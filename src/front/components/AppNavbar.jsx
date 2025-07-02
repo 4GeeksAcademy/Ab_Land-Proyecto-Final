@@ -1,5 +1,5 @@
 import React from "react";
-import logo from "../assets/img/SVG/logo_v2.svg";
+import logo from "../assets/img/SVG/logo_v4.svg";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -17,6 +17,7 @@ export const AppNavbar = () => {
     dispatch({ type: "LOGOUT" });
     navigate("/login");
   };
+
 
   return (
     <div className="container-fluid mx-5 py-1">
