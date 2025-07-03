@@ -1,6 +1,6 @@
 import { useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 export function Login() {
   const [email, setEmail] = useState("");
@@ -60,6 +60,9 @@ export function Login() {
         </button>
       </form>
       {store.error && <p className="text-red-500 mt-3">{store.error}</p>}
+      <p className="mt-3">
+        ¿No tienes una cuenta? <Link to="/register" className="text-blue-600">Regístrate aquí</Link>
+      </p>
     </div>
   );
 }

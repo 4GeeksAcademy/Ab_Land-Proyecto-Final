@@ -6,11 +6,14 @@ import enum
 db = SQLAlchemy()
 
 # --- ENUMS ---
+
+
 class ProjectStatus(enum.Enum):
     yet_to_start = "yet to start"
     in_progress = "in progress"
     done = "done"
     dismissed = "dismissed"
+
 
 class TaskStatus(enum.Enum):
     in_progress = "in progress"
@@ -18,17 +21,22 @@ class TaskStatus(enum.Enum):
     urgent = "urgent"
     done = "done"
 
+
 class RoleType(enum.Enum):
     admin = "admin"
     member = "member"
 
 # --- USER MODEL ---
+
+
 class User(db.Model):
     __tablename__ = 'user'
     id: Mapped[int] = mapped_column(primary_key=True)
     full_name: Mapped[str] = mapped_column(String(120), nullable=False)
-    email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
-    password: Mapped[str] = mapped_column(String(200), nullable=False)  # store hashed password!
+    email: Mapped[str] = mapped_column(
+        String(120), unique=True, nullable=False)
+    password: Mapped[str] = mapped_column(
+        String(200), nullable=False)  # store hashed password!
     phone: Mapped[int] = mapped_column(Integer, nullable=True)
     country: Mapped[str] = mapped_column(String(120), nullable=False)
     created_at: Mapped[DateTime] = mapped_column(DateTime, nullable=False)
@@ -38,11 +46,16 @@ class User(db.Model):
     is_active: Mapped[bool] = mapped_column(Boolean(), nullable=False)
 
     # Relationships
-    admin_of: Mapped[list['Project']] = relationship(back_populates='admin', cascade='all, delete-orphan')
-    member_of: Mapped[list['Project_Member']] = relationship(back_populates='member', cascade='all, delete-orphan')
-    author_of_task: Mapped[list['Task']] = relationship(back_populates='task_author', cascade='all, delete-orphan')
-    roles: Mapped[list['Role']] = relationship(back_populates='user', cascade='all, delete-orphan')
-    author_of_comment: Mapped[list['Comment']] = relationship(back_populates='comment_author', cascade='all, delete-orphan')
+    admin_of: Mapped[list['Project']] = relationship(
+        back_populates='admin', cascade='all, delete-orphan')
+    member_of: Mapped[list['Project_Member']] = relationship(
+        back_populates='member', cascade='all, delete-orphan')
+    author_of_task: Mapped[list['Task']] = relationship(
+        back_populates='task_author', cascade='all, delete-orphan')
+    roles: Mapped[list['Role']] = relationship(
+        back_populates='user', cascade='all, delete-orphan')
+    author_of_comment: Mapped[list['Comment']] = relationship(
+        back_populates='comment_author', cascade='all, delete-orphan')
 
     def __str__(self):
         return f'User {self.full_name}'
@@ -62,21 +75,28 @@ class User(db.Model):
         }
 
 # --- PROJECT MODEL ---
+
+
 class Project(db.Model):
     __tablename__ = 'project'
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(String(120), nullable=False)
     description: Mapped[str] = mapped_column(String, nullable=True)
     created_at: Mapped[DateTime] = mapped_column(DateTime, nullable=False)
-    proyect_picture_url: Mapped[str] = mapped_column(String, unique=True, nullable=True)
+    project_picture_url: Mapped[str] = mapped_column(
+        String, unique=True, nullable=True)
     due_date: Mapped[DateTime] = mapped_column(DateTime, nullable=False)
-    status: Mapped[ProjectStatus] = mapped_column(Enum(ProjectStatus), nullable=False, default=ProjectStatus.yet_to_start)
+    status: Mapped[ProjectStatus] = mapped_column(
+        Enum(ProjectStatus), nullable=False, default=ProjectStatus.yet_to_start)
 
     admin_id: Mapped[int] = mapped_column(ForeignKey('user.id'))
     admin: Mapped[User] = relationship(back_populates='admin_of')
-    members: Mapped[list['Project_Member']] = relationship(back_populates='project', cascade='all, delete-orphan')
-    tasks: Mapped[list['Task']] = relationship(back_populates='project', cascade='all, delete-orphan')
-    roles: Mapped[list['Role']] = relationship(back_populates='project', cascade='all, delete-orphan')
+    members: Mapped[list['Project_Member']] = relationship(
+        back_populates='project', cascade='all, delete-orphan')
+    tasks: Mapped[list['Task']] = relationship(
+        back_populates='project', cascade='all, delete-orphan')
+    roles: Mapped[list['Role']] = relationship(
+        back_populates='project', cascade='all, delete-orphan')
 
     def __str__(self):
         return f'Project {self.title}'
@@ -87,7 +107,7 @@ class Project(db.Model):
             'title': self.title,
             'description': self.description,
             'created_at': self.created_at.isoformat() if self.created_at else None,
-            'proyect_picture_url': self.proyect_picture_url,
+            'project_picture_url': self.project_picture_url,
             'due_date': self.due_date.isoformat() if self.due_date else None,
             'status': self.status.value,
             'admin_id': self.admin_id,
@@ -96,6 +116,8 @@ class Project(db.Model):
         }
 
 # --- PROJECT_MEMBER MODEL ---
+
+
 class Project_Member(db.Model):
     __tablename__ = 'project_member'
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -117,20 +139,25 @@ class Project_Member(db.Model):
         }
 
 # --- TASK MODEL ---
+
+
 class Task(db.Model):
     __tablename__ = 'task'
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(String(120), nullable=False)
     description: Mapped[str] = mapped_column(String, nullable=True)
     created_at: Mapped[DateTime] = mapped_column(DateTime, nullable=False)
-    status: Mapped[TaskStatus] = mapped_column(Enum(TaskStatus), nullable=False, default=TaskStatus.in_progress)
+    status: Mapped[TaskStatus] = mapped_column(
+        Enum(TaskStatus), nullable=False, default=TaskStatus.in_progress)
 
     author_id: Mapped[int] = mapped_column(ForeignKey('user.id'))
     task_author: Mapped[User] = relationship(back_populates='author_of_task')
     project_id: Mapped[int] = mapped_column(ForeignKey('project.id'))
     project: Mapped[Project] = relationship(back_populates='tasks')
-    comments: Mapped[list['Comment']] = relationship(back_populates='task', cascade='all, delete-orphan')
-    tags: Mapped[list['Tags']] = relationship(back_populates='task', cascade='all, delete-orphan')
+    comments: Mapped[list['Comment']] = relationship(
+        back_populates='task', cascade='all, delete-orphan')
+    tags: Mapped[list['Tags']] = relationship(
+        back_populates='task', cascade='all, delete-orphan')
 
     def __str__(self):
         return f'Task {self.title} in Project {self.project.title if self.project else None}'
@@ -151,6 +178,8 @@ class Task(db.Model):
         }
 
 # --- COMMENT MODEL ---
+
+
 class Comment(db.Model):
     __tablename__ = 'comment'
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -160,7 +189,8 @@ class Comment(db.Model):
     task_id: Mapped[int] = mapped_column(ForeignKey('task.id'))
     task: Mapped['Task'] = relationship(back_populates='comments')
     author_id: Mapped[int] = mapped_column(ForeignKey('user.id'))
-    comment_author: Mapped[User] = relationship(back_populates='author_of_comment')
+    comment_author: Mapped[User] = relationship(
+        back_populates='author_of_comment')
 
     def __str__(self):
         return f'Comment {self.title}: {self.description} on Task {self.task.title if self.task else None} by {self.comment_author.full_name if self.comment_author else None}'
@@ -178,6 +208,8 @@ class Comment(db.Model):
         }
 
 # --- ROLE MODEL ---
+
+
 class Role(db.Model):
     __tablename__ = 'role'
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -201,6 +233,8 @@ class Role(db.Model):
         }
 
 # --- TAGS MODEL ---
+
+
 class Tags(db.Model):
     __tablename__ = 'tags'
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -218,4 +252,3 @@ class Tags(db.Model):
             'task_id': self.task_id,
             'task_title': self.task.title if self.task else None
         }
-

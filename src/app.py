@@ -11,8 +11,10 @@ from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
 
+from flask_cors import CORS
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_mail import Mail, Message
 
 # Environment setup
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
@@ -27,27 +29,47 @@ app.url_map.strict_slashes = False
 # Database config
 db_url = os.getenv("DATABASE_URL")
 if db_url is not None:
-    app.config['SQLALCHEMY_DATABASE_URI'] = db_url.replace("postgres://", "postgresql://")
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_url.replace(
+        "postgres://", "postgresql://")
 else:
     app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///dev.db"
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = os.getenv("JWT_SECRET_KEY", "super-secret-key")  # <-- Use .env key
+app.config['JWT_SECRET_KEY'] = os.getenv(
+    "JWT_SECRET_KEY", "super-secret-key")  # <-- Use .env key
+
+# Mail configuration
+app.config.update(dict(
+    DEBUG=False,
+    MAIL_SERVER='smtp.gmail.com',
+    MAIL_PORT=587,
+    MAIL_USE_TLS=True,
+    MAIL_USE_SSL=False,
+    MAIL_USERNAME=os.getenv('MAIL_DEFAULT_SENDER'),
+    MAIL_DEFAULT_SENDER=os.getenv('MAIL_DEFAULT_SENDER'),
+    MAIL_PASSWORD=os.getenv('MAIL_PASSWORD'),
+))
 
 # Initialize extensions
 db.init_app(app)
 migrate = Migrate(app, db, compare_type=True)
 jwt = JWTManager(app)
+mail = Mail(app)
 setup_admin(app)
 setup_commands(app)
 app.register_blueprint(api, url_prefix='/api')
+CORS(app)
 
 # Error handler
+
+
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
 
 # Development sitemap route
+
+
 @app.route('/')
 def sitemap():
     if ENV == "development":
@@ -55,6 +77,8 @@ def sitemap():
     return send_from_directory(static_file_dir, 'index.html')
 
 # Serve static files (SPA fallback)
+
+
 @app.route('/<path:path>', methods=['GET'])
 def serve_any_other_file(path):
     if not os.path.isfile(os.path.join(static_file_dir, path)):
@@ -64,6 +88,8 @@ def serve_any_other_file(path):
     return response
 
 # --- REGISTER endpoint (with password hashing)
+
+
 @app.route('/register', methods=['POST'])
 def register():
     body = request.get_json(silent=True)
@@ -80,7 +106,8 @@ def register():
 
     phone = body.get('phone')
     profile_picture_url = body.get('profile_picture_url')
-    random_profile_color = None if profile_picture_url else random.randint(1, 7)
+    random_profile_color = random.randint(
+        0, 9)
     hashed_password = generate_password_hash(body['password'])
 
     new_user = User(
@@ -100,10 +127,23 @@ def register():
     except IntegrityError:
         db.session.rollback()
         return jsonify({'msg': 'Ingresa un email distinto.'}), 400
+    
+    # Send welcome email
+    path = os.path.join(static_file_dir, 'api', 'HTML mails', 'Welcome.html')
+    with open(path, 'r') as f:
+        html_content = f.read()
+    msg = Message(
+        subject="Hello, welcome to EchoBoard!",
+        recipients=[new_user.email],
+    )
+    msg.html = html_content
+    mail.send(msg)
 
     return jsonify({'msg': 'ok', 'new_user': new_user.serialize()}), 201
 
 # --- LOGIN endpoint (JWT + hash check)
+
+
 @app.route('/login', methods=['POST'])
 def login():
     body = request.get_json()
@@ -121,6 +161,8 @@ def login():
     }), 200
 
 # --- Protected route example
+
+
 @app.route('/private', methods=['GET'])
 @jwt_required()
 def private():
@@ -133,10 +175,24 @@ def private():
         'user': user.serialize()
     }), 200
 
+# --- Mail sending example
+
+
+@app.route('/send-mail', methods=['GET'])
+def send_mail():
+    path = os.path.join(static_file_dir, 'api', 'HTML mails', 'Welcome.html')#testpath
+    with open(path, 'r') as f:
+        html_content = f.read()
+    msg = Message(
+        subject="Hello",
+        recipients=["echoboard.4geeks@gmail.com"],
+    )
+    msg.html = html_content
+    mail.send(msg)
+    return jsonify({'msg': 'Email sent'}), 200
+
+
 # --- Run app ---
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3001))
     app.run(host='0.0.0.0', port=PORT, debug=True)
-
-
-

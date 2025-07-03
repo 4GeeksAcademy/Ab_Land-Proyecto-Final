@@ -83,6 +83,7 @@ body {
   );
   color: white;
   background-repeat: no-repeat;
+  min-height: 100vh
 }
 .gradient-text {
   background: linear-gradient(to right, #00a3ff, var(--green-500));

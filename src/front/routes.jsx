@@ -10,7 +10,7 @@ import { Home } from "./pages/Home";
 import ColorPalettePreview from "./pages/ColorPalettePreview";
 import { NotFound } from "./pages/NotFound";
 import { Login } from "./pages/Login";
-import { App } from "./pages/App";
+import { Register } from "./pages/Register";
 
 // Import your global reducer/context hook
 import useGlobalReducer from "./hooks/useGlobalReducer";
@@ -28,7 +28,7 @@ export const router = createBrowserRouter(
       <Route index element={<Home />} />
       <Route path="/cpp" element={<ColorPalettePreview />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/app" element={<App />} />
+      <Route path="/register" element={<Register />} />
 
       {/* Private routes */}
       <Route
