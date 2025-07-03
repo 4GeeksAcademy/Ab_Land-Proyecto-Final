@@ -195,6 +195,20 @@ def get_projects():
     }), 200
 
 
+# --- Protected endpoint JWT token check
+@app.route('/jwtcheck', methods=['GET'])
+@jwt_required()
+def verification_token():
+    # jwt_data = get_jwt()
+    # exp_timestamp = jwt_data['exp']
+    # now = datetime.datetime.now().timestamp()
+    # # Check if the token is about to expire in the next 60 seconds
+    # if exp_timestamp - now < 60:
+    #     user_id = get_jwt_identity()
+    #     new_token = create_access_token(identity=user_id)
+    #     return jsonify({'msg': 'Token is about to expire', 'new_token': new_token}), 200
+    return jsonify({'msg': 'Token is valid'}), 200
+
 # --- Run app ---
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3001))
