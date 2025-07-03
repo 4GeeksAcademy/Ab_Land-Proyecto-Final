@@ -41,7 +41,7 @@ export const RestorePassword = () => {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
+          body: JSON.stringify({ email: email }),
         }
       );
 
@@ -53,9 +53,9 @@ export const RestorePassword = () => {
         return;
       }
       setMailSent(true);
-      // Handle success
+      
     } catch (err) {
-      // Handle connection error
+      
     }
   };
 
@@ -65,20 +65,19 @@ export const RestorePassword = () => {
       const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/restore-password/${token}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ newPassword }),
+        body: JSON.stringify({ new_password: newPassword }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
         setError(data.msg || "token not valid or expired");
-        // Handle error
         return;
       }
-      // Handle success, e.g., navigate to login page
+      
       setPasswordRestored(true);
     } catch (err) {
-      // Handle connection error
+      
       setError(err || "Connection error");
     }
   }

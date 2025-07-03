@@ -56,6 +56,8 @@ class User(db.Model):
         back_populates='user', cascade='all, delete-orphan')
     author_of_comment: Mapped[list['Comment']] = relationship(
         back_populates='comment_author', cascade='all, delete-orphan')
+    restore_passwords: Mapped[list['RestorePassword']] = relationship(
+        back_populates='user', cascade='all, delete-orphan')
 
     def __str__(self):
         return f'User {self.full_name}'
@@ -83,9 +85,11 @@ class Project(db.Model):
     title: Mapped[str] = mapped_column(String(120), nullable=False)
     description: Mapped[str] = mapped_column(String, nullable=True)
     created_at: Mapped[DateTime] = mapped_column(DateTime, nullable=False)
-    project_picture_url: Mapped[str] = mapped_column(String, unique=True, nullable=True)
+    project_picture_url: Mapped[str] = mapped_column(
+        String, unique=True, nullable=True)
     due_date: Mapped[DateTime] = mapped_column(DateTime, nullable=False)
-    status: Mapped[ProjectStatus] = mapped_column(Enum(ProjectStatus), nullable=False, default=ProjectStatus.in_progress)
+    status: Mapped[ProjectStatus] = mapped_column(
+        Enum(ProjectStatus), nullable=False, default=ProjectStatus.in_progress)
     admin_id: Mapped[int] = mapped_column(ForeignKey('user.id'))
     admin: Mapped[User] = relationship(back_populates='admin_of')
     members: Mapped[list['Project_Member']] = relationship(
@@ -248,4 +252,32 @@ class Tags(db.Model):
             'tag': self.tag,
             'task_id': self.task_id,
             'task_title': self.task.title if self.task else None
+        }
+
+    # --- RESTORE PASSWORD MODEL ---
+
+
+class RestorePassword(db.Model):
+    __tablename__ = 'restore_password'
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_mail: Mapped[str] = mapped_column(
+        String(120),
+        ForeignKey('user.email', ondelete="CASCADE"),
+        nullable=False
+    )
+    uuid: Mapped[str] = mapped_column(String(36), unique=True, nullable=False)
+    expires_at: Mapped[DateTime] = mapped_column(DateTime, nullable=False)
+
+    # Relationships
+    user: Mapped[User] = relationship(back_populates='restore_passwords')
+
+    def __str__(self):
+        return f'RestorePassword for {self.user_mail} with UUID {self.uuid}'
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'user_mail': self.user_mail,
+            'uuid': self.uuid,
+            'expires_at': self.expires_at.isoformat() if self.expires_at else None
         }
