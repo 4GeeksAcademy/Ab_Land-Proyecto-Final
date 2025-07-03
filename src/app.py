@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 
 from api.utils import APIException, generate_sitemap
 from api.models import db, User, Project, Task, Comment
-from api.routes import api
+from api.routes import api  # Only /api/hello or similar test endpoints here!
 from api.admin import setup_admin
 from api.commands import setup_commands
 from flask_cors import CORS
@@ -17,8 +17,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 # Environment setup
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
-
-# Static file directory (for SPA mode)
 static_file_dir = os.path.dirname(os.path.realpath(__file__))
 
 # Initialize Flask app
@@ -29,12 +27,14 @@ CORS(app)
 # Database config
 db_url = os.getenv("DATABASE_URL")
 if db_url is not None:
-    app.config['SQLALCHEMY_DATABASE_URI'] = db_url.replace("postgres://", "postgresql://")
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_url.replace(
+        "postgres://", "postgresql://")
 else:
     app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///dev.db"
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = os.getenv("JWT_SECRET_KEY", "super-secret-key")  # <-- Use .env key
+app.config['JWT_SECRET_KEY'] = os.getenv(
+    "JWT_SECRET_KEY", "super-secret-key")  # Use your .env value
 
 # Initialize extensions
 db.init_app(app)
@@ -42,14 +42,19 @@ migrate = Migrate(app, db, compare_type=True)
 jwt = JWTManager(app)
 setup_admin(app)
 setup_commands(app)
+# ONLY /api/hello, no main endpoints here
 app.register_blueprint(api, url_prefix='/api')
 
 # Error handler
+
+
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
 
 # Development sitemap route
+
+
 @app.route('/')
 def sitemap():
     if ENV == "development":
@@ -57,6 +62,8 @@ def sitemap():
     return send_from_directory(static_file_dir, 'index.html')
 
 # Serve static files (SPA fallback)
+
+
 @app.route('/<path:path>', methods=['GET'])
 def serve_any_other_file(path):
     if not os.path.isfile(os.path.join(static_file_dir, path)):
@@ -66,6 +73,8 @@ def serve_any_other_file(path):
     return response
 
 # --- REGISTER endpoint (with password hashing)
+
+
 @app.route('/register', methods=['POST'])
 def register():
     body = request.get_json(silent=True)
@@ -82,7 +91,8 @@ def register():
 
     phone = body.get('phone')
     profile_picture_url = body.get('profile_picture_url')
-    random_profile_color = None if profile_picture_url else random.randint(1, 7)
+    random_profile_color = None if profile_picture_url else random.randint(
+        1, 7)
     hashed_password = generate_password_hash(body['password'])
 
     new_user = User(
@@ -106,6 +116,8 @@ def register():
     return jsonify({'msg': 'ok', 'new_user': new_user.serialize()}), 201
 
 # --- LOGIN endpoint (JWT + hash check)
+
+
 @app.route('/login', methods=['POST'])
 def login():
     body = request.get_json()
@@ -122,7 +134,8 @@ def login():
         "user": user.serialize()
     }), 200
 
-# --- Protected routes
+
+# --- CREATE PROJECT endpoint (protected)
 @app.route('/project', methods=['POST'])
 @jwt_required()
 def new_project():
@@ -137,23 +150,28 @@ def new_project():
         return jsonify({'msg': 'Debes enviar un título válido'}), 400
     if 'due_date' not in body or body['due_date'].strip() == '':
         return jsonify({'msg': 'Debes enviar una fecha de entrega válida'}), 400
-    
-    description=body.get('description')
-    project_picture_url=body.get('project_picture_url')
 
+    description = body.get('description')
+    project_picture_url = body.get('project_picture_url')
+
+    description = body.get('description')
+    project_picture_url = body.get('project_picture_url')
+    status = body.get('status', 'in progress')
     new_project = Project(
         title=body['title'],
         description=description,
         created_at=datetime.datetime.now(),
         project_picture_url=project_picture_url,
         due_date=datetime.datetime.strptime(body['due_date'], '%Y-%m-%d'),
-        admin=user
+        admin=user,
+        status=status
     )
     db.session.add(new_project)
     db.session.commit()
     return jsonify({'msg': 'ok', 'new_project': new_project.serialize()}), 201
 
-# --- Protected endpoint GET projects
+
+# --- GET PROJECTS endpoint (protected)
 @app.route('/projects', methods=['GET'])
 @jwt_required()
 def get_projects():
@@ -176,6 +194,7 @@ def get_projects():
         },
     }), 200
 
+
 # --- Protected endpoint JWT token check
 @app.route('/jwtcheck', methods=['GET'])
 @jwt_required()
@@ -194,6 +213,3 @@ def verification_token():
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3001))
     app.run(host='0.0.0.0', port=PORT, debug=True)
-
-
-

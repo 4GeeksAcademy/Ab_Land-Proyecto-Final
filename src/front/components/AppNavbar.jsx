@@ -1,5 +1,5 @@
 import React from "react";
-import logo from "../assets/img/SVG/logo_v2.svg";
+import logo from "../assets/img/SVG/logo_v5.svg";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -18,13 +18,14 @@ export const AppNavbar = () => {
     navigate("/login");
   };
 
+
   return (
     <div className="container-fluid mx-5 py-1">
       <a className="navbar-brand d-flex align-items-center text-white" href="/">
         <img
           src={logo}
           alt="Logo"
-          style={{ width: "7rem", height: "7rem" }}
+          style={{ width: "4rem", height: "4rem" }}
           className="d-inline-block mx-2 "
         />
         EchoBoard
