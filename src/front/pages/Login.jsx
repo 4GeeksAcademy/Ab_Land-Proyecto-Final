@@ -39,16 +39,17 @@ export function Login() {
   };
 
   return (
-    <div className="container mx-auto px-4 md:px-8">
-      <h2 className="text-xl font-bold mb-4">Iniciar Sesión</h2>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+    <div className="px-5 container-fluid">
+      <div className="card flex-center flex-column p-5 max-w-md mx-auto mt-10">
+      <h2 className="text-xl font-bold mb-4">Login to your account</h2>
+      <form className="w-50 text-center" onSubmit={handleSubmit} >
         <input
           type="email"
           value={email}
           onChange={e => setEmail(e.target.value)}
           placeholder="Email"
           required
-          className="border px-3 py-2 rounded"
+          className="form-control mb-3"
         />
         <input
           type="password"
@@ -56,19 +57,23 @@ export function Login() {
           onChange={e => setPassword(e.target.value)}
           placeholder="Contraseña"
           required
-          className="border px-3 py-2 rounded"
+          className="form-control mb-3"
         />
         <button
           type="submit"
-          className="bg-blue-600 text-white py-2 rounded"
+          className="btn btn-primary"
         >
-          Ingresar
+          Login
         </button>
       </form>
       {store.error && <p className="text-red-500 mt-3">{store.error}</p>}
       <p className="mt-3">
-        ¿No tienes una cuenta? <Link to="/register" className="text-blue-600">Regístrate aquí</Link>
+        Don't have an account? <Link to="/register" className="text-blue-600">Register here</Link>
       </p>
+      <p className="mt-3">
+        Forgot your password? <Link to="/restore-password" className="text-blue-600">Reset here</Link>
+      </p>
+    </div>
     </div>
   );
 }

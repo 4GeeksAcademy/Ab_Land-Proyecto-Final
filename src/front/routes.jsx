@@ -12,7 +12,8 @@ import { NotFound } from "./pages/NotFound";
 import { Login } from "./pages/Login";
 import { Register } from "./pages/Register";
 import { NewProject } from "./pages/NewProject";
-import Dashboard from "./pages/Dashboard"; 
+import Dashboard from "./pages/Dashboard";
+import {RestorePassword} from "./pages/RestorePassword"; 
 
 
 // Import global reducer/context hook
@@ -32,6 +33,10 @@ export const router = createBrowserRouter(
       <Route path="/cpp" element={<ColorPalettePreview />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/restore-password" element={<RestorePassword />} />
+      <Route path="/restore-password/:token" element={<RestorePassword />} /> 
+
+      
       <Route path="/newproject" element={<NewProject />} />   
 
       {/* Private routes */}
@@ -40,6 +45,7 @@ export const router = createBrowserRouter(
         element={
           <PrivateRoute>
             <Dashboard />
+
           </PrivateRoute>
         }
       />
