@@ -1,7 +1,7 @@
 
 import os
 from flask_admin import Admin
-from .models import db, User, Project, Task, Comment, Role, Project_Member, Tags
+from .models import db, User, Project, Task, Comment, Role, Project_Member, Tags, RestorePassword
 from flask_admin.contrib.sqla import ModelView
 
 
@@ -43,6 +43,9 @@ class TagsModelView(ModelView):
     column_auto_select_related = True
     column_list = ['id', 'tag', 'task_id', 'task']
 
+class RestorePasswordModelView(ModelView):
+    column_auto_select_related = True
+    column_list = ['id', 'user_mail', 'uuid', 'expires_at']
 
 def setup_admin(app):
     app.secret_key = os.environ.get('FLASK_APP_KEY', 'sample key')
@@ -57,6 +60,7 @@ def setup_admin(app):
     admin.add_view(RoleModelView(Role, db.session))
     admin.add_view(ProjectMemberModelView(Project_Member, db.session))
     admin.add_view(TagsModelView(Tags, db.session))
+    admin.add_view(RestorePasswordModelView(RestorePassword, db.session))
 
     # You can duplicate that line to add mew models
     # admin.add_view(ModelView(YourModelName, db.session))

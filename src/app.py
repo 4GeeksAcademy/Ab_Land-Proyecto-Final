@@ -1,12 +1,15 @@
 import os
 import datetime
 import random
+import uuid
+
 from flask import Flask, request, jsonify, send_from_directory
 from flask_migrate import Migrate
 from sqlalchemy.exc import IntegrityError
 
 from api.utils import APIException, generate_sitemap
-from api.models import db, User, Project, Task, Comment
+from api.models import db, User, Project, Task, Comment, RestorePassword
+
 from api.routes import api  # Only /api/hello or similar test endpoints here!
 from api.admin import setup_admin
 from api.commands import setup_commands
@@ -227,7 +230,7 @@ def get_projects():
 
 @app.route('/send-mail', methods=['GET'])
 def send_mail():
-    path = os.path.join(static_file_dir, 'api', 'HTML mails', 'Welcome.html')#testpath
+    path = os.path.join(static_file_dir, 'api', 'HTML mails', 'RestorePassword.html')#testpath
     with open(path, 'r') as f:
         html_content = f.read()
     msg = Message(
@@ -253,6 +256,78 @@ def verification_token():
     #     return jsonify({'msg': 'Token is about to expire', 'new_token': new_token}), 200
     return jsonify({'msg': 'Token is valid'}), 200
 
+# --- Restore password endpoint
+@app.route('/restore-password', methods=['POST'])
+def restore_password():
+    body = request.get_json(silent=True)
+    if body is None:
+        return jsonify({'msg': 'Debes enviar información en el body'}), 400
+    if 'email' not in body or body['email'].strip() == '':
+        return jsonify({'msg': 'Debes enviar un email válido'}), 400
+
+    user = User.query.filter_by(email=body['email']).first()
+    if not user:
+        return jsonify({'msg': 'User not found'}), 404
+
+    # Generate a password reset token and send it via email
+    token = str(uuid.uuid4())
+    expires_at = datetime.datetime.now() + datetime.timedelta(hours=2)
+    restore_password = RestorePassword(
+        user_mail=user.email,
+        uuid=token,
+        expires_at=expires_at
+    )
+    db.session.add(restore_password)
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({'msg': 'Error creating password reset request'}), 500
+    # create link to restore password
+    restore_link = f"{os.getenv('FRONTEND_URL')}/restore-password/{token}"
+    # Send password reset email
+
+    path = os.path.join(static_file_dir, 'api', 'HTML mails', 'RestorePassword.html')
+    with open(path, 'r') as f:
+        html_content = f.read()
+    html_content = html_content.replace('{{restore_link}}', restore_link)
+    msg = Message(
+        subject="Password Reset Request",
+        recipients=[user.email],
+    )
+    msg.html = html_content
+    mail.send(msg)
+
+    return jsonify({'msg': 'Password reset email sent'}), 200
+
+# --- restore password confirmation endpoint
+@app.route('/restore-password/<token>', methods=['POST'])
+def restore_password_confirmation(token):
+    body = request.get_json(silent=True)
+    if body is None:
+        return jsonify({'msg': 'Debes enviar información en el body'}), 400
+    if 'new_password' not in body or body['new_password'].strip() == '':
+        return jsonify({'msg': 'Debes enviar una nueva contraseña válida'}), 400
+
+    restore_request = RestorePassword.query.filter_by(uuid=token).first()
+    if not restore_request:
+        return jsonify({'msg': 'Invalid or expired token'}), 404
+
+    if restore_request.expires_at < datetime.datetime.now():
+        return jsonify({'msg': 'Token has expired'}), 400
+
+    user = User.query.filter_by(email=restore_request.user_mail).first()
+    if not user:
+        return jsonify({'msg': 'User not found'}), 404
+
+    user.password = generate_password_hash(body['new_password'])
+    db.session.commit()
+
+    # Delete the restore password request
+    db.session.delete(restore_request)
+    db.session.commit()
+
+    return jsonify({'msg': 'Password updated successfully'}), 200
 
 # --- Run app ---
 if __name__ == '__main__':
