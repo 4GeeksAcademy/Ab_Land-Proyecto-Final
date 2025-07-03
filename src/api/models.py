@@ -83,12 +83,9 @@ class Project(db.Model):
     title: Mapped[str] = mapped_column(String(120), nullable=False)
     description: Mapped[str] = mapped_column(String, nullable=True)
     created_at: Mapped[DateTime] = mapped_column(DateTime, nullable=False)
-    project_picture_url: Mapped[str] = mapped_column(
-        String, unique=True, nullable=True)
+    project_picture_url: Mapped[str] = mapped_column(String, unique=True, nullable=True)
     due_date: Mapped[DateTime] = mapped_column(DateTime, nullable=False)
-    status: Mapped[ProjectStatus] = mapped_column(
-        Enum(ProjectStatus), nullable=False, default=ProjectStatus.yet_to_start)
-
+    status: Mapped[ProjectStatus] = mapped_column(Enum(ProjectStatus), nullable=False, default=ProjectStatus.in_progress)
     admin_id: Mapped[int] = mapped_column(ForeignKey('user.id'))
     admin: Mapped[User] = relationship(back_populates='admin_of')
     members: Mapped[list['Project_Member']] = relationship(
@@ -112,7 +109,7 @@ class Project(db.Model):
             'status': self.status.value,
             'admin_id': self.admin_id,
             'admin_full_name': self.admin.full_name if self.admin else None,
-            'members': [member.serialize() for member in self.members]
+            'members': [member.member.serialize() for member in self.members]
         }
 
 # --- PROJECT_MEMBER MODEL ---

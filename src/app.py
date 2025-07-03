@@ -6,10 +6,11 @@ from flask_migrate import Migrate
 from sqlalchemy.exc import IntegrityError
 
 from api.utils import APIException, generate_sitemap
-from api.models import db, User
-from api.routes import api
+from api.models import db, User, Project, Task, Comment
+from api.routes import api  # Only /api/hello or similar test endpoints here!
 from api.admin import setup_admin
 from api.commands import setup_commands
+from flask_cors import CORS
 
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
@@ -18,13 +19,12 @@ from flask_mail import Mail, Message
 
 # Environment setup
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
-
-# Static file directory (for SPA mode)
 static_file_dir = os.path.dirname(os.path.realpath(__file__))
 
 # Initialize Flask app
 app = Flask(__name__)
 app.url_map.strict_slashes = False
+CORS(app)
 
 # Database config
 db_url = os.getenv("DATABASE_URL")
@@ -35,8 +35,7 @@ else:
     app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///dev.db"
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = os.getenv(
-    "JWT_SECRET_KEY", "super-secret-key")  # <-- Use .env key
+app.config['JWT_SECRET_KEY'] = os.getenv("JWT_SECRET_KEY", "super-secret-key")  
 
 # Mail configuration
 app.config.update(dict(
@@ -50,6 +49,7 @@ app.config.update(dict(
     MAIL_PASSWORD=os.getenv('MAIL_PASSWORD'),
 ))
 
+
 # Initialize extensions
 db.init_app(app)
 migrate = Migrate(app, db, compare_type=True)
@@ -57,6 +57,7 @@ jwt = JWTManager(app)
 mail = Mail(app)
 setup_admin(app)
 setup_commands(app)
+# ONLY /api/hello, no main endpoints here
 app.register_blueprint(api, url_prefix='/api')
 CORS(app)
 
@@ -106,8 +107,7 @@ def register():
 
     phone = body.get('phone')
     profile_picture_url = body.get('profile_picture_url')
-    random_profile_color = random.randint(
-        0, 9)
+    random_profile_color = random.randint(0, 9)
     hashed_password = generate_password_hash(body['password'])
 
     new_user = User(
@@ -154,26 +154,73 @@ def login():
     if not user or not check_password_hash(user.password, body['password']):
         return jsonify({'msg': 'Credenciales inválidas'}), 401
 
-    token = create_access_token(identity=user.id)
+    token = create_access_token(identity=str(user.id))
     return jsonify({
         "access_token": token,
         "user": user.serialize()
     }), 200
 
-# --- Protected route example
 
 
-@app.route('/private', methods=['GET'])
+# --- CREATE PROJECT endpoint (protected)
+@app.route('/project', methods=['POST'])
 @jwt_required()
-def private():
+def new_project():
     user_id = get_jwt_identity()
     user = User.query.get(user_id)
     if not user:
         return jsonify({'msg': 'User not found'}), 404
+    body = request.get_json(silent=True)
+    if body is None:
+        return jsonify({'msg': 'Debes enviar información en el body'}), 400
+    if 'title' not in body or body['title'].strip() == '':
+        return jsonify({'msg': 'Debes enviar un título válido'}), 400
+    if 'due_date' not in body or body['due_date'].strip() == '':
+        return jsonify({'msg': 'Debes enviar una fecha de entrega válida'}), 400
+
+    description = body.get('description')
+    project_picture_url = body.get('project_picture_url')
+
+    description = body.get('description')
+    project_picture_url = body.get('project_picture_url')
+    status = body.get('status', 'in progress')
+    new_project = Project(
+        title=body['title'],
+        description=description,
+        created_at=datetime.datetime.now(),
+        project_picture_url=project_picture_url,
+        due_date=datetime.datetime.strptime(body['due_date'], '%Y-%m-%d'),
+        admin=user,
+        status=status
+    )
+    db.session.add(new_project)
+    db.session.commit()
+    return jsonify({'msg': 'ok', 'new_project': new_project.serialize()}), 201
+
+
+# --- GET PROJECTS endpoint (protected)
+@app.route('/projects', methods=['GET'])
+@jwt_required()
+def get_projects():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'msg': 'User not found'}), 404
+
+    admin_of = [project.serialize() for project in user.admin_of]
+    member_of = [project.project.serialize() for project in user.member_of]
+
+    if not admin_of and not member_of:
+        return jsonify({'msg': 'No projects found for this user', 'user_projects': []}), 200
+
     return jsonify({
-        'msg': 'Este es un endpoint privado!',
-        'user': user.serialize()
+        'msg': 'Projects retrieved successfully',
+        'user_projects': {
+            'admin': admin_of,
+            'member': member_of
+        },
     }), 200
+
 
 # --- Mail sending example
 
@@ -190,6 +237,21 @@ def send_mail():
     msg.html = html_content
     mail.send(msg)
     return jsonify({'msg': 'Email sent'}), 200
+
+
+# --- Protected endpoint JWT token check
+@app.route('/jwtcheck', methods=['GET'])
+@jwt_required()
+def verification_token():
+    # jwt_data = get_jwt()
+    # exp_timestamp = jwt_data['exp']
+    # now = datetime.datetime.now().timestamp()
+    # # Check if the token is about to expire in the next 60 seconds
+    # if exp_timestamp - now < 60:
+    #     user_id = get_jwt_identity()
+    #     new_token = create_access_token(identity=user_id)
+    #     return jsonify({'msg': 'Token is about to expire', 'new_token': new_token}), 200
+    return jsonify({'msg': 'Token is valid'}), 200
 
 
 # --- Run app ---

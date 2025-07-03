@@ -11,8 +11,11 @@ import ColorPalettePreview from "./pages/ColorPalettePreview";
 import { NotFound } from "./pages/NotFound";
 import { Login } from "./pages/Login";
 import { Register } from "./pages/Register";
+import { NewProject } from "./pages/NewProject";
+import Dashboard from "./pages/Dashboard"; 
 
-// Import your global reducer/context hook
+
+// Import global reducer/context hook
 import useGlobalReducer from "./hooks/useGlobalReducer";
 
 // 🔒 Protects private routes
@@ -29,18 +32,21 @@ export const router = createBrowserRouter(
       <Route path="/cpp" element={<ColorPalettePreview />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/newproject" element={<NewProject />} />   
 
       {/* Private routes */}
       <Route
         path="/dashboard"
         element={
           <PrivateRoute>
-            <div>This is a protected Dashboard.</div>
+            <Dashboard />
           </PrivateRoute>
         }
       />
     </Route>
   )
 );
+
+
 
 
