@@ -9,7 +9,7 @@ export const RestorePassword = () => {
   const [passwordRestored, setPasswordRestored] = useState(false);
   const [passwordOne, setPasswordOne] = useState("");
   const [passwordTwo, setPasswordTwo] = useState("");
-  const [error, setError] = useState("testasdasdasdasdasdasdasdasd");
+  const [error, setError] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const { token } = useParams(); // Get token from URL if needed
   const navigate = useNavigate();
