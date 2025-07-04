@@ -8,7 +8,7 @@ from flask_migrate import Migrate
 from sqlalchemy.exc import IntegrityError
 
 from api.utils import APIException, generate_sitemap
-from api.models import db, User, Project, Task, Comment, RestorePassword
+from api.models import db, User, Project, Task, Comment, RestorePassword, Project_Member
 from api.admin import setup_admin
 from api.commands import setup_commands
 
@@ -29,9 +29,11 @@ app.url_map.strict_slashes = False
 CORS(
     app,
     resources={r"/*": {"origins": [
+        "https://laughing-space-enigma-7v5jwj9g6476cr9xx-3000.app.github.dev",     
         "https://supreme-memory-5grwvxxgqrgj245gw-3000.app.github.dev",
         "https://potential-journey-jj7vx9wqx46qfp749-3000.app.github.dev",
         "http://localhost:3000"
+
     ]}},
     supports_credentials=True
 )
@@ -202,6 +204,33 @@ def new_project():
     db.session.add(new_project)
     db.session.commit()
     return jsonify({'msg': 'ok', 'new_project': new_project.serialize()}), 201
+
+
+@app.route('/project/<int:project_id>', methods=['GET'])
+@jwt_required()
+def get_project(project_id):
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'msg': 'User not found'}), 404
+
+    project = Project.query.get(project_id)
+    if not project:
+        return jsonify({'msg': 'Project not found'}), 404
+
+    project_members = Project_Member.query.filter_by(project_id=project_id).all()
+    print([member.member_id for member in project_members])
+    print(user.id is not project.admin_id)
+    print(user.id not in [member.member_id for member in project_members])
+
+    if user.id is not project.admin_id and user.id not in [member.member_id for member in project_members]:
+        # If the user is not an admin or a member of the project, return an error
+        return jsonify({'msg': 'You are not authorized to view this project'}), 403
+
+    return jsonify({
+        'msg': 'Project retrieved successfully',
+        'project': project.serialize()
+    }), 200
 
 
 @app.route('/projects', methods=['GET'])

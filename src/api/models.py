@@ -113,7 +113,8 @@ class Project(db.Model):
             'status': self.status.value,
             'admin_id': self.admin_id,
             'admin_full_name': self.admin.full_name if self.admin else None,
-            'members': [member.member.serialize() for member in self.members]
+            'members': [member.member.serialize() for member in self.members],
+            'tasks': [task.serialize() for task in self.tasks]
         }
 
 # --- PROJECT_MEMBER MODEL ---

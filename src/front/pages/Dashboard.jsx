@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ProjectCard } from "../components/ProjectCard";
 
 export default function Dashboard() {
@@ -61,6 +61,7 @@ export default function Dashboard() {
   return (
     <div className="container py-5">
       <h2>User Dashboard: Your Projects</h2>
+      <Link to="/newProject" className="btn btn-primary mb-3">Create New Project</Link>
 
       {/* Welcome message with profile picture */}
       {store.user && (
@@ -107,7 +108,9 @@ export default function Dashboard() {
           <ul>
             {(projects.admin && projects.admin.length > 0)
               ? projects.admin.map(proj => (
-                <ProjectCard key={proj.id} project={proj} />
+                <Link to={`/project/${proj.id}`} key={proj.id}>
+                  <ProjectCard project={proj} />
+                </Link>
               ))
               : <li>You are not an admin of any project.</li>
             }
@@ -116,7 +119,9 @@ export default function Dashboard() {
           <ul>
             {(projects.member && projects.member.length > 0)
               ? projects.member.map(proj => (
-                <ProjectCard key={proj.id} project={proj} />
+                <Link to={`/project/${proj.id}`} key={proj.id}>
+                  <ProjectCard project={proj} />
+                </Link>
               ))
               : <li>You are not a member of any project.</li>
             }
