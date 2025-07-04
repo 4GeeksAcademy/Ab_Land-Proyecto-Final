@@ -3,7 +3,6 @@ import logo from "../assets/img/SVG/logo_v5.svg";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { Link, useNavigate } from "react-router-dom";
 
-
 export const AppNavbar = () => {
   const { store, dispatch } = useGlobalReducer(); // verificar si tiene token de acceso
   console.log(store.user);
@@ -17,7 +16,6 @@ export const AppNavbar = () => {
     dispatch({ type: "LOGOUT" });
     navigate("/login");
   };
-
 
   return (
     <div className="container-fluid mx-5 py-1">
@@ -87,3 +85,4 @@ export const AppNavbar = () => {
     </div>
   );
 };
+

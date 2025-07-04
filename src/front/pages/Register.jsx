@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-
 export const Register = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -22,7 +21,6 @@ export const Register = () => {
       [e.target.name]: e.target.value,
     }));
   };
-
 
   const handleFileUpload = async (file) => {
     if (!file) return;
@@ -46,15 +44,12 @@ export const Register = () => {
       if (!res.ok) {
         throw new Error("Image upload failed");
       }
-      console.log("Image uploaded successfully:", data);
       setFormData((prev) => ({
         ...prev,
         profile_picture_url: data.secure_url,
       }));
-
       setUploadMessage("Image uploaded ✅");
     } catch (err) {
-      console.error("Upload failed:", err);
       setUploadMessage("Upload failed ❌");
     } finally {
       setUploading(false);
@@ -80,28 +75,27 @@ export const Register = () => {
       alert("Please wait for the image upload to complete.");
       return;
     }
-    console.log("Form Data to send:", formData);
-    postRegister(); // Call the function to handle registration
+    postRegister();
   };
-  console.log("Form Data to send:", formData);
 
+  // --- FIXED: Send phone as number or null ---
   const postRegister = async () => {
-    const backendUrl = import.meta.env.VITE_BACKEND_URL
-    setFormData((prev) => ({
-      ...prev,
-      phone: parseInt(prev.phone) || null, // Ensure phone is always a number
-    }));
+    const backendUrl = import.meta.env.VITE_BACKEND_URL;
+    const submitData = { ...formData };
+    if (!submitData.phone || isNaN(Number(submitData.phone))) {
+      submitData.phone = null;
+    } else {
+      submitData.phone = Number(submitData.phone);
+    }
     try {
       const response = await fetch(`${backendUrl}/register`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(submitData),
       });
       if (!response.ok) throw new Error("Network response was not ok");
       const data = await response.json();
-      navigate("/login"); // Redirect to login after successful registration
+      navigate("/login");
       console.log("Registration successful:", data);
     } catch (error) {
       console.error("Error during registration:", error);
@@ -120,11 +114,11 @@ export const Register = () => {
         <div className="row g-0">
           <div className="col-md-4 flex-center border-end">
             <div className="mb-4">
-              <span>{currentStep >= 1 ? "✅" : "❌"} Step 1: Basic Info</span>{" "}
+              <span>{currentStep >= 1 ? "✅" : "❌"} Step 1: Basic Info</span>
               <br />
               <span>
                 {currentStep >= 2 ? "✅" : "❌"} Step 2: Contact Info
-              </span>{" "}
+              </span>
               <br />
               <span>
                 {currentStep === 3 ? "✅" : "❌"} Step 3: Profile Picture
@@ -226,11 +220,20 @@ export const Register = () => {
 
             <div className="mt-4 d-flex justify-content-between mb-4">
               {currentStep > 1 && (
-                <button type="button" className="btn btn-secondary me-5" onClick={prevStep}>
+                <button
+                  type="button"
+                  className="btn btn-secondary me-5"
+                  onClick={prevStep}
+                >
                   Back
                 </button>
               )}
-              <button type="button" className="btn btn-primary ms-auto" onClick={nextStep}>
+              <button
+                type="button"
+                className="btn btn-primary ms-auto"
+                onClick={nextStep}
+                disabled={uploading}
+              >
                 {currentStep < 3 ? "Next" : "Submit"}
               </button>
             </div>
@@ -240,3 +243,4 @@ export const Register = () => {
     </div>
   );
 };
+
