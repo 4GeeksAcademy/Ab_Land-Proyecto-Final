@@ -2,7 +2,6 @@ import React from 'react'
 import logo from '../assets/img/SVG/logo_v5.svg'
 import { Link } from 'react-router-dom'
 
-
 export const HomeNavbar = () => {
     const goTo = (id) => {
         document.getElementById(id).scrollIntoView({ behavior: "smooth" });
@@ -20,24 +19,23 @@ export const HomeNavbar = () => {
             </button>
 
             <div className="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul className='nav mx-auto '>
-                <li className='nav-item'>
-                    <button className='nav-link text-white' onClick={() => { goTo('home') }}> Home</button>
-                </li>
-                <li className='nav-item '>
-                    <button className='nav-link text-white' onClick={() => { goTo('howitworks') }}> How it Works</button>
-                </li>
-                <li className='nav-item'>
-                    <button className='nav-link text-white' onClick={() => { goTo('ourteam') }}> Our Team</button>
-                </li>
+                <ul className='nav mx-auto '>
+                    <li className='nav-item'>
+                        <button className='nav-link text-white' onClick={() => { goTo('home') }}> Home</button>
+                    </li>
+                    <li className='nav-item '>
+                        <button className='nav-link text-white' onClick={() => { goTo('howitworks') }}> How it Works</button>
+                    </li>
+                    <li className='nav-item'>
+                        <button className='nav-link text-white' onClick={() => { goTo('ourteam') }}> Our Team</button>
+                    </li>
+                </ul>
 
-            </ul>
-
-            <Link to="login" className='shadow-lg ms-3'>
-                <button className='btn text-white' style={{ background: "var(--green-500)" }}>Log In</button>
-            </Link>
+                <Link to="login" className='shadow-lg ms-3'>
+                    <button className='btn text-white' style={{ background: "var(--green-500)" }}>Log In</button>
+                </Link>
             </div>
-
         </div>
     )
 }
+

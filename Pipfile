@@ -21,6 +21,7 @@ flask-migrate = "*"
 flask-cors = "*"
 sqlalchemy = "*"
 flask-mail = "*"
+six = "*"
 
 [requires]
 python_version = "3.13"
