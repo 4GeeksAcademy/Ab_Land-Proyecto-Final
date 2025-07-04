@@ -8,7 +8,8 @@ from flask_migrate import Migrate
 from sqlalchemy.exc import IntegrityError
 
 from api.utils import APIException, generate_sitemap
-from api.models import db, User, Project, Task, Comment, RestorePassword, Project_Member
+from api.models import db, User, Project, Task, Comment, RestorePassword, ProjectStatus, Project_Member
+
 from api.admin import setup_admin
 from api.commands import setup_commands
 
@@ -29,6 +30,7 @@ app.url_map.strict_slashes = False
 CORS(
     app,
     resources={r"/*": {"origins": [
+
         "https://laughing-space-enigma-7v5jwj9g6476cr9xx-3000.app.github.dev",     
         "https://supreme-memory-5grwvxxgqrgj245gw-3000.app.github.dev",
         "https://potential-journey-jj7vx9wqx46qfp749-3000.app.github.dev",
@@ -192,6 +194,18 @@ def new_project():
     if "T" in due_date:
         due_date = due_date.split("T")[0]
 
+    # Validar el status
+    if status == "in progress":
+        status_enum = ProjectStatus.in_progress
+    elif status == "yet to start":
+        status_enum = ProjectStatus.yet_to_start
+    elif status == "done":
+        status_enum = ProjectStatus.done
+    elif status == "dismissed":
+        status_enum = ProjectStatus.dismissed
+    else:
+        status_enum = ProjectStatus.in_progress
+
     new_project = Project(
         title=body['title'],
         description=description,
@@ -199,11 +213,57 @@ def new_project():
         project_picture_url=project_picture_url,
         due_date=datetime.datetime.strptime(due_date, '%Y-%m-%d'),
         admin=user,
-        status=status
+        status=status_enum
     )
     db.session.add(new_project)
-    db.session.commit()
-    return jsonify({'msg': 'ok', 'new_project': new_project.serialize()}), 201
+    db.session.flush()
+
+    member_emails = body.get('members', [])
+    added_members = []
+    member_errors = []
+
+    if member_emails and isinstance(member_emails, list):
+        for email in member_emails:
+            if not email or not email.strip():
+                continue
+
+            member_user = User.query.filter_by(email=email.strip()).first()
+            if not member_user:
+                member_errors.append(f"User with email {email} not found")
+                continue
+
+            if member_user.id == user.id:
+                member_errors.append(f"Cannot add admin as member")
+                continue
+
+            new_member = Project_Member(
+                project_id=new_project.id,
+                member_id=member_user.id
+            )
+            db.session.add(new_member)
+            added_members.append({
+                'email': member_user.email,
+                'full_name': member_user.full_name
+            })
+
+    try:
+        db.session.commit()
+        response_data = {
+            'msg': 'Project created successfully',
+            'new_project': new_project.serialize()
+        }
+
+        # Agregar información de miembros si se procesaron
+        if member_emails:
+            response_data['members_info'] = {
+                'added_members': added_members,
+                'errors': member_errors
+            }
+
+        return jsonify(response_data), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'msg': 'Error creating project'}), 500
 
 
 @app.route('/project/<int:project_id>', methods=['GET'])
@@ -327,12 +387,153 @@ def restore_password_confirmation(token):
 
     return jsonify({'msg': 'Password updated successfully'}), 200
 
+
+@app.route('/project/<int:project_id>', methods=['PUT'])
+@jwt_required()
+def edit_project(project_id):
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'msg': 'User not found'}), 404
+
+    project = Project.query.get(project_id)
+    if not project:
+        return jsonify({'msg': 'Project not found'}), 404
+
+    if project.admin_id != user.id:
+        return jsonify({'msg': 'Only the project admin can edit this project'}), 403
+
+    body = request.get_json(silent=True)
+    if body is None:
+        return jsonify({'msg': 'Debes enviar información en el body'}), 400
+    if 'title' in body and body['title'].strip():
+        project.title = body['title']
+    if 'description' in body:
+        project.description = body['description']
+
+    if 'due_date' in body and body['due_date'].strip():
+        due_date = body['due_date']
+        if "T" in due_date:
+            due_date = due_date.split("T")[0]
+        project.due_date = datetime.datetime.strptime(due_date, '%Y-%m-%d')
+    if 'project_picture_url' in body:
+        project.project_picture_url = body['project_picture_url']
+    if 'status' in body:
+        # Mapear los valores string a los enum values
+        status_value = body['status']
+        if status_value == "in progress":
+            project.status = ProjectStatus.in_progress
+        elif status_value == "yet to start":
+            project.status = ProjectStatus.yet_to_start
+        elif status_value == "done":
+            project.status = ProjectStatus.done
+        elif status_value == "dismissed":
+            project.status = ProjectStatus.dismissed
+
+    try:
+        db.session.commit()
+        return jsonify({'msg': 'Project updated successfully', 'project': project.serialize()}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'msg': 'Error updating project'}), 500
+
+
+@app.route('/user', methods=['GET'])
+@jwt_required()
+def get_user():
+    email = request.args.get('email')
+    if not email or not email.strip():
+        return jsonify({'msg': 'Email parameter is required'}), 400
+
+    user = User.query.filter_by(email=email.strip()).first()
+
+    if user:
+        return jsonify({
+            'found': True,
+            'user': {
+                'id': user.id,
+                'email': user.email,
+                'full_name': user.full_name
+            }
+        }), 200
+    else:
+        return jsonify({'found': False}), 404
+
+
 # TEST HELLO ENDPOINT
 
 
 @app.route('/api/hello', methods=['GET'])
 def hello():
     return jsonify({"msg": "Hello from backend!"}), 200
+
+
+@app.route('/project/<int:project_id>/members', methods=['POST'])
+@jwt_required()
+def add_project_members(project_id):
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'msg': 'User not found'}), 404
+
+    project = Project.query.get(project_id)
+    if not project:
+        return jsonify({'msg': 'Project not found'}), 404
+
+    if project.admin_id != user.id:
+        return jsonify({'msg': 'Only the project admin can add members'}), 403
+
+    body = request.get_json(silent=True)
+    if body is None or 'members' not in body:
+        return jsonify({'msg': 'Must provide members list'}), 400
+
+    member_emails = body['members']
+    if not isinstance(member_emails, list):
+        return jsonify({'msg': 'Members must be a list of emails'}), 400
+
+    added_members = []
+    errors = []
+
+    for email in member_emails:
+        if not email or not email.strip():
+            continue
+
+        member_user = User.query.filter_by(email=email.strip()).first()
+        if not member_user:
+            errors.append(f"User with email {email} not found")
+            continue
+        existing_member = Project_Member.query.filter_by(
+            project_id=project_id,
+            member_id=member_user.id
+        ).first()
+
+        if existing_member:
+            errors.append(f"User {email} is already a member")
+            continue
+        if member_user.id == user.id:
+            errors.append(f"Cannot add admin as member")
+            continue
+        new_member = Project_Member(
+            project_id=project_id,
+            member_id=member_user.id
+        )
+        db.session.add(new_member)
+        added_members.append({
+            'id': member_user.id,
+            'email': member_user.email,
+            'full_name': member_user.full_name
+        })
+
+    try:
+        db.session.commit()
+        return jsonify({
+            'msg': 'Members processed successfully',
+            'added_members': added_members,
+            'errors': errors
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'msg': 'Error adding members'}), 500
 
 
 # ---- RUN APP ----
