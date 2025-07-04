@@ -25,11 +25,15 @@ app = Flask(__name__)
 app.url_map.strict_slashes = False
 
 # ====== CORS: HARDCODE YOUR FRONTEND URLS! ======
+# Añadir todas las URLs de frontend necesarias para CORS
 CORS(
     app,
     resources={r"/*": {"origins": [
-        "https://laughing-space-enigma-7v5jwj9g6476cr9xx-3000.app.github.dev",  
-        "http://localhost:3000"  # For local dev
+        "https://laughing-space-enigma-7v5jwj9g6476cr9xx-3000.app.github.dev",     
+        "https://supreme-memory-5grwvxxgqrgj245gw-3000.app.github.dev",
+        "https://potential-journey-jj7vx9wqx46qfp749-3000.app.github.dev",
+        "http://localhost:3000"
+
     ]}},
     supports_credentials=True
 )
@@ -38,7 +42,8 @@ CORS(
 # DATABASE CONFIG
 db_url = os.getenv("DATABASE_URL")
 if db_url is not None:
-    app.config['SQLALCHEMY_DATABASE_URI'] = db_url.replace("postgres://", "postgresql://")
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_url.replace(
+        "postgres://", "postgresql://")
 else:
     app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///dev.db"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -67,11 +72,15 @@ setup_admin(app)
 setup_commands(app)
 
 # ERROR HANDLER
+
+
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
 
 # SITEMAP (DEV ONLY)
+
+
 @app.route('/')
 def sitemap():
     if ENV == "development":
@@ -79,6 +88,8 @@ def sitemap():
     return send_from_directory(static_file_dir, 'index.html')
 
 # SPA FALLBACK
+
+
 @app.route('/<path:path>', methods=['GET'])
 def serve_any_other_file(path):
     if not os.path.isfile(os.path.join(static_file_dir, path)):
@@ -88,6 +99,7 @@ def serve_any_other_file(path):
     return response
 
 # ==== API ENDPOINTS BELOW ====
+
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -140,6 +152,7 @@ def register():
 
     return jsonify({'msg': 'ok', 'new_user': new_user.serialize()}), 201
 
+
 @app.route('/login', methods=['POST'])
 def login():
     body = request.get_json()
@@ -155,6 +168,7 @@ def login():
         "access_token": token,
         "user": user.serialize()
     }), 200
+
 
 @app.route('/project', methods=['POST'])
 @jwt_required()
@@ -191,6 +205,7 @@ def new_project():
     db.session.commit()
     return jsonify({'msg': 'ok', 'new_project': new_project.serialize()}), 201
 
+
 @app.route('/project/<int:project_id>', methods=['GET'])
 @jwt_required()
 def get_project(project_id):
@@ -217,6 +232,7 @@ def get_project(project_id):
         'project': project.serialize()
     }), 200
 
+
 @app.route('/projects', methods=['GET'])
 @jwt_required()
 def get_projects():
@@ -236,10 +252,12 @@ def get_projects():
         }
     }), 200
 
+
 @app.route('/jwtcheck', methods=['GET'])
 @jwt_required()
 def verification_token():
     return jsonify({'msg': 'Token is valid'}), 200
+
 
 @app.route('/restore-password', methods=['POST'])
 def restore_password():
@@ -270,7 +288,8 @@ def restore_password():
     restore_link = f"{frontend_url}/restore-password/{token}"
 
     # Send password reset email
-    path = os.path.join(static_file_dir, 'api', 'HTML mails', 'RestorePassword.html')
+    path = os.path.join(static_file_dir, 'api',
+                        'HTML mails', 'RestorePassword.html')
     if os.path.exists(path):
         with open(path, 'r') as f:
             html_content = f.read()
@@ -283,6 +302,7 @@ def restore_password():
         mail.send(msg)
 
     return jsonify({'msg': 'Password reset email sent'}), 200
+
 
 @app.route('/restore-password/<token>', methods=['POST'])
 def restore_password_confirmation(token):
@@ -308,14 +328,14 @@ def restore_password_confirmation(token):
     return jsonify({'msg': 'Password updated successfully'}), 200
 
 # TEST HELLO ENDPOINT
+
+
 @app.route('/api/hello', methods=['GET'])
 def hello():
     return jsonify({"msg": "Hello from backend!"}), 200
+
 
 # ---- RUN APP ----
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3001))
     app.run(host='0.0.0.0', port=PORT, debug=True)
-
-
-
