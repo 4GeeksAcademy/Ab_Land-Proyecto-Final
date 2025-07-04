@@ -36,7 +36,7 @@ export default function storeReducer(store, action = {}) {
     case "error":
       return {
         ...store,
-        error: action.payload || "Error desconocido",
+        error: action.payload ? action.payload : null,
       };
 
     default:

@@ -14,6 +14,7 @@ import { Register } from "./pages/Register";
 import { NewProject } from "./pages/NewProject";
 import Dashboard from "./pages/Dashboard";
 import {RestorePassword} from "./pages/RestorePassword"; 
+import { ProjectFullView } from "./pages/ProjectFullView"; // Assuming this is a placeholder for the full project view
 
 
 // Import global reducer/context hook
@@ -49,6 +50,11 @@ export const router = createBrowserRouter(
           </PrivateRoute>
         }
       />
+      <Route path="/project/:id" element={
+        <PrivateRoute>
+          <ProjectFullView />
+        </PrivateRoute>
+      } />
     </Route>
   )
 );

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ProjectCard } from "../components/ProjectCard";
 import { EditProject } from "../components/EditProject";
 import { AddMembersModal } from "../components/AddMembersModal";
@@ -115,6 +115,7 @@ export default function Dashboard() {
   return (
     <div className="container py-5">
       <h2>User Dashboard: Your Projects</h2>
+      <Link to="/newProject" className="btn btn-primary mb-3">Create New Project</Link>
 
       {/* Welcome message with profile picture */}
       {store.user && (
