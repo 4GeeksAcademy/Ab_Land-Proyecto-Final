@@ -13,6 +13,8 @@ export function NewProject() {
     const [uploadMessage, setUploadMessage] = useState("");
     const [error, setError] = useState(null);
     const [status, setStatus] = useState("in progress");
+    const [members, setMembers] = useState([]);
+    const [memberEmail, setMemberEmail] = useState("");
     const navigate = useNavigate();
 
 
@@ -87,6 +89,7 @@ export function NewProject() {
                 due_date: dueDate,
                 project_picture_url: projectPictureUrl,
                 status,
+                members: members
             }),
         })
             .then(async (res) => {
@@ -95,12 +98,74 @@ export function NewProject() {
                     setError((data && data.msg) || "An error occurred while creating the project.");
                     return;
                 }
-                window.alert("¡Proyecto guardado exitosamente!");
+
+                // Preparar mensaje de éxito
+                let successMessage = "¡Proyecto guardado exitosamente!";
+
+                // Si hay información de miembros, mostrar warnings si los hay
+                if (data.members_info && data.members_info.errors && data.members_info.errors.length > 0) {
+                    successMessage += `\n\nWarnings:\n${data.members_info.errors.join('\n')}`;
+                }
+
+                window.alert(successMessage);
                 navigate("/dashboard");
             })
             .catch(() => {
                 setError("Connection error with the server.");
             });
+    };    const handleAddMember = async () => {
+        const email = memberEmail.trim();
+        if (!email) return;
+        
+        if (members.includes(email)) {
+            setError("This member is already added.");
+            return;
+        }
+
+        const emailRegex = /\S+@\S/;
+        if (!emailRegex.test(email)) {
+            setError("Please enter a valid email address.");
+            return;
+        }
+
+        setError("Checking user...");
+
+        try {
+            // Verificar si el usuario existe en el backend
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/user?email=${encodeURIComponent(email)}`, {
+                method: "GET",
+                headers: {
+                    "Authorization": "Bearer " + store.token,
+                },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.found) {
+                    // Usuario existe, agregarlo a la lista
+                    setMembers([...members, email]);
+                    setMemberEmail("");
+                    setError("");
+                } else {
+                    setError(`User with email "${email}" not found in the system.`);
+                }
+            } else {
+                setError(`User with email "${email}" not found in the system.`);
+            }
+        } catch (err) {
+            setError("Error checking user. Please try again.");
+        }
+    };
+
+    const handleRemoveMember = (emailToRemove) => {
+        setMembers(members.filter(email => email !== emailToRemove));
+    };
+
+    const handleMemberKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleAddMember();
+        }
     };
 
     return (
@@ -195,10 +260,44 @@ export function NewProject() {
                                 </div>
                             )}
                         </div>
+                        <div className="col-12">
+                            <label className="form-label text-dark">Team Members (optional)</label>
+                            <div className="input-group mb-3">
+                                <input
+                                    type="email"
+                                    className="form-control"
+                                    placeholder="Enter member email"
+                                    value={memberEmail}
+                                    onChange={e => setMemberEmail(e.target.value)}
+                                    onKeyDown={handleMemberKeyPress}
+                                />
+                                <button
+                                    className="btn btn-outline-secondary"
+                                    type="button"
+                                    onClick={handleAddMember}
+                                    disabled={!memberEmail.trim()}
+                                >
+                                    Add
+                                </button>
+                            </div>
+                            <div>
+                                {members.map((member, index) => (
+                                    <div key={index} className="badge bg-blue-500 text-wrap me-2 mb-2">
+                                        {member}
+                                        <button
+                                            type="button"
+                                            className="btn-close btn-close-white ms-2"
+                                            aria-label="Close"
+                                            onClick={() => handleRemoveMember(member)}
+                                        ></button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                         <div className="col-6">
                             <button className="btn btn-primary" type="submit">Create new Project</button>
                         </div>
-                        
+
                         {error && (
                             <div className="col-12">
                                 <div className="alert alert-danger" role="alert">

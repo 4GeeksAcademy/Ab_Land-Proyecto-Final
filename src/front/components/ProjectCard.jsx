@@ -3,7 +3,7 @@ import useGlobalReducer from "../hooks/useGlobalReducer";
 import { useNavigate } from "react-router-dom";
 
 
-export const ProjectCard = ({ project, onEdit }) => {
+export const ProjectCard = ({ project, onEdit, onAddMembers }) => {
 
   const { store, dispatch } = useGlobalReducer();
   const navigate = useNavigate();
@@ -94,7 +94,6 @@ export const ProjectCard = ({ project, onEdit }) => {
         {members.length > 0 &&
           members.slice(0, 2).map((member, idx) => (
             <div className="me-2" key={idx}>
-
               <img
                 src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
                   member.full_name || `M${idx + 1}`
@@ -107,7 +106,19 @@ export const ProjectCard = ({ project, onEdit }) => {
             </div>
           ))}
         {members.length > 2 && (
-          <span className="badge bg-secondary">+{members.length - 2}</span>
+          <span className="badge bg-secondary me-2">+{members.length - 2}</span>
+        )}
+        
+        {/* Add Members Button - Only for Admin */}
+        {isAdmin && (
+          <button
+            className="btn btn-sm btn-outline-primary rounded-circle d-flex align-items-center justify-content-center"
+            style={{ width: "32px", height: "32px", padding: "0" }}
+            onClick={() => onAddMembers && onAddMembers(project)}
+            title="Add team members"
+          >
+            <span style={{ fontSize: "16px", lineHeight: "1" }}>+</span>
+          </button>
         )}
       </div>
     </div>
