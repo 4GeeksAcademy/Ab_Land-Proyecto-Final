@@ -95,10 +95,12 @@ export const Register = () => {
       });
       if (!response.ok) throw new Error("Network response was not ok");
       const data = await response.json();
+      window.alert("¡Usuario creado exitosamente!");
       navigate("/login");
       console.log("Registration successful:", data);
     } catch (error) {
       console.error("Error during registration:", error);
+      window.alert("Error al crear el usuario. Por favor, intenta de nuevo.");
     }
   };
 

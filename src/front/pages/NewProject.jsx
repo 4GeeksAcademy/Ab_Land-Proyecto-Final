@@ -12,8 +12,7 @@ export function NewProject() {
     const [uploading, setUploading] = useState(false);
     const [uploadMessage, setUploadMessage] = useState("");
     const [error, setError] = useState(null);
-    const [success, setSuccess] = useState(null);
-    const [status, setStatus] = useState("in_progress");
+    const [status, setStatus] = useState("in progress");
     const navigate = useNavigate();
 
 
@@ -72,12 +71,11 @@ export function NewProject() {
     const handleSubmit = (e) => {
         e.preventDefault();
         setError(null);
-        setSuccess(false);
         if (uploading) {
             setError("Please wait for the image upload to complete.");
             return;
         }
-        fetch(`${import.meta.env.VITE_BACKEND_URL}project`, {
+        fetch(`${import.meta.env.VITE_BACKEND_URL}/project`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -152,8 +150,8 @@ export function NewProject() {
                                 onChange={e => setStatus(e.target.value)}
                                 required
                             >
-                                <option value="in_progress">In progress</option>
-                                <option value="yet_to_start">Yet to start</option>
+                                <option value="in progress">In progress</option>
+                                <option value="yet to start">Yet to start</option>
                                 <option value="done">Done</option>
                                 <option value="dismissed">Dismissed</option>
                             </select>
@@ -200,6 +198,14 @@ export function NewProject() {
                         <div className="col-6">
                             <button className="btn btn-primary" type="submit">Create new Project</button>
                         </div>
+                        
+                        {error && (
+                            <div className="col-12">
+                                <div className="alert alert-danger" role="alert">
+                                    {error}
+                                </div>
+                            </div>
+                        )}
                     </form>
                 </div>
             </div>

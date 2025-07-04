@@ -2,11 +2,14 @@ import React, { useEffect, useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { useNavigate } from "react-router-dom";
 import { ProjectCard } from "../components/ProjectCard";
+import { EditProject } from "../components/EditProject";
 
 export default function Dashboard() {
   const { store, dispatch } = useGlobalReducer();
   const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -53,6 +56,29 @@ export default function Dashboard() {
 
     fetchProjects();
   }, [store.token, dispatch, navigate]);
+
+  // Función para abrir el modal de edición
+  const handleEditProject = (project) => {
+    setSelectedProject(project);
+    setShowEditModal(true);
+  };
+
+  // Función para actualizar la lista después de editar
+  const handleUpdateProject = (updatedProject) => {
+    setProjects(prevProjects => {
+      if (!prevProjects) return prevProjects;
+
+      return {
+        admin: prevProjects.admin.map(proj =>
+          proj.id === updatedProject.id ? updatedProject : proj
+        ),
+        member: prevProjects.member.map(proj =>
+          proj.id === updatedProject.id ? updatedProject : proj
+        )
+      };
+    });
+    setShowEditModal(false);
+  };
 
   if (!store.token) {
     return <p>Redirecting to login...</p>;
@@ -107,7 +133,7 @@ export default function Dashboard() {
           <ul>
             {(projects.admin && projects.admin.length > 0)
               ? projects.admin.map(proj => (
-                <ProjectCard key={proj.id} project={proj} />
+                <ProjectCard key={proj.id} project={proj} onEdit={handleEditProject} />
               ))
               : <li>You are not an admin of any project.</li>
             }
@@ -116,13 +142,21 @@ export default function Dashboard() {
           <ul>
             {(projects.member && projects.member.length > 0)
               ? projects.member.map(proj => (
-                <ProjectCard key={proj.id} project={proj} />
+                <ProjectCard key={proj.id} project={proj} onEdit={handleEditProject} />
               ))
               : <li>You are not a member of any project.</li>
             }
           </ul>
         </div>
       ) : !loading && <div>No projects found.</div>}
+
+      {/* Modal de edición */}
+      <EditProject
+        project={selectedProject}
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        onUpdate={handleUpdateProject}
+      />
     </div>
   );
 }

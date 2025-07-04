@@ -8,7 +8,7 @@ from flask_migrate import Migrate
 from sqlalchemy.exc import IntegrityError
 
 from api.utils import APIException, generate_sitemap
-from api.models import db, User, Project, Task, Comment, RestorePassword
+from api.models import db, User, Project, Task, Comment, RestorePassword, ProjectStatus
 from api.admin import setup_admin
 from api.commands import setup_commands
 
@@ -29,6 +29,7 @@ app.url_map.strict_slashes = False
 CORS(
     app,
     resources={r"/*": {"origins": [
+        "https://studious-guacamole-wr5pwxjgw5pwcgvqj-3000.app.github.dev",
         "https://supreme-memory-5grwvxxgqrgj245gw-3000.app.github.dev",
         "https://potential-journey-jj7vx9wqx46qfp749-3000.app.github.dev",
         "http://localhost:3000"
@@ -298,12 +299,63 @@ def restore_password_confirmation(token):
 
     return jsonify({'msg': 'Password updated successfully'}), 200
 
+@app.route('/project/<int:project_id>', methods=['PUT'])
+@jwt_required()
+def edit_project(project_id):
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'msg': 'User not found'}), 404
+    
+    project = Project.query.get(project_id)
+    if not project:
+        return jsonify({'msg': 'Project not found'}), 404
+    
+    if project.admin_id != user.id:
+        return jsonify({'msg': 'Only the project admin can edit this project'}), 403
+    
+    body = request.get_json(silent=True)
+    if body is None:
+        return jsonify({'msg': 'Debes enviar información en el body'}), 400
+    if 'title' in body and body['title'].strip():
+        project.title = body['title']
+    if 'description' in body:
+        project.description = body['description']
+    
+    if 'due_date' in body and body['due_date'].strip():
+        due_date = body['due_date']
+        if "T" in due_date:
+            due_date = due_date.split("T")[0]
+        project.due_date = datetime.datetime.strptime(due_date, '%Y-%m-%d')
+    if 'project_picture_url' in body:
+        project.project_picture_url = body['project_picture_url']
+    if 'status' in body:
+        # Mapear los valores string a los enum values
+        status_value = body['status']
+        if status_value == "in progress":
+            project.status = ProjectStatus.in_progress
+        elif status_value == "yet to start":
+            project.status = ProjectStatus.yet_to_start
+        elif status_value == "done":
+            project.status = ProjectStatus.done
+        elif status_value == "dismissed":
+            project.status = ProjectStatus.dismissed
+    
+    try:
+        db.session.commit()
+        return jsonify({'msg': 'Project updated successfully', 'project': project.serialize()}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'msg': 'Error updating project'}), 500
+
+
 # TEST HELLO ENDPOINT
 
 
 @app.route('/api/hello', methods=['GET'])
 def hello():
     return jsonify({"msg": "Hello from backend!"}), 200
+
 
 
 # ---- RUN APP ----

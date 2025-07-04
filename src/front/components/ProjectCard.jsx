@@ -28,8 +28,8 @@ export const ProjectCard = ({ project, onEdit }) => {
 
   const statusLabel = status ? status[0].toUpperCase() + status.slice(1) : '';
 
-  const isAdmin = store.user.id === admin_id;  
-  
+  const isAdmin = store.user.id === admin_id;
+
 
   return (
     <div className="card shadow-sm rounded-3 p-3 mb-4">
@@ -55,7 +55,7 @@ export const ProjectCard = ({ project, onEdit }) => {
           {isAdmin && (
             <button
               className="btn btn-sm btn-outline-warning mb-2"
-              onClick={() => { navigate(`/projects/${id}/edit`) }}
+              onClick={() => onEdit && onEdit(project)}
             >
               Edit
             </button>
@@ -75,7 +75,7 @@ export const ProjectCard = ({ project, onEdit }) => {
           <small className="text-muted">Due Date</small>
           <div className="fw-semibold">{formattedDate}</div>
         </div>
-        
+
       </div>
 
       {/* Admin & Members */}
@@ -94,7 +94,7 @@ export const ProjectCard = ({ project, onEdit }) => {
         {members.length > 0 &&
           members.slice(0, 2).map((member, idx) => (
             <div className="me-2" key={idx}>
-              
+
               <img
                 src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
                   member.full_name || `M${idx + 1}`
