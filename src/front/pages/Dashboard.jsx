@@ -61,10 +61,40 @@ export default function Dashboard() {
   return (
     <div className="container py-5">
       <h2>User Dashboard: Your Projects</h2>
-      
-      {/* Welcome message */}
+
+      {/* Welcome message with profile picture */}
       {store.user && (
-        <div className="alert alert-info mb-4">
+        <div className="alert alert-info mb-4 d-flex align-items-center">
+          {store.user.profile_picture_url ? (
+            <img
+              src={store.user.profile_picture_url}
+              alt="Profile"
+              style={{
+                width: "48px",
+                height: "48px",
+                borderRadius: "50%",
+                objectFit: "cover",
+                marginRight: "1rem",
+                border: "2px solid var(--green-500)"
+              }}
+            />
+          ) : (
+            <span
+              className="d-inline-flex align-items-center justify-content-center"
+              style={{
+                width: "48px",
+                height: "48px",
+                borderRadius: "50%",
+                background: "#eee",
+                marginRight: "1rem",
+                fontSize: "1.5rem",
+                fontWeight: "bold",
+                border: "2px solid var(--green-500)"
+              }}
+            >
+              {store.user.full_name ? store.user.full_name[0] : "?"}
+            </span>
+          )}
           Welcome, <strong>{store.user.full_name || store.user.email}</strong>! 👋
         </div>
       )}
@@ -96,6 +126,7 @@ export default function Dashboard() {
     </div>
   );
 }
+
 
 
 

@@ -156,20 +156,48 @@ export const Navbar = () => {
                 type="button"
                 data-bs-toggle="dropdown"
                 style={{
-                  height: "5vh",
+                  height: "48px",
+                  width: "48px",
                   position: "relative",
                   backgroundColor: `var(--${profileColor}-500)`,
+                  padding: 0,
+                  overflow: "hidden",
+                  border: "2px solid var(--green-500)"
                 }}
               >
-                {" "}
-                {store.user.full_name[0]}
+                {store.user && store.user.profile_picture_url ? (
+                  <img
+                    src={store.user.profile_picture_url}
+                    alt="Profile"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      borderRadius: "50%"
+                    }}
+                  />
+                ) : (
+                  <span
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: "bold",
+                      fontSize: "1.4rem",
+                      color: "white"
+                    }}
+                  >
+                    {store.user.full_name ? store.user.full_name[0] : "?"}
+                  </span>
+                )}
               </button>
               <ul className="dropdown-menu dropdown-menu-end">
                 <li>
                   <Link
                     className="dropdown-item text-end"
                     to={`/profile/${store.user.id}`}
-                    //style={{ color: "var(--green-500)" }}
                   >
                     Profile
                   </Link>
@@ -178,12 +206,11 @@ export const Navbar = () => {
                   <Link
                     className="dropdown-item text-end"
                     to="/dashboard"
-                    //style={{ color: "var(--green-500)" }}
                   >
                     Dashboard
                   </Link>
                 </li>
-                <div class="dropdown-divider"></div>
+                <div className="dropdown-divider"></div>
                 <li>
                   <button
                     className="dropdown-item text-danger text-end "
@@ -202,3 +229,4 @@ export const Navbar = () => {
     </nav>
   );
 };
+
