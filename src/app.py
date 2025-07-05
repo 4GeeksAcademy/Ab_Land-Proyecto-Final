@@ -8,7 +8,7 @@ from flask_migrate import Migrate
 from sqlalchemy.exc import IntegrityError
 
 from api.utils import APIException, generate_sitemap
-from api.models import db, User, Project, Task, Comment, RestorePassword, ProjectStatus, Project_Member
+from api.models import db, User, Project, Task, Comment, RestorePassword, ProjectStatus, Project_Member, TaskStatus
 
 from api.admin import setup_admin
 from api.commands import setup_commands
@@ -22,6 +22,21 @@ from flask_cors import CORS
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.dirname(os.path.realpath(__file__))
 
+# CONSTANTS
+TASK_STATUS_MAPPING = {
+    'in progress': TaskStatus.in_progress,
+    'delegated': TaskStatus.delegated,
+    'urgent': TaskStatus.urgent,
+    'done': TaskStatus.done
+}
+
+PROJECT_STATUS_MAPPING = {
+    'in progress': ProjectStatus.in_progress,
+    'yet to start': ProjectStatus.yet_to_start,
+    'done': ProjectStatus.done,
+    'dismissed': ProjectStatus.dismissed
+}
+
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 
@@ -31,9 +46,7 @@ CORS(
     app,
     resources={r"/*": {"origins": [
 
-        "https://laughing-space-enigma-7v5jwj9g6476cr9xx-3000.app.github.dev",     
-        "https://supreme-memory-5grwvxxgqrgj245gw-3000.app.github.dev",
-        "https://potential-journey-jj7vx9wqx46qfp749-3000.app.github.dev",
+        "https://obscure-meme-wr5pwxjgwg6vf9xpj-3000.app.github.dev",
         "http://localhost:3000"
 
     ]}},
@@ -101,6 +114,8 @@ def serve_any_other_file(path):
     return response
 
 # ==== API ENDPOINTS BELOW ====
+
+# ========== AUTH & USER ENDPOINTS ==========
 
 
 @app.route('/register', methods=['POST'])
@@ -172,151 +187,32 @@ def login():
     }), 200
 
 
-@app.route('/project', methods=['POST'])
-@jwt_required()
-def new_project():
-    user_id = get_jwt_identity()
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({'msg': 'User not found'}), 404
-    body = request.get_json(silent=True)
-    if body is None:
-        return jsonify({'msg': 'Debes enviar información en el body'}), 400
-    if not body.get('title', '').strip():
-        return jsonify({'msg': 'Debes enviar un título válido'}), 400
-    if not body.get('due_date', '').strip():
-        return jsonify({'msg': 'Debes enviar una fecha de entrega válida'}), 400
-
-    description = body.get('description')
-    project_picture_url = body.get('project_picture_url')
-    status = body.get('status', 'in progress')
-    due_date = body['due_date']
-    if "T" in due_date:
-        due_date = due_date.split("T")[0]
-
-    # Validar el status
-    if status == "in progress":
-        status_enum = ProjectStatus.in_progress
-    elif status == "yet to start":
-        status_enum = ProjectStatus.yet_to_start
-    elif status == "done":
-        status_enum = ProjectStatus.done
-    elif status == "dismissed":
-        status_enum = ProjectStatus.dismissed
-    else:
-        status_enum = ProjectStatus.in_progress
-
-    new_project = Project(
-        title=body['title'],
-        description=description,
-        created_at=datetime.datetime.now(),
-        project_picture_url=project_picture_url,
-        due_date=datetime.datetime.strptime(due_date, '%Y-%m-%d'),
-        admin=user,
-        status=status_enum
-    )
-    db.session.add(new_project)
-    db.session.flush()
-
-    member_emails = body.get('members', [])
-    added_members = []
-    member_errors = []
-
-    if member_emails and isinstance(member_emails, list):
-        for email in member_emails:
-            if not email or not email.strip():
-                continue
-
-            member_user = User.query.filter_by(email=email.strip()).first()
-            if not member_user:
-                member_errors.append(f"User with email {email} not found")
-                continue
-
-            if member_user.id == user.id:
-                member_errors.append(f"Cannot add admin as member")
-                continue
-
-            new_member = Project_Member(
-                project_id=new_project.id,
-                member_id=member_user.id
-            )
-            db.session.add(new_member)
-            added_members.append({
-                'email': member_user.email,
-                'full_name': member_user.full_name
-            })
-
-    try:
-        db.session.commit()
-        response_data = {
-            'msg': 'Project created successfully',
-            'new_project': new_project.serialize()
-        }
-
-        # Agregar información de miembros si se procesaron
-        if member_emails:
-            response_data['members_info'] = {
-                'added_members': added_members,
-                'errors': member_errors
-            }
-
-        return jsonify(response_data), 201
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'msg': 'Error creating project'}), 500
-
-
-@app.route('/project/<int:project_id>', methods=['GET'])
-@jwt_required()
-def get_project(project_id):
-    user_id = get_jwt_identity()
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({'msg': 'User not found'}), 404
-
-    project = Project.query.get(project_id)
-    if not project:
-        return jsonify({'msg': 'Project not found'}), 404
-
-    project_members = Project_Member.query.filter_by(project_id=project_id).all()
-    print([member.member_id for member in project_members])
-    print(user.id is not project.admin_id)
-    print(user.id not in [member.member_id for member in project_members])
-
-    if user.id is not project.admin_id and user.id not in [member.member_id for member in project_members]:
-        # If the user is not an admin or a member of the project, return an error
-        return jsonify({'msg': 'You are not authorized to view this project'}), 403
-
-    return jsonify({
-        'msg': 'Project retrieved successfully',
-        'project': project.serialize()
-    }), 200
-
-
-@app.route('/projects', methods=['GET'])
-@jwt_required()
-def get_projects():
-    user_id = get_jwt_identity()
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({'msg': 'User not found'}), 404
-
-    admin_of = [project.serialize() for project in user.admin_of]
-    member_of = [project.project.serialize() for project in user.member_of]
-
-    return jsonify({
-        'msg': 'Projects retrieved successfully',
-        'user_projects': {
-            'admin': admin_of,
-            'member': member_of
-        }
-    }), 200
-
-
 @app.route('/jwtcheck', methods=['GET'])
 @jwt_required()
 def verification_token():
     return jsonify({'msg': 'Token is valid'}), 200
+
+
+@app.route('/user', methods=['GET'])
+@jwt_required()
+def get_user():
+    email = request.args.get('email')
+    if not email or not email.strip():
+        return jsonify({'msg': 'Email parameter is required'}), 400
+
+    user = User.query.filter_by(email=email.strip()).first()
+
+    if user:
+        return jsonify({
+            'found': True,
+            'user': {
+                'id': user.id,
+                'email': user.email,
+                'full_name': user.full_name
+            }
+        }), 200
+    else:
+        return jsonify({'found': False}), 404
 
 
 @app.route('/restore-password', methods=['POST'])
@@ -388,6 +284,141 @@ def restore_password_confirmation(token):
     return jsonify({'msg': 'Password updated successfully'}), 200
 
 
+# ========== PROJECT ENDPOINTS ==========
+
+@app.route('/project', methods=['POST'])
+@jwt_required()
+def new_project():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'msg': 'User not found'}), 404
+    body = request.get_json(silent=True)
+    if body is None:
+        return jsonify({'msg': 'Debes enviar información en el body'}), 400
+    if not body.get('title', '').strip():
+        return jsonify({'msg': 'Debes enviar un título válido'}), 400
+    if not body.get('due_date', '').strip():
+        return jsonify({'msg': 'Debes enviar una fecha de entrega válida'}), 400
+
+    description = body.get('description')
+    project_picture_url = body.get('project_picture_url')
+    status = body.get('status', 'in progress')
+    due_date = body['due_date']
+    if "T" in due_date:
+        due_date = due_date.split("T")[0]
+
+    # Validar el status
+    status_enum = PROJECT_STATUS_MAPPING.get(status, ProjectStatus.in_progress)
+
+    new_project = Project(
+        title=body['title'],
+        description=description,
+        created_at=datetime.datetime.now(),
+        project_picture_url=project_picture_url,
+        due_date=datetime.datetime.strptime(due_date, '%Y-%m-%d'),
+        admin=user,
+        status=status_enum
+    )
+    db.session.add(new_project)
+    db.session.flush()
+
+    member_emails = body.get('members', [])
+    added_members = []
+    member_errors = []
+
+    if member_emails and isinstance(member_emails, list):
+        for email in member_emails:
+            if not email or not email.strip():
+                continue
+
+            member_user = User.query.filter_by(email=email.strip()).first()
+            if not member_user:
+                member_errors.append(f"User with email {email} not found")
+                continue
+
+            if member_user.id == user.id:
+                member_errors.append(f"Cannot add admin as member")
+                continue
+
+            new_member = Project_Member(
+                project_id=new_project.id,
+                member_id=member_user.id
+            )
+            db.session.add(new_member)
+            added_members.append({
+                'email': member_user.email,
+                'full_name': member_user.full_name
+            })
+
+    try:
+        db.session.commit()
+        response_data = {
+            'msg': 'Project created successfully',
+            'new_project': new_project.serialize()
+        }
+
+        # Agregar información de miembros si se procesaron
+        if member_emails:
+            response_data['members_info'] = {
+                'added_members': added_members,
+                'errors': member_errors
+            }
+
+        return jsonify(response_data), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'msg': 'Error creating project'}), 500
+
+
+@app.route('/projects', methods=['GET'])
+@jwt_required()
+def get_projects():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'msg': 'User not found'}), 404
+
+    admin_of = [project.serialize() for project in user.admin_of]
+    member_of = [project.project.serialize() for project in user.member_of]
+
+    return jsonify({
+        'msg': 'Projects retrieved successfully',
+        'user_projects': {
+            'admin': admin_of,
+            'member': member_of
+        }
+    }), 200
+
+
+@app.route('/project/<int:project_id>', methods=['GET'])
+@jwt_required()
+def get_project(project_id):
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'msg': 'User not found'}), 404
+
+    project = Project.query.get(project_id)
+    if not project:
+        return jsonify({'msg': 'Project not found'}), 404
+
+    project_members = Project_Member.query.filter_by(
+        project_id=project_id).all()
+    print([member.member_id for member in project_members])
+    print(user.id is not project.admin_id)
+    print(user.id not in [member.member_id for member in project_members])
+
+    if user.id is not project.admin_id and user.id not in [member.member_id for member in project_members]:
+        # If the user is not an admin or a member of the project, return an error
+        return jsonify({'msg': 'You are not authorized to view this project'}), 403
+
+    return jsonify({
+        'msg': 'Project retrieved successfully',
+        'project': project.serialize()
+    }), 200
+
+
 @app.route('/project/<int:project_id>', methods=['PUT'])
 @jwt_required()
 def edit_project(project_id):
@@ -419,16 +450,9 @@ def edit_project(project_id):
     if 'project_picture_url' in body:
         project.project_picture_url = body['project_picture_url']
     if 'status' in body:
-        # Mapear los valores string a los enum values
-        status_value = body['status']
-        if status_value == "in progress":
-            project.status = ProjectStatus.in_progress
-        elif status_value == "yet to start":
-            project.status = ProjectStatus.yet_to_start
-        elif status_value == "done":
-            project.status = ProjectStatus.done
-        elif status_value == "dismissed":
-            project.status = ProjectStatus.dismissed
+        # Usar el mapping global para validar y asignar el status
+        if body['status'] in PROJECT_STATUS_MAPPING:
+            project.status = PROJECT_STATUS_MAPPING[body['status']]
 
     try:
         db.session.commit()
@@ -437,36 +461,11 @@ def edit_project(project_id):
         db.session.rollback()
         return jsonify({'msg': 'Error updating project'}), 500
 
+# ========== PENDIENTE DELETE ==========
+# @app.route('/project/<int:project_id>', methods=['DELETE'])  # Eliminar proyecto (solo admin)
+# ========== PENDIENTE DELETE ==========
 
-@app.route('/user', methods=['GET'])
-@jwt_required()
-def get_user():
-    email = request.args.get('email')
-    if not email or not email.strip():
-        return jsonify({'msg': 'Email parameter is required'}), 400
-
-    user = User.query.filter_by(email=email.strip()).first()
-
-    if user:
-        return jsonify({
-            'found': True,
-            'user': {
-                'id': user.id,
-                'email': user.email,
-                'full_name': user.full_name
-            }
-        }), 200
-    else:
-        return jsonify({'found': False}), 404
-
-
-# TEST HELLO ENDPOINT
-
-
-@app.route('/api/hello', methods=['GET'])
-def hello():
-    return jsonify({"msg": "Hello from backend!"}), 200
-
+# ========== PROJECT MEMBERS ENDPOINTS ==========
 
 @app.route('/project/<int:project_id>/members', methods=['POST'])
 @jwt_required()
@@ -475,44 +474,35 @@ def add_project_members(project_id):
     user = User.query.get(user_id)
     if not user:
         return jsonify({'msg': 'User not found'}), 404
-
     project = Project.query.get(project_id)
     if not project:
         return jsonify({'msg': 'Project not found'}), 404
-
     if project.admin_id != user.id:
         return jsonify({'msg': 'Only the project admin can add members'}), 403
 
     body = request.get_json(silent=True)
     if body is None or 'members' not in body:
         return jsonify({'msg': 'Must provide members list'}), 400
-
     member_emails = body['members']
     if not isinstance(member_emails, list):
         return jsonify({'msg': 'Members must be a list of emails'}), 400
-
     added_members = []
-    errors = []
 
     for email in member_emails:
         if not email or not email.strip():
             continue
-
         member_user = User.query.filter_by(email=email.strip()).first()
         if not member_user:
-            errors.append(f"User with email {email} not found")
-            continue
+            return jsonify({'msg': f'User with email {email} not found'}), 400
         existing_member = Project_Member.query.filter_by(
             project_id=project_id,
             member_id=member_user.id
         ).first()
 
         if existing_member:
-            errors.append(f"User {email} is already a member")
-            continue
+            return jsonify({'msg': f'User {email} is already a member'}), 400
         if member_user.id == user.id:
-            errors.append(f"Cannot add admin as member")
-            continue
+            return jsonify({'msg': 'Cannot add admin as member'}), 400
         new_member = Project_Member(
             project_id=project_id,
             member_id=member_user.id
@@ -527,13 +517,225 @@ def add_project_members(project_id):
     try:
         db.session.commit()
         return jsonify({
-            'msg': 'Members processed successfully',
-            'added_members': added_members,
-            'errors': errors
+            'msg': 'Members added successfully',
+            'added_members': added_members
         }), 200
-    except Exception as e:
+    except Exception:
         db.session.rollback()
         return jsonify({'msg': 'Error adding members'}), 500
+
+# ========== PROJECT MEMBERS DELETE FALTANTE ==========
+# @app.route('/project/<int:project_id>/member/<int:member_id>', methods=['DELETE'])  # Remover miembro específico (solo admin)
+# ========== PROJECT MEMBERS DELETE FALTANTE ==========
+
+# ========== TASK ENDPOINTS ==========
+
+@app.route('/project/<int:project_id>/tasks', methods=['GET'])
+@jwt_required()
+def get_project_tasks(project_id):
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'msg': 'User not found'}), 404
+
+    project = Project.query.get(project_id)
+    if not project:
+        return jsonify({'msg': 'Project not found'}), 404
+
+    project_members = Project_Member.query.filter_by(
+        project_id=project_id).all()
+    is_admin = (user.id == project.admin_id)
+    is_member = user.id in [member.member_id for member in project_members]
+
+    print(
+        f"DEBUG: User {user.id}, Project {project_id}, Admin: {is_admin}, Member: {is_member}")
+
+    if not is_admin and not is_member:
+        return jsonify({'msg': 'You are not authorized to view tasks from this project'}), 400
+
+    if is_admin:
+        all_tasks = Task.query.filter_by(project_id=project_id).all()
+        tasks_data_serialize = [task.serialize() for task in all_tasks]
+
+        print(f"DEBUG: Admin view - Found {len(all_tasks)} tasks")
+
+        return jsonify({
+            'msg': 'All project tasks retrieved successfully',
+            'role': 'admin',
+            'tasks': tasks_data_serialize,
+            'total_tasks': len(tasks_data_serialize)
+        }), 200
+
+    else:
+        member_tasks = Task.query.filter_by(project_id=project_id).filter(
+            (Task.asignated_to_id == user.id) | (Task.author_id == user.id)
+        ).all()
+
+        tasks_data = [task.serialize_for_member(
+            user.id) for task in member_tasks]
+
+        print(f"DEBUG: Member view - Found {len(member_tasks)} tasks")
+
+        return jsonify({
+            'msg': 'Your tasks retrieved successfully',
+            'role': 'member',
+            'tasks': tasks_data,
+            'total_tasks': len(tasks_data)
+        }), 200
+
+
+@app.route('/project/<int:project_id>/task', methods=['POST'])
+@jwt_required()
+def create_task(project_id):
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'msg': 'User not found'}), 404
+    project = Project.query.get(project_id)
+    if not project:
+        return jsonify({'msg': 'Project not found'}), 404
+
+    project_members = Project_Member.query.filter_by(
+        project_id=project_id).all()
+    is_admin = (user.id == project.admin_id)
+    is_member = user.id in [member.member_id for member in project_members]
+
+    if not is_admin and not is_member:
+        return jsonify({'msg': 'You are not authorized to create tasks in this project'}), 400
+    body = request.get_json(silent=True)
+    if body is None:
+        return jsonify({'msg': 'Debes enviar información en el body'}), 400
+    if not body.get('title', '').strip():
+        return jsonify({'msg': 'Debes enviar un título válido'}), 400
+
+    assigned_to_id = body.get('asignated_to_id')
+    if assigned_to_id:
+        assigned_user = User.query.get(assigned_to_id)
+        if not assigned_user:
+            return jsonify({'msg': 'Assigned user not found'}), 404
+
+        valid_assignee = (assigned_user.id == project.admin_id or
+                          assigned_user.id in [member.member_id for member in project_members])
+        if not valid_assignee:
+            return jsonify({'msg': 'Cannot assign task to user who is not part of the project'}), 400
+
+    # Validar status de la tarea
+    status_value = body.get('status', 'in progress')
+    if status_value not in TASK_STATUS_MAPPING:
+        return jsonify({'msg': 'Invalid task status'}), 400
+    new_task = Task(
+        title=body['title'],
+        description=body.get('description'),
+        created_at=datetime.datetime.now(),
+        status=TASK_STATUS_MAPPING[status_value],
+        author_id=user.id,
+        project_id=project_id,
+        asignated_to_id=assigned_to_id
+    )
+
+    db.session.add(new_task)
+
+    try:
+        db.session.commit()
+        return jsonify({
+            'msg': 'Task created successfully',
+            'task': new_task.serialize()
+        }), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'msg': 'Error creating task'}), 500
+
+
+@app.route('/project/<int:project_id>/task/<int:task_id>', methods=['PUT'])
+@jwt_required()
+def update_task(project_id, task_id):
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'msg': 'User not found'}), 404
+    project = Project.query.get(project_id)
+    if not project:
+        return jsonify({'msg': 'Project not found'}), 404
+    task = Task.query.filter_by(id=task_id, project_id=project_id).first()
+    if not task:
+        return jsonify({'msg': 'Task not found'}), 404
+    if task.author_id != user.id and project.admin_id != user.id:
+        return jsonify({'msg': 'You are not authorized to edit this task'}), 400
+
+    body = request.get_json(silent=True)
+    if body is None:
+        return jsonify({'msg': 'Debes enviar información en el body'}), 400
+    if 'title' in body and body['title'].strip():
+        task.title = body['title']
+    if 'description' in body:
+        task.description = body['description']
+    if 'status' in body:
+        if body['status'] in TASK_STATUS_MAPPING:
+            task.status = TASK_STATUS_MAPPING[body['status']]
+
+    if 'asignated_to_id' in body and project.admin_id == user.id:
+        assigned_to_id = body['asignated_to_id']
+        if assigned_to_id:
+            assigned_user = User.query.get(assigned_to_id)
+            if not assigned_user:
+                return jsonify({'msg': 'Assigned user not found'}), 404
+            project_members = Project_Member.query.filter_by(
+                project_id=project_id).all()
+            valid_assignee = (assigned_user.id == project.admin_id or
+                              assigned_user.id in [member.member_id for member in project_members])
+            if not valid_assignee:
+                return jsonify({'msg': 'Cannot assign task to user who is not part of the project'}), 400
+        task.asignated_to_id = assigned_to_id
+
+    try:
+        db.session.commit()
+        return jsonify({
+            'msg': 'Task updated successfully',
+            'task': task.serialize()
+        }), 200
+    except Exception:
+        db.session.rollback()
+        return jsonify({'msg': 'Error updating task'}), 500
+
+# ========== TASK DELETE FALTANTE ==========
+# @app.route('/project/<int:project_id>/task/<int:task_id>', methods=['DELETE'])  # Eliminar tarea (admin o autor)
+# ========== TASK DELETE FALTANTE ==========
+
+
+
+# ======================== POSIBLES ENDPOINTS ADICIONALES ========================
+# Basado en los modelos disponibles en models.py que aún no tienen endpoints implementados
+
+# ========== COMMENT ENDPOINTS ==========
+# Endpoints para manejar comentarios en las tareas
+# @app.route('/project/<int:project_id>/task/<int:task_id>/comments', methods=['GET'])
+# @app.route('/project/<int:project_id>/task/<int:task_id>/comment', methods=['POST'])
+# @app.route('/project/<int:project_id>/task/<int:task_id>/comment/<int:comment_id>', methods=['PUT', 'DELETE'])
+
+# ========== TAGS ENDPOINTS ==========
+# Endpoints para manejar etiquetas/tags en las tareas
+# @app.route('/project/<int:project_id>/task/<int:task_id>/tags', methods=['GET'])
+# @app.route('/project/<int:project_id>/task/<int:task_id>/tag', methods=['POST'])
+# @app.route('/project/<int:project_id>/task/<int:task_id>/tag/<int:tag_id>', methods=['DELETE'])
+
+# ========== ROLE ENDPOINTS ==========
+# Endpoints para manejar roles específicos en proyectos (alternativa a project members)
+# @app.route('/project/<int:project_id>/roles', methods=['GET'])
+# @app.route('/project/<int:project_id>/role', methods=['POST'])
+# @app.route('/project/<int:project_id>/role/<int:role_id>', methods=['PUT', 'DELETE'])
+
+# ========== USER PROFILE ENDPOINTS ==========
+# Endpoints adicionales para gestión de perfiles de usuario
+# @app.route('/profile', methods=['GET'])  # Obtener perfil del usuario autenticado
+# @app.route('/profile', methods=['PUT'])  # Actualizar perfil del usuario autenticado
+# @app.route('/profile/picture', methods=['POST'])  # Subir foto de perfil
+# @app.route('/users', methods=['GET'])  # Buscar usuarios (para añadir a proyectos)
+
+# ========== TASK ASSIGNMENT ENDPOINTS ==========
+# Endpoints específicos para gestión de asignaciones
+# @app.route('/project/<int:project_id>/task/<int:task_id>/assign', methods=['POST'])
+# @app.route('/project/<int:project_id>/task/<int:task_id>/unassign', methods=['POST'])
+# @app.route('/my-tasks', methods=['GET'])  # Todas las tareas asignadas al usuario
 
 
 # ---- RUN APP ----

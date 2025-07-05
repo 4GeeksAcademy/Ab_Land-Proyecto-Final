@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { useNavigate } from "react-router-dom";
 
-export const TaskCard = ({ task }) => {
+export const TaskCard = ({ task, userRole = 'member' }) => {
   const { id = '',
     title = '',
     description = '',
@@ -14,7 +14,11 @@ export const TaskCard = ({ task }) => {
     project_id = '',
     project = '',
     comments = [],
-    tags = [] } = task;
+    tags = [],
+    assigned_to = null,
+    asignated_to_id = null,
+    is_unassigned = true,
+    user_relation = null } = task;
 
   const [statusColor, setStatusColor] = useState('');
   const [timeAgo, setTimeAgo] = useState('');
@@ -52,7 +56,7 @@ export const TaskCard = ({ task }) => {
   }, [status, created_at]);
 
   return (
-    <div className={`card task-${statusColor} p-3 shadow-sm`} >
+    <div className={`card task-${statusColor} p-3 m-1 shadow-sm`} >
       <div className='d-flex align-items-center mb-2'>
         <span className={`badge badge-${statusColor} text-capitalize `}>
           {status}
@@ -67,9 +71,11 @@ export const TaskCard = ({ task }) => {
           </div>
         )}
         <div className="ms-auto">
-          {store.user_id === author_id && <button className="btn btn-sm btn-outline-secondary" onClick={() => console.log(`Edit task ${id}`)}>
-            Edit
-          </button>}
+          {/* Usar user_relation.can_edit si está disponible, sino usar la lógica anterior */}
+          {(user_relation?.can_edit || (!user_relation && store.user_id === author_id)) &&
+            <button className="btn btn-sm btn-outline-secondary" onClick={() => console.log(`Edit task ${id}`)}>
+              Edit
+            </button>}
         </div>
       </div>
 
@@ -77,20 +83,78 @@ export const TaskCard = ({ task }) => {
       <h5 className='text-capitalize text-black'>{title}</h5>
       <p>{description}</p>
       <div className="d-flex align-items-center">
-        <div className="me-2">
-          <img
-            src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
-              task_author
-            )}&background=random`}
-            alt={task_author}
-            className="rounded-circle"
-            width="32"
-            height="32"
-          />
-        </div>
+        {/* Si es la misma persona creador y asignado */}
+        {assigned_to && assigned_to.full_name === task_author ? (
+          <div className="d-flex align-items-center me-3">
+            <div className="me-2">
+              <img
+                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                  task_author
+                )}&background=random`}
+                alt={task_author}
+                className="rounded-circle"
+                width="32"
+                height="32"
+                title={`Creado y asignado: ${task_author}`}
+              />
+            </div>
+            <small className="text-muted">
+              <strong>Creado y asignado:</strong> {task_author}
+            </small>
+          </div>
+        ) : (
+          <>
+            {/* Mostrar autor de la tarea */}
+            <div className="d-flex align-items-center me-3">
+              <div className="me-2">
+                <img
+                  src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                    task_author
+                  )}&background=random`}
+                  alt={task_author}
+                  className="rounded-circle"
+                  width="32"
+                  height="32"
+                  title={`Creado por: ${task_author}`}
+                />
+              </div>
+              <small className="text-muted">
+                <strong>Creador:</strong> {task_author}
+              </small>
+            </div>
+
+            {/* Mostrar información de asignación */}
+            <div className="d-flex align-items-center me-3">
+              {assigned_to && assigned_to.full_name ? (
+                <>
+                  <div className="me-2">
+                    <img
+                      src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                        assigned_to.full_name
+                      )}&background=random`}
+                      alt={assigned_to.full_name}
+                      className="rounded-circle"
+                      width="32"
+                      height="32"
+                      title={`Asignado a: ${assigned_to.full_name}`}
+                    />
+                  </div>
+                  <small className="text-muted">
+                    <strong>Asignado a:</strong> {assigned_to.full_name}
+                  </small>
+                </>
+              ) : (
+                <small className="text-muted">
+                  <strong>Asignado a:</strong> <em>Sin asignar</em>
+                </small>
+              )}
+            </div>
+          </>
+        )}
+
         <small className='text-muted ms-auto'> {timeAgo}</small>
       </div>
-      
+
 
     </div>
   )
