@@ -24,22 +24,20 @@ export const ProjectCard = ({ project, onEdit, onAddMembers }) => {
   } = project;
 
   useEffect(() => {
-          if (status === 'in progress') {
-              setStatusColor('inProgress');
-          } else if (status === 'yet to start') {
-              setStatusColor('yetToStart');
-          } else {
-              setStatusColor(status);
-          }
-      }, [status]);
+    if (status === 'in progress') {
+      setStatusColor('inProgress');
+    } else if (status === 'yet to start') {
+      setStatusColor('yetToStart');
+    } else {
+      setStatusColor(status);
+    }
+  }, [status]);
 
   const formattedDate = new Date(due_date).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
   });
-
-  const statusLabel = status ? status[0].toUpperCase() + status.slice(1) : '';
 
   const isAdmin = store.user.id === admin_id;
 
@@ -106,18 +104,8 @@ export const ProjectCard = ({ project, onEdit, onAddMembers }) => {
             {members.length > 2 && (
               <span className="badge bg-secondary me-2">+{members.length - 2}</span>
             )}
+
             
-            {/* Add Members Button - Only for Admin */}
-            {isAdmin && (
-              <button
-                className="btn btn-sm btn-outline-primary rounded-circle d-flex align-items-center justify-content-center"
-                style={{ width: "32px", height: "32px", padding: "0" }}
-                onClick={() => onAddMembers && onAddMembers(project)}
-                title="Add team members"
-              >
-                <span style={{ fontSize: "16px", lineHeight: "1" }}>+</span>
-              </button>
-            )}
           </div>
         </div>
         <div className="text-center mx-auto"> some summary</div>
@@ -127,15 +115,7 @@ export const ProjectCard = ({ project, onEdit, onAddMembers }) => {
             {status}
           </span>
 
-          {/* Edit Button for Admin */}
-          {isAdmin && (
-            <button
-              className="btn btn-sm btn-outline-warning mb-2"
-              onClick={() => onEdit && onEdit(project)}
-            >
-              Edit
-            </button>
-          )}
+         
         </div>
       </div>
     </div>

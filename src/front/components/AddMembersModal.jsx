@@ -106,11 +106,11 @@ export function AddMembersModal({ project, isOpen, onClose, onUpdate }) {
     };
 
     return (
-        <div className="modal show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+        <div className="modal show flex-center text-black" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
             <div className="modal-dialog">
                 <div className="modal-content">
                     <div className="modal-header">
-                        <h5 className="modal-title">Add Team Member</h5>
+                        <h5 className="modal-title ">Add Team Member</h5>
                         <button
                             type="button"
                             className="btn-close"

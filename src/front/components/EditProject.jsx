@@ -112,7 +112,7 @@ export function EditProject({ project, isOpen, onClose, onUpdate }) {
     if (!isOpen) return null;
 
     return (
-        <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+        <div className="modal fade show flex-center text-black" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
             <div className="modal-dialog modal-lg">
                 <div className="modal-content">
                     <div className="modal-header">

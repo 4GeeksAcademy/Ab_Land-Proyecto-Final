@@ -44,10 +44,8 @@ app.url_map.strict_slashes = False
 # Añadir todas las URLs de frontend necesarias para CORS
 CORS(
     app,
-    resources={r"/*": {"origins": [
+    resources={r"/*": {"origins": [ os.getenv("FRONTEND_URL", "http://localhost:3000"),
 
-        "https://obscure-meme-wr5pwxjgwg6vf9xpj-3000.app.github.dev",
-        "http://localhost:3000"
 
     ]}},
     supports_credentials=True

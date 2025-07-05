@@ -2,16 +2,14 @@ import React, { useEffect, useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { Link, useNavigate } from "react-router-dom";
 import { ProjectCard } from "../components/ProjectCard";
-import { EditProject } from "../components/EditProject";
-import { AddMembersModal } from "../components/AddMembersModal";
+import { WelcomeModal } from "../components/WelcomeModal";
 
 export default function Dashboard() {
   const { store, dispatch } = useGlobalReducer();
   const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState(null);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [showAddMembersModal, setShowAddMembersModal] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,8 +17,12 @@ export default function Dashboard() {
       navigate("/login");
       return;
     }
+    fetchProjects()
+    handleWelcomeModal(projects)
+    
+  }, [store.token]);
 
-    const fetchProjects = async () => {
+  const fetchProjects = async () => {
       setLoading(true);
       dispatch({ type: "error", payload: null });
 
@@ -48,6 +50,7 @@ export default function Dashboard() {
           setProjects(null);
         } else {
           setProjects(data.user_projects);
+          
         }
       } catch (err) {
         dispatch({ type: "error", payload: "Could not connect to backend." });
@@ -56,70 +59,26 @@ export default function Dashboard() {
       }
     };
 
-    fetchProjects();
-  }, [store.token, dispatch, navigate]);
-
-  // Función para abrir el modal de edición
-  const handleEditProject = (project) => {
-    setSelectedProject(project);
-    setShowEditModal(true);
-  };
-
-  // Función para abrir el modal de añadir miembros
-  const handleAddMembers = (project) => {
-    setSelectedProject(project);
-    setShowAddMembersModal(true);
-  };
-
-  // Función para actualizar la lista después de editar
-  const handleUpdateProject = (closeModal = true) => {
-    // Refrescar todos los proyectos para obtener los datos más actualizados
-    const fetchProjects = async () => {
-      try {
-        const res = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/projects`,
-          {
-            headers: {
-              Authorization: "Bearer " + store.token,
-              "Content-Type": "application/json"
-            }
-          }
-        );
-        const data = await res.json();
-        if (res.ok) {
-          setProjects(data.user_projects);
-          // Actualizar también el proyecto seleccionado si está abierto el modal de añadir miembros
-          if (selectedProject && !closeModal) {
-            const updatedProject = data.user_projects.find(p => p.id === selectedProject.id);
-            if (updatedProject) {
-              setSelectedProject(updatedProject);
-            }
-          }
-        }
-      } catch (err) {
-        console.error("Error refreshing projects:", err);
-      }
-    };
-
-    fetchProjects();
-    if (closeModal) {
-      setShowEditModal(false);
-      setShowAddMembersModal(false);
-    }
-  };
+  const handleWelcomeModal = (projectsData) => {
+  if (projectsData && projectsData.admin && projectsData.admin.length > 0) {
+    setShowModal(true);
+  } else {
+    setShowModal(false);
+  }
+};
 
   if (!store.token) {
     return <p>Redirecting to login...</p>;
   }
 
   return (
-    <div className="container py-5">
+    <div className="container app ">
       <h2>User Dashboard: Your Projects</h2>
       <Link to="/newProject" className="btn btn-primary mb-3">Create New Project</Link>
 
       {/* Welcome message with profile picture */}
       {store.user && (
-        <div className="alert alert-info mb-4 d-flex align-items-center">
+        <div className="alert alert-info alert-dismissible mb-4 d-flex align-items-center " role="alert">
           {store.user.profile_picture_url ? (
             <img
               src={store.user.profile_picture_url}
@@ -151,6 +110,7 @@ export default function Dashboard() {
             </span>
           )}
           Welcome, <strong>{store.user.full_name || store.user.email}</strong>! 👋
+          <button type="button" class="btn-close mt-2" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
       )}
 
@@ -165,8 +125,6 @@ export default function Dashboard() {
                 <Link to={`/project/${proj.id}`} key={proj.id}>
                   <ProjectCard
                     project={proj}
-                    onEdit={handleEditProject}
-                    onAddMembers={handleAddMembers}
                   />
                 </Link>
               ))
@@ -180,8 +138,6 @@ export default function Dashboard() {
                 <Link to={`/project/${proj.id}`} key={proj.id}>
                   <ProjectCard
                     project={proj}
-                    onEdit={handleEditProject}
-                    onAddMembers={handleAddMembers}
                   />
                 </Link>
               ))
@@ -190,22 +146,13 @@ export default function Dashboard() {
           </ul>
         </div>
       ) : !loading && <div>No projects found.</div>}
-
-      {/* Modal de edición */}
-      <EditProject
-        project={selectedProject}
-        isOpen={showEditModal}
-        onClose={() => setShowEditModal(false)}
-        onUpdate={handleUpdateProject}
-      />
-
-      {/* Modal de añadir miembros */}
-      <AddMembersModal
-        project={selectedProject}
-        isOpen={showAddMembersModal}
-        onClose={() => setShowAddMembersModal(false)}
-        onUpdate={() => handleUpdateProject(false)}
-      />
+      
+      {/* Modal no project wellcome */}
+                  <WelcomeModal                     
+                      isOpen={showModal}
+                      onClose={() => setShowModal(false)}
+                      
+                  />
     </div>
   );
 }
