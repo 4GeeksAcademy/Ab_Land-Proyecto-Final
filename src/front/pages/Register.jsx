@@ -105,16 +105,16 @@ export const Register = () => {
   };
 
   return (
-    <div className="px-5 container-fluid">
-      <div className="card ">
-        <div className="card-header text-center">
+    <div className="container app ">
+      <div className="card p-5 max-w-md  mt-10 ">
+        <div className="text-center">
           <h1 className="text-center mb-4">EchoBoard Registration</h1>
           <p className="text-center mb-4">
             Please fill in the details below to create your account.
           </p>
         </div>
-        <div className="row g-0">
-          <div className="col-md-4 flex-center border-end">
+        <div className="row">
+          <div className="col-md-3 flex-center border-end ">
             <div className="mb-4">
               <span>{currentStep >= 1 ? "✅" : "❌"} Step 1: Basic Info</span>
               <br />
@@ -127,9 +127,9 @@ export const Register = () => {
               </span>
             </div>
           </div>
-          <div className="col-md-8 bg-light flex-center flex-column px-0">
+          <div className=" col-md-8 flex-center flex-column px-0 pt-4 ">
             {currentStep === 1 && (
-              <form className="card p-4 m-2 mt-4">
+              <form className="card p-4 m-2 mt-4 w-50">
                 <div className="mb-3">
                   <label className="form-label">Email</label>
                   <input
@@ -156,7 +156,7 @@ export const Register = () => {
             )}
 
             {currentStep === 2 && (
-              <form className="card p-4 m-2 mt-4">
+              <form className="card p-4 m-2 mt-4 w-50">
                 <div className="mb-3">
                   <label className="form-label">Full Name</label>
                   <input
@@ -192,7 +192,7 @@ export const Register = () => {
             )}
 
             {currentStep === 3 && (
-              <div className="card  p-4 m-2 mt-4">
+              <div className="card  p-4 m-2 mt-4 w-50">
                 <label className="form-label">Profile Picture</label>
                 <div className="mb-3">
                   <input

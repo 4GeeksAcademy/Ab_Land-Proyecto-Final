@@ -83,8 +83,8 @@ export const RestorePassword = () => {
   }
 
   return (
-    <div className="px-5 container-fluid">
-      <div className="card flex-center flex-column p-5 max-w-md mx-auto mt-10">
+    <div className="container app">
+      <div className="card flex-center flex-column p-5 max-w-md mt-10">
 
         <h1 className="mb-4">EchoBoard Restore</h1>
         <p className="mb-4">
@@ -93,7 +93,7 @@ export const RestorePassword = () => {
 
         <div className="divider"></div>
         {!mailSent && !token && (
-          <form className="w-50 text-center">
+          <form className="w-25 text-center">
 
             <input
               type="email"

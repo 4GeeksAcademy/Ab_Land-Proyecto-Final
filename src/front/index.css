@@ -105,9 +105,8 @@ body {
   min-height: 70vh;
 }
 .app {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
+  
+  min-height: 75vh;
 }
 .task-inProgress {
   border-color: var(--yellow-500);

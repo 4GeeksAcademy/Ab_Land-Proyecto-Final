@@ -170,8 +170,8 @@ export function NewProject() {
 
     return (
         <>
-            <div className="flex-center">
-                <div className="container bg-white p-5">
+            <div className="container app ">
+                <div className="card p-5">
                     <h1 className="text-center mb-4 text-dark">Create New Project</h1>
                     <form className="row g-3" onSubmit={handleSubmit}>
                         <div className="col-12">

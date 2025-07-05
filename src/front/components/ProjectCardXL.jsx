@@ -4,11 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from 'react';
 
 
-export const ProjectCardXL = ({ project }) => {
+export const ProjectCardXL = ({ project, onEdit, onAddMembers }) => {
 
     const { store, dispatch } = useGlobalReducer();
     const [statusColor, setStatusColor] = useState('');
-
     const navigate = useNavigate();
 
     const {
@@ -40,7 +39,6 @@ export const ProjectCardXL = ({ project }) => {
         year: 'numeric',
     });
 
-    const statusLabel = status ? status[0].toUpperCase() + status.slice(1) : '';
 
     const isAdmin = store.user.id === admin_id;
 
@@ -62,7 +60,7 @@ export const ProjectCardXL = ({ project }) => {
                     <div className="d-flex align-items-center mb-2">
                         <h5 className="mb-1 me-2 fw-bold text-capitalize">{title}</h5>
                         <span className={`badge badge-${statusColor} text-capitalize flex-center`}>
-                            {statusLabel}
+                            {status}
                         </span>
 
                     </div>
@@ -77,13 +75,13 @@ export const ProjectCardXL = ({ project }) => {
                             <small className="mb-0 text-muted">Due Date</small>
 
                         </div>
-                        <div className="me-3 p-1 rounded border-dashed text-center">
+                        {/* <div className="me-3 p-1 rounded border-dashed text-center">
                             <small className="mb-0 text-muted">
                                 <strong>{budget || 'No budget set'}</strong>
                             </small> <br />
                             <small className="mb-0 text-muted">Budget</small>
 
-                        </div>
+                        </div> */}
                         <div className="mx-2">
                             <img
                                 src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
@@ -113,16 +111,28 @@ export const ProjectCardXL = ({ project }) => {
                         {members.length > 8 && (
                             <span className="badge bg-secondary">+{members.length - 8}</span>
                         )}
+                        {/* Add Members Button - Only for Admin */}
+                        {isAdmin && (
+                            <button
+                                className="btn btn-sm btn-outline-primary rounded-circle d-flex align-items-center justify-content-center"
+                                style={{ width: "32px", height: "32px", padding: "0" }}
+                                onClick={() => onAddMembers && onAddMembers(project)}
+                                title="Add team members"
+                            >
+                                <span style={{ fontSize: "16px", lineHeight: "1" }}>+</span>
+                            </button>
+                        )}
                     </div>
 
 
 
                 </div>
                 <div className='d-flex align-items-center ms-auto'>
+                    {/* Edit Button for Admin */}
                     {isAdmin && (
                         <button
-                            className="btn btn-sm btn-outline-warning ms-auto"
-                            onClick={() => { navigate(`/projects/${id}/edit`) }}
+                            className="btn btn-sm btn-outline-warning mb-2"
+                            onClick={() => onEdit && onEdit(project)}
                         >
                             Edit
                         </button>
