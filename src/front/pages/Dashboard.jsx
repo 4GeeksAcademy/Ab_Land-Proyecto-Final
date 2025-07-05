@@ -162,12 +162,13 @@ export default function Dashboard() {
           <ul>
             {(projects.admin && projects.admin.length > 0)
               ? projects.admin.map(proj => (
-                <ProjectCard
-                  key={proj.id}
-                  project={proj}
-                  onEdit={handleEditProject}
-                  onAddMembers={handleAddMembers}
-                />
+                <Link to={`/project/${proj.id}`} key={proj.id}>
+                  <ProjectCard
+                    project={proj}
+                    onEdit={handleEditProject}
+                    onAddMembers={handleAddMembers}
+                  />
+                </Link>
               ))
               : <li>You are not an admin of any project.</li>
             }
@@ -176,12 +177,13 @@ export default function Dashboard() {
           <ul>
             {(projects.member && projects.member.length > 0)
               ? projects.member.map(proj => (
-                <ProjectCard
-                  key={proj.id}
-                  project={proj}
-                  onEdit={handleEditProject}
-                  onAddMembers={handleAddMembers}
-                />
+                <Link to={`/project/${proj.id}`} key={proj.id}>
+                  <ProjectCard
+                    project={proj}
+                    onEdit={handleEditProject}
+                    onAddMembers={handleAddMembers}
+                  />
+                </Link>
               ))
               : <li>You are not a member of any project.</li>
             }
