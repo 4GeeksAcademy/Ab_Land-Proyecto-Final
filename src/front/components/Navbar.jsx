@@ -1,7 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
-import { useEffect } from "react";
 
 import logo from "../assets/img/SVG/logo_v5.svg";
 
@@ -9,7 +8,6 @@ export const Navbar = () => {
   const { store, dispatch } = useGlobalReducer();
 
   const tokenVerification = async () => {
-    // verificar si tiene token de acceso
     try {
       const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/jwtcheck`, {
         headers: {
@@ -18,13 +16,11 @@ export const Navbar = () => {
         },
       });
       const data = await res.json();
-      // Token expirado/inválido: 401 o 422 => fuerza logout
       if (res.status === 401 || res.status === 422) {
         console.error("Token expired or invalid:", data);
         dispatch({ type: "LOGOUT" });
         return;
       }
-      // Token válido: 200 => no hacer nada
       if (res.status === 200) {
         return;
       }
@@ -33,7 +29,7 @@ export const Navbar = () => {
       dispatch({ type: "LOGOUT" });
     }
   };
-  // Verificar token al cargar el componente
+
   useEffect(() => {
     if (store.token) {
       tokenVerification();
@@ -60,19 +56,37 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="navbar navbar-expand-lg mb-1 p-0">
+    <nav
+      className="navbar navbar-expand-lg mb-1 p-0 shadow"
+      style={{
+        background: "var(--gray-900)",
+        borderBottom: "1.5px solid var(--green-400)",
+        zIndex: 20,
+      }}
+    >
       <div className="container-fluid mx-5 py-1">
         <a
           className="navbar-brand d-flex align-items-center text-white"
           href="/"
+          style={{ gap: "1rem" }}
         >
           <img
             src={logo}
             alt="Logo"
-            style={{ width: "5rem", height: "5rem" }}
-            className="d-inline-block mx-2 "
+            style={{ width: "4.2rem", height: "4.2rem" }}
+            className="d-inline-block mx-2"
           />
-          <strong>EchoBoard</strong>
+          <strong
+            style={{
+              fontWeight: "bold",
+              letterSpacing: ".05em",
+              fontSize: "2.1rem",
+              color: "var(--green-400)",
+              textShadow: "1px 2px 3px rgba(0,0,0,.13)",
+            }}
+          >
+            EchoBoard
+          </strong>
         </a>
 
         <button
@@ -88,50 +102,50 @@ export const Navbar = () => {
         </button>
         <div className="collapse navbar-collapse" id="navbarSupportedContent">
           {path === "/" && (
-            <ul className="nav mx-auto ">
+            <ul className="nav mx-auto" style={{ gap: "1.3rem" }}>
               {store.token && (
                 <li className="nav-item">
                   <button
-                    className="nav-link text-white"
+                    className="nav-link text-white fw-semibold"
+                    style={{ fontSize: "1.09rem" }}
                     onClick={() => {
                       navigate("/dashboard");
                     }}
                   >
-                    {" "}
                     Dashboard
                   </button>
                 </li>
               )}
               <li className="nav-item">
                 <button
-                  className="nav-link text-white"
+                  className="nav-link text-white fw-semibold"
+                  style={{ fontSize: "1.09rem" }}
                   onClick={() => {
                     goTo("home");
                   }}
                 >
-                  {" "}
                   Home
                 </button>
               </li>
-              <li className="nav-item ">
+              <li className="nav-item">
                 <button
-                  className="nav-link text-white"
+                  className="nav-link text-white fw-semibold"
+                  style={{ fontSize: "1.09rem" }}
                   onClick={() => {
                     goTo("howitworks");
                   }}
                 >
-                  {" "}
                   How it Works
                 </button>
               </li>
               <li className="nav-item">
                 <button
-                  className="nav-link text-white"
+                  className="nav-link text-white fw-semibold"
+                  style={{ fontSize: "1.09rem" }}
                   onClick={() => {
                     goTo("ourteam");
                   }}
                 >
-                  {" "}
                   Our Team
                 </button>
               </li>
@@ -139,10 +153,18 @@ export const Navbar = () => {
           )}
 
           {!store.token && (
-            <Link to="login" className="shadow-lg ms-auto ">
+            <Link to="login" className="shadow-lg ms-auto">
               <button
                 className="btn text-white"
-                style={{ background: "var(--green-500)" }}
+                style={{
+                  background: "var(--green-500)",
+                  fontWeight: "bold",
+                  letterSpacing: ".03em",
+                  fontSize: "1.12rem",
+                  borderRadius: "26px",
+                  padding: "7px 25px",
+                  boxShadow: "0 3px 8px rgba(0,80,60,.08)",
+                }}
               >
                 LogIn
               </button>
@@ -152,9 +174,10 @@ export const Navbar = () => {
           {store.token && (
             <div className="dropdown-center ms-auto me-2">
               <button
-                className="ms-auto text-white rounded-circle portrait flex-center"
+                className="ms-auto text-white rounded-circle portrait flex-center shadow-sm"
                 type="button"
                 data-bs-toggle="dropdown"
+                aria-expanded="false"
                 style={{
                   height: "48px",
                   width: "48px",
@@ -162,8 +185,15 @@ export const Navbar = () => {
                   backgroundColor: `var(--${profileColor}-500)`,
                   padding: 0,
                   overflow: "hidden",
-                  border: "2px solid var(--green-500)"
+                  border: "2.5px solid var(--green-400)",
+                  boxShadow: "0 2px 8px rgba(0,60,45,.07)",
+                  cursor: "pointer",
+                  transition: "border 0.1s",
                 }}
+                onClick={() =>
+                  navigate(`/profile/${store.user && store.user.id}`)
+                }
+                title="Go to profile"
               >
                 {store.user && store.user.profile_picture_url ? (
                   <img
@@ -173,7 +203,7 @@ export const Navbar = () => {
                       width: "100%",
                       height: "100%",
                       objectFit: "cover",
-                      borderRadius: "50%"
+                      borderRadius: "50%",
                     }}
                   />
                 ) : (
@@ -186,19 +216,21 @@ export const Navbar = () => {
                       justifyContent: "center",
                       fontWeight: "bold",
                       fontSize: "1.4rem",
-                      color: "white"
+                      color: "white",
+                      letterSpacing: ".06em",
                     }}
                   >
                     {store.user.full_name ? store.user.full_name[0] : "?"}
                   </span>
                 )}
               </button>
-              <ul className="dropdown-menu dropdown-menu-end">
+              <ul className="dropdown-menu dropdown-menu-end shadow-sm" style={{ minWidth: 155 }}>
                 <li>
                   <Link
                     className="dropdown-item text-end"
                     to={`/profile/${store.user.id}`}
                   >
+                    <span role="img" aria-label="Profile" className="me-2">👤</span>
                     Profile
                   </Link>
                 </li>
@@ -207,17 +239,17 @@ export const Navbar = () => {
                     className="dropdown-item text-end"
                     to="/dashboard"
                   >
+                    <span role="img" aria-label="Dashboard" className="me-2">📊</span>
                     Dashboard
                   </Link>
                 </li>
                 <div className="dropdown-divider"></div>
                 <li>
                   <button
-                    className="dropdown-item text-danger text-end "
-                    onClick={() => {
-                      handleLogOut();
-                    }}
+                    className="dropdown-item text-danger text-end"
+                    onClick={handleLogOut}
                   >
+                    <span role="img" aria-label="Logout" className="me-2">🚪</span>
                     Log out
                   </button>
                 </li>

@@ -13,9 +13,9 @@ import { Login } from "./pages/Login";
 import { Register } from "./pages/Register";
 import { NewProject } from "./pages/NewProject";
 import Dashboard from "./pages/Dashboard";
-import {RestorePassword} from "./pages/RestorePassword"; 
-import { ProjectFullView } from "./pages/ProjectFullView"; // Assuming this is a placeholder for the full project view
-
+import { RestorePassword } from "./pages/RestorePassword";
+import { ProjectFullView } from "./pages/ProjectFullView";
+import { Profile } from "./pages/Profile"; 
 
 // Import global reducer/context hook
 import useGlobalReducer from "./hooks/useGlobalReducer";
@@ -35,10 +35,8 @@ export const router = createBrowserRouter(
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/restore-password" element={<RestorePassword />} />
-      <Route path="/restore-password/:token" element={<RestorePassword />} /> 
-
-      
-      <Route path="/newproject" element={<NewProject />} />   
+      <Route path="/restore-password/:token" element={<RestorePassword />} />
+      <Route path="/newproject" element={<NewProject />} />
 
       {/* Private routes */}
       <Route
@@ -46,18 +44,29 @@ export const router = createBrowserRouter(
         element={
           <PrivateRoute>
             <Dashboard />
-
           </PrivateRoute>
         }
       />
-      <Route path="/project/:id" element={
-        <PrivateRoute>
-          <ProjectFullView />
-        </PrivateRoute>
-      } />
+      <Route
+        path="/project/:id"
+        element={
+          <PrivateRoute>
+            <ProjectFullView />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/profile/:id"
+        element={
+          <PrivateRoute>
+            <Profile />
+          </PrivateRoute>
+        }
+      />
     </Route>
   )
 );
+
 
 
 
