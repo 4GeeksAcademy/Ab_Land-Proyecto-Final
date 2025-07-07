@@ -40,21 +40,16 @@ PROJECT_STATUS_MAPPING = {
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 
-
-# Añadir todas las URLs de frontend necesarias para CORS
 CORS(
     app,
-    resources={r"/*": {"origins": [ os.getenv("FRONTEND_URL", "http://localhost:3000"),
-    ]}},
+    resources={r"/*": {"origins": [os.getenv("FRONTEND_URL", "http://localhost:3000")]}},
     supports_credentials=True
 )
-# =================================================
 
 # DATABASE CONFIG
 db_url = os.getenv("DATABASE_URL")
 if db_url is not None:
-    app.config['SQLALCHEMY_DATABASE_URI'] = db_url.replace(
-        "postgres://", "postgresql://")
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_url.replace("postgres://", "postgresql://")
 else:
     app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///dev.db"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -83,20 +78,15 @@ setup_admin(app)
 setup_commands(app)
 
 # ERROR HANDLER
-
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
-
-# SITEMAP (DEV ONLY)
 
 @app.route('/')
 def sitemap():
     if ENV == "development":
         return generate_sitemap(app)
     return send_from_directory(static_file_dir, 'index.html')
-
-# SPA FALLBACK
 
 @app.route('/<path:path>', methods=['GET'])
 def serve_any_other_file(path):
@@ -106,10 +96,7 @@ def serve_any_other_file(path):
     response.cache_control.max_age = 0
     return response
 
-# ==== API ENDPOINTS BELOW ====
-
-# ========== AUTH & USER ENDPOINTS ==========
-
+# AUTH & USER ENDPOINTS
 @app.route('/register', methods=['POST'])
 def register():
     body = request.get_json(silent=True)
@@ -125,6 +112,14 @@ def register():
         return jsonify({'msg': 'Debes enviar un country válido'}), 400
 
     phone = body.get('phone')
+    if phone is not None and phone != "":
+        try:
+            phone = int(phone)
+        except Exception:
+            return jsonify({'msg': 'Phone number must be numeric'}), 400
+    else:
+        phone = None
+
     profile_picture_url = body.get('profile_picture_url')
     random_profile_color = random.randint(0, 9)
     hashed_password = generate_password_hash(body['password'])
@@ -147,7 +142,7 @@ def register():
         db.session.rollback()
         return jsonify({'msg': 'Ingresa un email distinto.'}), 400
 
-    # Send welcome email
+    # Welcome email
     path = os.path.join(static_file_dir, 'api', 'HTML mails', 'Welcome.html')
     if os.path.exists(path):
         with open(path, 'r') as f:
@@ -182,7 +177,7 @@ def login():
 def verification_token():
     return jsonify({'msg': 'Token is valid'}), 200
 
-@app.route('/user', methods=['GET'])
+@app.route('/user-by-email', methods=['GET'])
 @jwt_required()
 def get_user():
     email = request.args.get('email')
@@ -203,7 +198,6 @@ def get_user():
     else:
         return jsonify({'found': False}), 404
 
-# ========== USER PROFILE ENDPOINTS ADDED HERE ==========
 @app.route('/profile', methods=['GET'])
 @jwt_required()
 def get_profile():
@@ -224,18 +218,33 @@ def update_profile():
     if not body:
         return jsonify({'msg': 'Missing body'}), 400
 
-    # Editable fields
-    if 'full_name' in body: user.full_name = body['full_name']
-    if 'country' in body: user.country = body['country']
-    if 'phone' in body: user.phone = body['phone']
-    if 'profile_picture_url' in body: user.profile_picture_url = body['profile_picture_url']
+    if 'full_name' in body:
+        user.full_name = body['full_name']
+    if 'country' in body:
+        user.country = body['country']
+    if 'phone' in body:
+        try:
+            user.phone = int(body['phone']) if body['phone'] not in [None, ""] else None
+        except Exception:
+            return jsonify({'msg': 'Phone number must be numeric'}), 400
+    if 'profile_picture_url' in body:
+        user.profile_picture_url = body['profile_picture_url']
+
     try:
         db.session.commit()
         return jsonify({'msg': 'Profile updated', 'user': user.serialize()}), 200
     except Exception:
         db.session.rollback()
         return jsonify({'msg': 'Failed to update profile'}), 500
-# ========== END PROFILE ENDPOINTS ==========
+
+#  ALIAS for PUT /user and GET /user
+@app.route('/user', methods=['GET', 'PUT'])
+@jwt_required()
+def user_alias():
+    if request.method == 'GET':
+        return get_profile()
+    elif request.method == 'PUT':
+        return update_profile()
 
 @app.route('/restore-password', methods=['POST'])
 def restore_password():
@@ -261,13 +270,10 @@ def restore_password():
         db.session.rollback()
         return jsonify({'msg': 'Error creating password reset request'}), 500
 
-    # Create password reset link
     frontend_url = os.getenv('FRONTEND_URL') or "http://localhost:3000"
     restore_link = f"{frontend_url}/restore-password/{token}"
 
-    # Send password reset email
-    path = os.path.join(static_file_dir, 'api',
-                        'HTML mails', 'RestorePassword.html')
+    path = os.path.join(static_file_dir, 'api', 'HTML mails', 'RestorePassword.html')
     if os.path.exists(path):
         with open(path, 'r') as f:
             html_content = f.read()
@@ -298,14 +304,10 @@ def restore_password_confirmation(token):
     user.password = generate_password_hash(body['new_password'])
     db.session.commit()
 
-    # Delete the restore password request
     db.session.delete(restore_request)
     db.session.commit()
 
     return jsonify({'msg': 'Password updated successfully'}), 200
-
-# ========== PROJECT ENDPOINTS ==========
-
 
 @app.route('/project', methods=['POST'])
 @jwt_required()
@@ -329,7 +331,6 @@ def new_project():
     if "T" in due_date:
         due_date = due_date.split("T")[0]
 
-    # Validar el status
     status_enum = PROJECT_STATUS_MAPPING.get(status, ProjectStatus.in_progress)
 
     new_project = Project(
@@ -359,7 +360,7 @@ def new_project():
                 continue
 
             if member_user.id == user.id:
-                member_errors.append(f"Cannot add admin as member")
+                member_errors.append("Cannot add admin as member")
                 continue
 
             new_member = Project_Member(
@@ -379,7 +380,6 @@ def new_project():
             'new_project': new_project.serialize()
         }
 
-        # Agregar información de miembros si se procesaron
         if member_emails:
             response_data['members_info'] = {
                 'added_members': added_members,
@@ -387,14 +387,13 @@ def new_project():
             }
 
         return jsonify(response_data), 201
-    except Exception as e:
+    except Exception:
         db.session.rollback()
         return jsonify({'msg': 'Error creating project'}), 500
-
-
 
 # ---- RUN APP ----
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3001))
     app.run(host='0.0.0.0', port=PORT, debug=True)
+
 
