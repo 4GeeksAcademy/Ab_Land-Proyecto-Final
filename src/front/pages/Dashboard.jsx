@@ -114,7 +114,7 @@ export default function Dashboard() {
             </span>
           )}
           Welcome, <strong>{store.user.full_name || store.user.email}</strong>! 👋
-          <button type="button" class="btn-close mt-2" data-bs-dismiss="alert" aria-label="Close"></button>
+          <button type="button" className="btn-close mt-2" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
       )}
 

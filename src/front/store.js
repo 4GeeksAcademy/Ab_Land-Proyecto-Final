@@ -3,7 +3,7 @@
 export const initialStore = () => {
   const token = localStorage.getItem("token");
   const user = localStorage.getItem("user");
-  const projects = localStorage.getItem("projects")
+  const projects = localStorage.getItem("projects");
   return {
     token: token || null,
     user: user ? JSON.parse(user) : null,
@@ -35,8 +35,6 @@ export default function storeReducer(store, action = {}) {
         error: null,
       };
     case "projects":
-      console.log(action.payload);
-      
       localStorage.setItem("projects", JSON.stringify(action.payload));
       return {
         ...store,
@@ -57,4 +55,3 @@ export default function storeReducer(store, action = {}) {
       return store;
   }
 }
-

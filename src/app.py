@@ -44,9 +44,9 @@ app.url_map.strict_slashes = False
 # Añadir todas las URLs de frontend necesarias para CORS
 CORS(
     app,
-    resources={r"/*": {"origins": [ os.getenv("FRONTEND_URL", "http://localhost:3000")
+    resources={r"/*": {"origins": [os.getenv("FRONTEND_URL", "http://localhost:3000",)
 
-    ]}},
+                                   ]}},
     supports_credentials=True
 )
 # =================================================
@@ -280,6 +280,7 @@ def restore_password_confirmation(token):
 
     return jsonify({'msg': 'Password updated successfully'}), 200
 
+
 @app.route('/profile', methods=['GET'])
 @jwt_required()
 def get_profile():
@@ -307,7 +308,8 @@ def update_profile():
         user.country = body['country']
     if 'phone' in body:
         try:
-            user.phone = int(body['phone']) if body['phone'] not in [None, ""] else None
+            user.phone = int(body['phone']) if body['phone'] not in [
+                None, ""] else None
         except Exception:
             return jsonify({'msg': 'Phone number must be numeric'}), 400
     if 'profile_picture_url' in body:
@@ -320,6 +322,8 @@ def update_profile():
         return jsonify({'msg': 'Failed to update profile'}), 500
 
 #  ALIAS for PUT /user and GET /user
+
+
 @app.route('/user', methods=['GET', 'PUT'])
 @jwt_required()
 def user_alias():
@@ -512,6 +516,7 @@ def edit_project(project_id):
 
 # ========== PROJECT MEMBERS ENDPOINTS ==========
 
+
 @app.route('/project/<int:project_id>/members', methods=['POST'])
 @jwt_required()
 def add_project_members(project_id):
@@ -575,6 +580,7 @@ def add_project_members(project_id):
 
 # ========== TASK ENDPOINTS ==========
 
+
 @app.route('/project/<int:project_id>/tasks', methods=['GET'])
 @jwt_required()
 def get_project_tasks(project_id):
@@ -629,7 +635,7 @@ def get_project_tasks(project_id):
         }), 200
 
 
-@app.route('/project/<int:project_id>/task', methods=['POST'])
+@app.route('/api/project/<int:project_id>/task', methods=['POST'])
 @jwt_required()
 def create_task(project_id):
     user_id = get_jwt_identity()
@@ -691,7 +697,7 @@ def create_task(project_id):
         return jsonify({'msg': 'Error creating task'}), 500
 
 
-@app.route('/project/<int:project_id>/task/<int:task_id>', methods=['PUT'])
+@app.route('/api/project/<int:project_id>/task/<int:task_id>', methods=['PUT'])
 @jwt_required()
 def update_task(project_id, task_id):
     user_id = get_jwt_identity()
@@ -747,7 +753,6 @@ def update_task(project_id, task_id):
 # ========== TASK DELETE FALTANTE ==========
 
 
-
 # ======================== POSIBLES ENDPOINTS ADICIONALES ========================
 # Basado en los modelos disponibles en models.py que aún no tienen endpoints implementados
 
@@ -781,7 +786,6 @@ def update_task(project_id, task_id):
 # @app.route('/project/<int:project_id>/task/<int:task_id>/assign', methods=['POST'])
 # @app.route('/project/<int:project_id>/task/<int:task_id>/unassign', methods=['POST'])
 # @app.route('/my-tasks', methods=['GET'])  # Todas las tareas asignadas al usuario
-
 
 # ---- RUN APP ----
 if __name__ == '__main__':
