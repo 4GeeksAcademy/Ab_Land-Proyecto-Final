@@ -13,7 +13,7 @@ export const Footer = () => {
   }
 
   return (
-    <footer className='container d-flex justify-content-between align-items-center px-3 my-4 border-top'>
+    <footer className='container d-flex justify-content-between align-items-center px-3 mt-2 border-top'>
       <ul className='nav'>
         <li className="nav-item">
           <a href="#" onClick={scrollToTop} className="nav-link px-2 text-white">Back top</a>

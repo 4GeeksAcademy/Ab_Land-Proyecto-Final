@@ -108,7 +108,7 @@ export const ProjectCard = ({ project, onEdit, onAddMembers }) => {
             
           </div>
         </div>
-        <div className="text-center mx-auto"> some summary</div>
+        {/* <div className="text-center mx-auto"> div to ad a summay with ai (optional)</div> */}
         <div className="d-flex flex-column align-items-end ms-auto">
           {/* Status Badge */}
           <span className={`badge badge-${statusColor} text-capitalize mb-2`}>

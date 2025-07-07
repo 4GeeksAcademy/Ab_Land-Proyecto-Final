@@ -3,9 +3,11 @@
 export const initialStore = () => {
   const token = localStorage.getItem("token");
   const user = localStorage.getItem("user");
+  const projects = localStorage.getItem("projects")
   return {
     token: token || null,
     user: user ? JSON.parse(user) : null,
+    projects: projects ? JSON.parse(projects) : null,
     error: null, // so you can track errors in your store
     profile_colors:["red","brown","orange","yellow","mint","green","aqua","blue","purple"]
   };
@@ -30,6 +32,15 @@ export default function storeReducer(store, action = {}) {
         ...store,
         token: null,
         user: null,
+        error: null,
+      };
+    case "projects":
+      console.log(action.payload);
+      
+      localStorage.setItem("projects", JSON.stringify(action.payload));
+      return {
+        ...store,
+        projects: action.payload,
         error: null,
       };
 
