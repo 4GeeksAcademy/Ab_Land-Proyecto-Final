@@ -15,6 +15,7 @@ export const ProjectFullView = () => {
     const [showEditModal, setShowEditModal] = useState(false);
     const [selectedProject, setSelectedProject] = useState(null);
     const [showAddMembersModal, setShowAddMembersModal] = useState(false);
+    const [projectVersion, setProjectVersion] = useState(0);
 
     // Determinar el rol del usuario en el proyecto
     const getUserRole = () => {
@@ -36,6 +37,13 @@ export const ProjectFullView = () => {
         };
         fetchProjectAndTasks();
     }, [id]);
+
+    // useEffect para refrescar el proyecto cuando se actualiza
+    useEffect(() => {
+        if (projectVersion > 0) {
+            getProject();
+        }
+    }, [projectVersion]);
 
     const getProject = async () => {
         try {
@@ -90,41 +98,11 @@ export const ProjectFullView = () => {
         setShowAddMembersModal(true);
     };
 
-    // Función para actualizar la lista después de editar
-    const handleUpdateProject = (closeModal = true) => {
-        // Refrescar todos los proyectos para obtener los datos más actualizados
-        const fetchProjects = async () => {
-            try {
-                const res = await fetch(
-                    `${import.meta.env.VITE_BACKEND_URL}/projects`,
-                    {
-                        headers: {
-                            Authorization: "Bearer " + store.token,
-                            "Content-Type": "application/json"
-                        }
-                    }
-                );
-                const data = await res.json();
-                if (res.ok) {
-                    setProjects(data.user_projects);
-                    // Actualizar también el proyecto seleccionado si está abierto el modal de añadir miembros
-                    if (selectedProject && !closeModal) {
-                        const updatedProject = data.user_projects.find(p => p.id === selectedProject.id);
-                        if (updatedProject) {
-                            setSelectedProject(updatedProject);
-                        }
-                    }
-                }
-            } catch (err) {
-                console.error("Error refreshing projects:", err);
-            }
-        };
-
-        fetchProjects();
-        if (closeModal) {
-            setShowEditModal(false);
-            setShowAddMembersModal(false);
-        }
+    // Función para actualizar el proyecto después de editar
+    const handleUpdateProject = () => {
+        setProjectVersion(prev => prev + 1); // Incrementar para disparar useEffect
+        setShowEditModal(false);
+        setShowAddMembersModal(false);
     };
 
     if (!project) {
@@ -135,7 +113,7 @@ export const ProjectFullView = () => {
         <div className="px-5 container app">
             <div className=" p-4 ">
                 <ProjectCardXL project={project} onEdit={handleEditProject}
-                    onAddMembers={handleAddMembers}/>
+                    onAddMembers={handleAddMembers} />
 
                 {tasks && tasks.length > 0 ? (
                     <div className="mt-3 d-flex align-items-center justify-content-between">
@@ -180,7 +158,7 @@ export const ProjectFullView = () => {
                 project={selectedProject}
                 isOpen={showAddMembersModal}
                 onClose={() => setShowAddMembersModal(false)}
-                onUpdate={() => handleUpdateProject(false)}
+                onUpdate={handleUpdateProject}
             />
 
         </div>

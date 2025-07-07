@@ -11,6 +11,7 @@ export function Profile() {
     profile_picture_url: store.user.profile_picture_url || "",
     email: store.user.email || "",
   });
+  const [imageFile, setImageFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState("");
   const [success, setSuccess] = useState("");
@@ -52,6 +53,25 @@ export function Profile() {
       setUploadMessage("Upload failed ❌");
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      handleFileUpload(file);
+    } else {
+      setImageFile(null);
+      setFormData(prev => ({ ...prev, profile_picture_url: "" }));
+    }
+  };
+
+  const handleUrlChange = (e) => {
+    if (e.key === 'Enter') {
+      setImageFile(null);
+      const url = e.target.value;
+      setFormData(prev => ({ ...prev, profile_picture_url: url }));
     }
   };
 
@@ -101,8 +121,8 @@ export function Profile() {
             src={
               formData.profile_picture_url ||
               "https://ui-avatars.com/api/?name=" +
-                encodeURIComponent(formData.full_name || "U") +
-                "&background=0D8ABC&color=fff"
+              encodeURIComponent(formData.full_name || "U") +
+              "&background=0D8ABC&color=fff"
             }
             alt="Profile"
             style={{
@@ -124,14 +144,14 @@ export function Profile() {
         <div className="d-flex gap-3 mt-3">
           <button
             className={`btn btn-link px-2 ${tab === "overview" ? "border-bottom border-2 border-primary" : ""}`}
-            style={{color: tab==="overview" ? "#0D8ABC" : "#555", fontWeight:"bold"}}
+            style={{ color: tab === "overview" ? "#0D8ABC" : "#555", fontWeight: "bold" }}
             onClick={() => setTab("overview")}
           >
             Overview
           </button>
           <button
             className={`btn btn-link px-2 ${tab === "projects" ? "border-bottom border-2 border-primary" : ""}`}
-            style={{color: tab==="projects" ? "#0D8ABC" : "#555", fontWeight:"bold"}}
+            style={{ color: tab === "projects" ? "#0D8ABC" : "#555", fontWeight: "bold" }}
             onClick={() => setTab("projects")}
           >
             Projects
@@ -147,8 +167,8 @@ export function Profile() {
                 src={
                   formData.profile_picture_url ||
                   "https://ui-avatars.com/api/?name=" +
-                    encodeURIComponent(formData.full_name || "U") +
-                    "&background=0D8ABC&color=fff"
+                  encodeURIComponent(formData.full_name || "U") +
+                  "&background=0D8ABC&color=fff"
                 }
                 alt="Profile"
                 style={{
@@ -160,17 +180,23 @@ export function Profile() {
                   marginBottom: "1rem",
                 }}
               />
-              <input
-                type="file"
-                accept="image/*"
-                className="form-control"
-                onChange={e => {
-                  if (e.target.files && e.target.files[0]) {
-                    handleFileUpload(e.target.files[0]);
-                  }
-                }}
-                disabled={uploading}
-              />
+              <label className="form-label">Profile picture: URL or file (optional)</label>
+              <div className="d-flex gap-2 mb-2">
+                <input
+                  type="url"
+                  className="form-control"
+                  placeholder="Enter image URL"
+                  onKeyDown={handleUrlChange}
+                  disabled={!!imageFile}
+                />
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="form-control"
+                  onChange={handleImageChange}
+                  disabled={!!formData.profile_picture_url && !imageFile || uploading}
+                />
+              </div>
               {uploadMessage && <div className="mt-2 text-muted">{uploadMessage}</div>}
             </div>
             <div className="col-md-8">

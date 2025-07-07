@@ -41,12 +41,12 @@ app = Flask(__name__)
 app.url_map.strict_slashes = False
 
 # ====== CORS: HARDCODE YOUR FRONTEND URLS! ======
-# Añadir todas las URLs de frontend necesarias para CORS
 CORS(
     app,
-    resources={r"/*": {"origins": [ os.getenv("FRONTEND_URL", "http://localhost:3000",)
-
-    ]}},
+    origins=[
+        "http://localhost:3000",
+        os.getenv("FRONTEND_URL", "http://localhost:3000")
+    ],
     supports_credentials=True
 )
 # =================================================
@@ -190,28 +190,6 @@ def verification_token():
     return jsonify({'msg': 'Token is valid'}), 200
 
 
-@app.route('/user-by-email', methods=['GET'])
-@jwt_required()
-def get_user():
-    email = request.args.get('email')
-    if not email or not email.strip():
-        return jsonify({'msg': 'Email parameter is required'}), 400
-
-    user = User.query.filter_by(email=email.strip()).first()
-
-    if user:
-        return jsonify({
-            'found': True,
-            'user': {
-                'id': user.id,
-                'email': user.email,
-                'full_name': user.full_name
-            }
-        }), 200
-    else:
-        return jsonify({'found': False}), 404
-
-
 @app.route('/restore-password', methods=['POST'])
 def restore_password():
     body = request.get_json(silent=True)
@@ -280,6 +258,7 @@ def restore_password_confirmation(token):
 
     return jsonify({'msg': 'Password updated successfully'}), 200
 
+
 @app.route('/profile', methods=['GET'])
 @jwt_required()
 def get_profile():
@@ -307,7 +286,8 @@ def update_profile():
         user.country = body['country']
     if 'phone' in body:
         try:
-            user.phone = int(body['phone']) if body['phone'] not in [None, ""] else None
+            user.phone = int(body['phone']) if body['phone'] not in [
+                None, ""] else None
         except Exception:
             return jsonify({'msg': 'Phone number must be numeric'}), 400
     if 'profile_picture_url' in body:
@@ -320,11 +300,34 @@ def update_profile():
         return jsonify({'msg': 'Failed to update profile'}), 500
 
 #  ALIAS for PUT /user and GET /user
+
+
 @app.route('/user', methods=['GET', 'PUT'])
 @jwt_required()
 def user_alias():
     if request.method == 'GET':
-        return get_profile()
+        # Si hay un parámetro email, buscar usuario por email
+        email = request.args.get('email')
+        if email:
+            if not email.strip():
+                return jsonify({'msg': 'Email parameter is required'}), 400
+
+            user = User.query.filter_by(email=email.strip()).first()
+
+            if user:
+                return jsonify({
+                    'found': True,
+                    'user': {
+                        'id': user.id,
+                        'email': user.email,
+                        'full_name': user.full_name
+                    }
+                }), 200
+            else:
+                return jsonify({'found': False}), 404
+        else:
+            # Si no hay parámetro email, devolver perfil del usuario autenticado
+            return get_profile()
     elif request.method == 'PUT':
         return update_profile()
 
@@ -512,6 +515,7 @@ def edit_project(project_id):
 
 # ========== PROJECT MEMBERS ENDPOINTS ==========
 
+
 @app.route('/project/<int:project_id>/members', methods=['POST'])
 @jwt_required()
 def add_project_members(project_id):
@@ -531,6 +535,7 @@ def add_project_members(project_id):
     member_emails = body['members']
     if not isinstance(member_emails, list):
         return jsonify({'msg': 'Members must be a list of emails'}), 400
+
     added_members = []
 
     for email in member_emails:
@@ -574,6 +579,7 @@ def add_project_members(project_id):
 # ========== PROJECT MEMBERS DELETE FALTANTE ==========
 
 # ========== TASK ENDPOINTS ==========
+
 
 @app.route('/project/<int:project_id>/tasks', methods=['GET'])
 @jwt_required()
@@ -747,7 +753,6 @@ def update_task(project_id, task_id):
 # ========== TASK DELETE FALTANTE ==========
 
 
-
 # ======================== POSIBLES ENDPOINTS ADICIONALES ========================
 # Basado en los modelos disponibles en models.py que aún no tienen endpoints implementados
 
@@ -781,7 +786,6 @@ def update_task(project_id, task_id):
 # @app.route('/project/<int:project_id>/task/<int:task_id>/assign', methods=['POST'])
 # @app.route('/project/<int:project_id>/task/<int:task_id>/unassign', methods=['POST'])
 # @app.route('/my-tasks', methods=['GET'])  # Todas las tareas asignadas al usuario
-
 
 # ---- RUN APP ----
 if __name__ == '__main__':
