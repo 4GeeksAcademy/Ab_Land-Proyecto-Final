@@ -17,7 +17,10 @@ export default function Dashboard() {
       navigate("/login");
       return;
     }
-    fetchProjects()
+    if (!store.user_projects){
+      fetchProjects()
+    }
+    setProjects(store.user_projects)    
     handleWelcomeModal(projects)
     
   }, [store.token]);
@@ -50,6 +53,7 @@ export default function Dashboard() {
           setProjects(null);
         } else {
           setProjects(data.user_projects);
+          dispatch({ type: "projects", payload: data.user_projects });
           
         }
       } catch (err) {

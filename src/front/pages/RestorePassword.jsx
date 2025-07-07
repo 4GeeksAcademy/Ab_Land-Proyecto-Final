@@ -1,7 +1,8 @@
 import React from "react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
+import useGlobalReducer from "../hooks/useGlobalReducer";
 
 export const RestorePassword = () => {
   const [email, setEmail] = useState("");
@@ -9,18 +10,17 @@ export const RestorePassword = () => {
   const [passwordRestored, setPasswordRestored] = useState(false);
   const [passwordOne, setPasswordOne] = useState("");
   const [passwordTwo, setPasswordTwo] = useState("");
-  const [error, setError] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const { token } = useParams(); // Get token from URL if needed
+  const { token } = useParams();
   const navigate = useNavigate();
+  const { store, dispatch } = useGlobalReducer();
 
   const comparePasswords = (passwordOne, passwordTwo) => {
     if (passwordOne !== passwordTwo) {
-      setError("Passwords do not match")
+      dispatch({ type: "error", payload: "Passwords do not match" });
       return false;
     } else {
-      setError("");
-      setNewPassword(passwordOne);
+      setNewPassword(passwordOne);      
       return true;
     }
   };
@@ -28,7 +28,7 @@ export const RestorePassword = () => {
   const handleSaveNewPassword = (e) => {
     e.preventDefault();
     if (comparePasswords(passwordOne, passwordTwo)) {
-      postNewPassword(e);
+      postNewPassword();
     }
   };
 
@@ -48,19 +48,19 @@ export const RestorePassword = () => {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.msg || "email not found, use a valid email");
-        // Handle error
+        dispatch({ type: "error", payload: data.msg || "email not found, use a valid email" });
         return;
       }
       setMailSent(true);
-      
+
     } catch (err) {
-      
+      dispatch({ type: "error", payload: err || "Could not connect to backend." });
+
     }
   };
 
   const postNewPassword = async () => {
-        
+
     try {
       const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/restore-password/${token}`, {
         method: "POST",
@@ -71,20 +71,20 @@ export const RestorePassword = () => {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.msg || "token not valid or expired");
+        dispatch({ type: "error", payload: data.msg || "token not valid or expired" });
         return;
       }
-      
+
       setPasswordRestored(true);
     } catch (err) {
-      
-      setError(err || "Connection error");
+      dispatch({ type: "error", payload: err || "Could not connect to backend." });
     }
   }
 
   return (
     <div className="container app">
       <div className="card flex-center flex-column p-5 max-w-md mt-10">
+        <Link to="/login" className="me-auto"> ← Back</Link>
 
         <h1 className="mb-4">EchoBoard Restore</h1>
         <p className="mb-4">
@@ -126,12 +126,7 @@ export const RestorePassword = () => {
             ></button>
           </div>
         )}
-        {error && (
-          <div className="alert alert-danger alert-dismissible fade show" role="alert">
-            {error}
-            <button type="button" className="btn-close" data-bs-dismiss="alert" aria-label="Close" onClick={() => setError("")}></button>
-          </div>
-        )}
+
         {token && (
           <form className="w-50 text-center">
             <div className="mb-3">
@@ -156,7 +151,7 @@ export const RestorePassword = () => {
                 value={passwordTwo}
                 className="form-control"
                 onChange={(e) => {
-                  setPasswordTwo(e.target.value);                  
+                  setPasswordTwo(e.target.value);
                 }}
                 id="confirm-password"
                 required

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import useGlobalReducer from "../hooks/useGlobalReducer";
 
 export const Register = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -14,6 +15,7 @@ export const Register = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState("");
   const navigate = useNavigate();
+  const {store, dispatch} = useGlobalReducer
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -72,7 +74,7 @@ export const Register = () => {
 
   const handleSubmit = () => {
     if (uploading) {
-      alert("Please wait for the image upload to complete.");
+      dispatch({ type: "error", payload: "Please wait for the image upload to complete." });      
       return;
     }
     postRegister();
@@ -99,15 +101,15 @@ export const Register = () => {
       navigate("/login");
       console.log("Registration successful:", data);
     } catch (error) {
-      console.error("Error during registration:", error);
-      window.alert("Error al crear el usuario. Por favor, intenta de nuevo.");
+      dispatch({ type: "error", payload: error || "Error al crear el usuario. Por favor, intenta de nuevo." });       
     }
   };
 
   return (
     <div className="container app ">
-      <div className="card p-5 max-w-md  mt-10 ">
-        <div className="text-center">
+      <div className="card p-4 max-w-md  mt-10 ">
+        <Link to="/login"> ← Back</Link>
+        <div className="text-center border-bottom">
           <h1 className="text-center mb-4">EchoBoard Registration</h1>
           <p className="text-center mb-4">
             Please fill in the details below to create your account.

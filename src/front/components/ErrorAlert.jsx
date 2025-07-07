@@ -7,7 +7,7 @@ export const ErrorAlert = () => {
   if (!store.error) return null;
 
   return (
-    <div className="alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3 shadow" style={{ zIndex: 9999, minWidth: "300px", maxWidth: "95vw" }} role="alert">
+    <div className="alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3 shadow" style={{ zIndex: 9999, minWidth: "350px", maxWidth: "95vw" }} role="alert">
       {store.error}
       <button
         type="button"

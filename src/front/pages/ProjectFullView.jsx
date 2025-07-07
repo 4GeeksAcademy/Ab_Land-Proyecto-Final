@@ -54,7 +54,7 @@ export const ProjectFullView = () => {
 
             setProject(data.project);
         } catch (error) {
-            console.error("Error fetching project:", error);
+            dispatch({ type: "error", payload: "Could not connect to backend." });
         }
     };
 
