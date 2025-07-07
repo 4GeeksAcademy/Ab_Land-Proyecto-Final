@@ -45,7 +45,7 @@ CORS(
     app,
     origins=[
         "http://localhost:3000",
-        os.getenv("FRONTEND_URL", "http://localhost:3000")
+        os.getenv("FRONTEND_URL")
     ],
     supports_credentials=True
 )
@@ -635,7 +635,7 @@ def get_project_tasks(project_id):
         }), 200
 
 
-@app.route('/project/<int:project_id>/task', methods=['POST'])
+@app.route('/api/project/<int:project_id>/task', methods=['POST'])
 @jwt_required()
 def create_task(project_id):
     user_id = get_jwt_identity()
@@ -697,7 +697,7 @@ def create_task(project_id):
         return jsonify({'msg': 'Error creating task'}), 500
 
 
-@app.route('/project/<int:project_id>/task/<int:task_id>', methods=['PUT'])
+@app.route('/api/project/<int:project_id>/task/<int:task_id>', methods=['PUT'])
 @jwt_required()
 def update_task(project_id, task_id):
     user_id = get_jwt_identity()

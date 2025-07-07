@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { useNavigate } from "react-router-dom";
 
-export const TaskCard = ({ task, userRole = 'member' }) => {
+export const TaskCard = ({ task, userRole = 'member', onEdit }) => {
   const { id = '',
     title = '',
     description = '',
@@ -22,9 +22,20 @@ export const TaskCard = ({ task, userRole = 'member' }) => {
 
   const [statusColor, setStatusColor] = useState('');
   const [timeAgo, setTimeAgo] = useState('');
+  const [canEdit, setCanEdit] = useState(false)
 
   const { store, dispatch } = useGlobalReducer();
   const navigate = useNavigate();
+
+  const editAble = () => {
+    if (userRole === "admin" || store.user.id === author_id) {
+      setCanEdit(true)
+    }
+    else { setCanEdit(false) }
+  }
+
+  console.log(userRole, canEdit, store.user.id, author_id);
+
 
 
   const timeSinceCreation = () => {
@@ -53,6 +64,7 @@ export const TaskCard = ({ task, userRole = 'member' }) => {
       setStatusColor('inProgress');
     } else { setStatusColor(status) }
     setTimeAgo(timeSinceCreation());
+    editAble()
   }, [status, created_at]);
 
   return (
@@ -71,9 +83,8 @@ export const TaskCard = ({ task, userRole = 'member' }) => {
           </div>
         )}
         <div className="ms-auto">
-          {/* Usar user_relation.can_edit si está disponible, sino usar la lógica anterior */}
-          {(user_relation?.can_edit || (!user_relation && store.user_id === author_id)) &&
-            <button className="btn btn-sm btn-outline-secondary" onClick={() => console.log(`Edit task ${id}`)}>
+          {canEdit &&
+            <button className="btn btn-sm btn-outline-secondary" onClick={onEdit}>
               Edit
             </button>}
         </div>

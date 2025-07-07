@@ -6,16 +6,21 @@ import { ProjectCardXL } from '../components/ProjectCardXL'
 import useGlobalReducer from "../hooks/useGlobalReducer"
 import { EditProject } from "../components/EditProject";
 import { AddMembersModal } from "../components/AddMembersModal";
+import { AddEditTask } from '../components/Add-Edit-Task'
 
 export const ProjectFullView = () => {
-    const { store } = useGlobalReducer();
+    const { store, dispatch } = useGlobalReducer();
     const { id } = useParams();
     const [project, setProject] = useState(null);
     const [tasks, setTasks] = useState([]);
     const [showEditModal, setShowEditModal] = useState(false);
     const [selectedProject, setSelectedProject] = useState(null);
     const [showAddMembersModal, setShowAddMembersModal] = useState(false);
+    const [showTaskModal, setShowTaskModal] = useState(false);
+    const [taskOnEdit, setTaskOnEdit] = useState(false);
+    const [taskToEdit, setTaskToEdit] = useState(null);
     const [projectVersion, setProjectVersion] = useState(0);
+
 
     // Determinar el rol del usuario en el proyecto
     const getUserRole = () => {
@@ -30,13 +35,37 @@ export const ProjectFullView = () => {
         return 'member';
     };
 
+    const filterProjectById = (projectId) => {
+        const roles = Object.keys(store.projects); 
+
+        for (const role of roles) {
+            const project = store.projects[role].find(project => project.id === projectId);
+            if (project) return project;
+        }
+
+        return null;
+    };
+
+
+
     useEffect(() => {
-        const fetchProjectAndTasks = async () => {
-            await getProject();
-            await getTasks();
+        const fetchData = async () => {
+            if (store.projects) {
+                const foundProject = filterProjectById(id);
+                if (foundProject) {
+                    setProject(foundProject);
+                } else {
+                    await getProject();
+                    await getTasks();
+                }
+            } else {
+                await getProject();
+                await getTasks();
+            }
         };
-        fetchProjectAndTasks();
-    }, [id]);
+
+        fetchData();
+    }, [id, store.projects]);
 
     // useEffect para refrescar el proyecto cuando se actualiza
     useEffect(() => {
@@ -55,7 +84,7 @@ export const ProjectFullView = () => {
             });
             const data = await res.json();
             if (!res.ok) {
-                console.error("Error fetching project:", data.msg || "Unknown error");
+                dispatch({ type: "error", payload: data.msg || "Something went wrong" });
                 return;
             }
             console.log("Project data:", data.project);
@@ -77,6 +106,7 @@ export const ProjectFullView = () => {
             const data = await res.json();
             if (!res.ok) {
                 console.error("Error fetching tasks:", data.msg || "Unknown error");
+                dispatch({ type: "error", payload: data.msg || "Something went wrong when getting tasks" });
                 return;
             }
             console.log("Tasks data:", data.tasks);
@@ -105,42 +135,48 @@ export const ProjectFullView = () => {
         setShowAddMembersModal(false);
     };
 
+    const handleUpdateTasks = (closeModal = true) => {
+        getTasks();
+        if (closeModal) {
+            setShowTaskModal(false);
+            setTaskOnEdit(false);
+            setTaskToEdit(null)
+        }
+    }
+    const handleEditTask = (task) => {
+        setTaskToEdit(task);
+        setTaskOnEdit(true);
+        setTimeout(() => {
+            setShowTaskModal(true);
+        }, 0);
+    };
+
     if (!project) {
         return <p className='text-center'>Loading project...</p>;
     }
+
+
 
     return (
         <div className="px-5 container app">
             <div className=" p-4 ">
                 <ProjectCardXL project={project} onEdit={handleEditProject}
                     onAddMembers={handleAddMembers} />
-
-                {tasks && tasks.length > 0 ? (
-                    <div className="mt-3 d-flex align-items-center justify-content-between">
-                        <div></div>
-                        <h3 className="mb-2 p-2">Tasks</h3>
-                        <Link to={`/projects/${project.id}/tasks/new`} className="btn btn-primary">
-                            +
-                        </Link>
-                    </div>
-                ) : (
-                    <div className="my-3 d-flex align-items-center justify-content-between">
-                        <div></div>
-                        <h3>No tasks available</h3>
-                        <Link to={`/projects/${project.id}/tasks/new`} className="btn btn-primary ">
-                            +
-                        </Link>
-                    </div>
-                )}
+                <div className="my-3 d-flex align-items-center justify-content-between">
+                    <div></div>
+                    {tasks && tasks.length > 0 ? (<h3 className="mb-2 p-2">Tasks</h3>) : (<h3>No tasks available</h3>)}
+                    <button className='btn btn-warning text-white' onClick={() => { setShowTaskModal(true) }}> add task </button>
+                </div>
                 {tasks && tasks.length > 0 && (
                     <div className="mt-3">
-                        {tasks.map((task) => (
+                        {tasks.map((task) =>
                             <TaskCard
                                 key={task.id}
                                 task={task}
+                                onEdit={() => handleEditTask(task)}
                                 userRole={getUserRole()}
                             />
-                        ))}
+                        )}
                     </div>
                 )}
             </div>
@@ -159,6 +195,15 @@ export const ProjectFullView = () => {
                 isOpen={showAddMembersModal}
                 onClose={() => setShowAddMembersModal(false)}
                 onUpdate={handleUpdateProject}
+            />
+            {/* Modal de añadir task */}
+            <AddEditTask
+                project={project}
+                isOpen={showTaskModal}
+                onEdit={taskOnEdit}
+                task={taskToEdit || null}
+                onClose={() => setShowTaskModal(false)}
+                onUpdate={handleUpdateTasks}
             />
 
         </div>
