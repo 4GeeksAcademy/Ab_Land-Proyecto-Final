@@ -16,9 +16,11 @@ export const ProjectFullView = () => {
     const [showEditModal, setShowEditModal] = useState(false);
     const [selectedProject, setSelectedProject] = useState(null);
     const [showAddMembersModal, setShowAddMembersModal] = useState(false);
-    const [showTaskModal, setShowTaskModal] = useState(false)
-    const [taskOnEdit, setTaskOnEdit] = useState(false)
-    const [taskToEdit, setTaskToEdit] = useState(null)
+    const [showTaskModal, setShowTaskModal] = useState(false);
+    const [taskOnEdit, setTaskOnEdit] = useState(false);
+    const [taskToEdit, setTaskToEdit] = useState(null);
+    const [projectVersion, setProjectVersion] = useState(0);
+
 
     // Determinar el rol del usuario en el proyecto
     const getUserRole = () => {
@@ -64,6 +66,13 @@ export const ProjectFullView = () => {
 
         fetchData();
     }, [id, store.projects]);
+
+    // useEffect para refrescar el proyecto cuando se actualiza
+    useEffect(() => {
+        if (projectVersion > 0) {
+            getProject();
+        }
+    }, [projectVersion]);
 
     const getProject = async () => {
         try {
@@ -119,14 +128,11 @@ export const ProjectFullView = () => {
         setShowAddMembersModal(true);
     };
 
-    // Función para actualizar la lista después de editar
-    const handleUpdateProject = (closeModal = true) => {
-
-        getProject();
-        if (closeModal) {
-            setShowEditModal(false);
-            setShowAddMembersModal(false);
-        }
+    // Función para actualizar el proyecto después de editar
+    const handleUpdateProject = () => {
+        setProjectVersion(prev => prev + 1); // Incrementar para disparar useEffect
+        setShowEditModal(false);
+        setShowAddMembersModal(false);
     };
 
     const handleUpdateTasks = (closeModal = true) => {
@@ -156,13 +162,11 @@ export const ProjectFullView = () => {
             <div className=" p-4 ">
                 <ProjectCardXL project={project} onEdit={handleEditProject}
                     onAddMembers={handleAddMembers} />
-
                 <div className="my-3 d-flex align-items-center justify-content-between">
                     <div></div>
                     {tasks && tasks.length > 0 ? (<h3 className="mb-2 p-2">Tasks</h3>) : (<h3>No tasks available</h3>)}
                     <button className='btn btn-warning text-white' onClick={() => { setShowTaskModal(true) }}> add task </button>
                 </div>
-
                 {tasks && tasks.length > 0 && (
                     <div className="mt-3">
                         {tasks.map((task) =>
@@ -172,8 +176,6 @@ export const ProjectFullView = () => {
                                 onEdit={() => handleEditTask(task)}
                                 userRole={getUserRole()}
                             />
-
-
                         )}
                     </div>
                 )}
@@ -192,7 +194,7 @@ export const ProjectFullView = () => {
                 project={selectedProject}
                 isOpen={showAddMembersModal}
                 onClose={() => setShowAddMembersModal(false)}
-                onUpdate={() => handleUpdateProject(false)}
+                onUpdate={handleUpdateProject}
             />
             {/* Modal de añadir task */}
             <AddEditTask

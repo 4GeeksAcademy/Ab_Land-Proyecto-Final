@@ -12,10 +12,11 @@ export const Register = () => {
     phone: "",
     profile_picture_url: "",
   });
+  const [imageFile, setImageFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState("");
   const navigate = useNavigate();
-  const {store, dispatch} = useGlobalReducer
+  const { store, dispatch } = useGlobalReducer
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -58,6 +59,29 @@ export const Register = () => {
     }
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      handleFileUpload(file);
+    } else {
+      setImageFile(null);
+      setFormData((prev) => ({
+        ...prev,
+        profile_picture_url: "",
+      }));
+    }
+  };
+
+  const handleUrlChange = (e) => {
+    setImageFile(null);
+    const url = e.target.value;
+    setFormData((prev) => ({
+      ...prev,
+      profile_picture_url: url,
+    }));
+  };
+
   const nextStep = () => {
     if (currentStep < 3) {
       setCurrentStep((prev) => prev + 1);
@@ -74,7 +98,7 @@ export const Register = () => {
 
   const handleSubmit = () => {
     if (uploading) {
-      dispatch({ type: "error", payload: "Please wait for the image upload to complete." });      
+      dispatch({ type: "error", payload: "Please wait for the image upload to complete." });
       return;
     }
     postRegister();
@@ -101,7 +125,7 @@ export const Register = () => {
       navigate("/login");
       console.log("Registration successful:", data);
     } catch (error) {
-      dispatch({ type: "error", payload: error || "Error al crear el usuario. Por favor, intenta de nuevo." });       
+      dispatch({ type: "error", payload: error || "Error al crear el usuario. Por favor, intenta de nuevo." });
     }
   };
 
@@ -195,30 +219,44 @@ export const Register = () => {
 
             {currentStep === 3 && (
               <div className="card  p-4 m-2 mt-4 w-50">
-                <label className="form-label">Profile Picture</label>
-                <div className="mb-3">
+                <label className="form-label">Profile Picture: URL or file (optional)</label>
+                <div className="d-flex gap-2 mb-3">
+                  <input
+                    type="url"
+                    className="form-control"
+                    placeholder="Enter image URL"
+                    value={imageFile ? "" : formData.profile_picture_url}
+                    onChange={handleUrlChange}
+                    disabled={!!imageFile}
+                  />
                   <input
                     type="file"
                     accept="image/*"
                     className="form-control"
-                    onChange={e => {
-                      if (e.target.files && e.target.files[0]) {
-                        handleFileUpload(e.target.files[0]);
-                      }
-                    }}
+                    onChange={handleImageChange}
+                    disabled={!!formData.profile_picture_url && !imageFile || uploading}
                   />
-                  {uploadMessage && (
-                    <div className="mt-2 text-muted">
-                      {uploading ? (
-                        <div
-                          className="spinner-border spinner-border-sm me-2"
-                          role="status"
-                        />
-                      ) : null}
-                      {uploadMessage}
-                    </div>
-                  )}
                 </div>
+                {uploadMessage && (
+                  <div className="mt-2 text-muted">
+                    {uploading ? (
+                      <div
+                        className="spinner-border spinner-border-sm me-2"
+                        role="status"
+                      />
+                    ) : null}
+                    {uploadMessage}
+                  </div>
+                )}
+                {formData.profile_picture_url && (
+                  <div className="mt-3 text-center">
+                    <img
+                      src={formData.profile_picture_url}
+                      alt="Vista previa"
+                      style={{ maxWidth: "100%", maxHeight: "200px", borderRadius: "8px" }}
+                    />
+                  </div>
+                )}
               </div>
             )}
 

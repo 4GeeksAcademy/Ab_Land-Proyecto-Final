@@ -41,12 +41,12 @@ app = Flask(__name__)
 app.url_map.strict_slashes = False
 
 # ====== CORS: HARDCODE YOUR FRONTEND URLS! ======
-# Añadir todas las URLs de frontend necesarias para CORS
 CORS(
     app,
-    resources={r"/*": {"origins": [os.getenv("FRONTEND_URL", "http://localhost:3000",)
-
-                                   ]}},
+    origins=[
+        "http://localhost:3000",
+        os.getenv("FRONTEND_URL")
+    ],
     supports_credentials=True
 )
 # =================================================
@@ -190,28 +190,6 @@ def verification_token():
     return jsonify({'msg': 'Token is valid'}), 200
 
 
-@app.route('/user-by-email', methods=['GET'])
-@jwt_required()
-def get_user():
-    email = request.args.get('email')
-    if not email or not email.strip():
-        return jsonify({'msg': 'Email parameter is required'}), 400
-
-    user = User.query.filter_by(email=email.strip()).first()
-
-    if user:
-        return jsonify({
-            'found': True,
-            'user': {
-                'id': user.id,
-                'email': user.email,
-                'full_name': user.full_name
-            }
-        }), 200
-    else:
-        return jsonify({'found': False}), 404
-
-
 @app.route('/restore-password', methods=['POST'])
 def restore_password():
     body = request.get_json(silent=True)
@@ -328,7 +306,28 @@ def update_profile():
 @jwt_required()
 def user_alias():
     if request.method == 'GET':
-        return get_profile()
+        # Si hay un parámetro email, buscar usuario por email
+        email = request.args.get('email')
+        if email:
+            if not email.strip():
+                return jsonify({'msg': 'Email parameter is required'}), 400
+
+            user = User.query.filter_by(email=email.strip()).first()
+
+            if user:
+                return jsonify({
+                    'found': True,
+                    'user': {
+                        'id': user.id,
+                        'email': user.email,
+                        'full_name': user.full_name
+                    }
+                }), 200
+            else:
+                return jsonify({'found': False}), 404
+        else:
+            # Si no hay parámetro email, devolver perfil del usuario autenticado
+            return get_profile()
     elif request.method == 'PUT':
         return update_profile()
 
@@ -536,6 +535,7 @@ def add_project_members(project_id):
     member_emails = body['members']
     if not isinstance(member_emails, list):
         return jsonify({'msg': 'Members must be a list of emails'}), 400
+
     added_members = []
 
     for email in member_emails:

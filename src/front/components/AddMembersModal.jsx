@@ -141,7 +141,7 @@ export function AddMembersModal({ project, isOpen, onClose, onUpdate }) {
                                     disabled={loading}
                                 />
                                 <button
-                                    className="btn btn-primary"
+                                    className="btn bg-blue-500"
                                     type="button"
                                     onClick={handleAddMember}
                                     disabled={!memberEmail.trim() || loading}

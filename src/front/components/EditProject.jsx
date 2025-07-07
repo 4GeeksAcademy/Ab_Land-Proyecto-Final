@@ -7,6 +7,7 @@ export function EditProject({ project, isOpen, onClose, onUpdate }) {
     const [description, setDescription] = useState("");
     const [dueDate, setDueDate] = useState("");
     const [projectPictureUrl, setProjectPictureUrl] = useState("");
+    const [urlInputValue, setUrlInputValue] = useState("");
     const [status, setStatus] = useState("in progress");
     const [imageFile, setImageFile] = useState(null);
     const [uploading, setUploading] = useState(false);
@@ -19,6 +20,7 @@ export function EditProject({ project, isOpen, onClose, onUpdate }) {
             setDescription(project.description || "");
             setDueDate(project.due_date ? project.due_date.split('T')[0] : "");
             setProjectPictureUrl(project.project_picture_url || "");
+            setUrlInputValue(""); // Siempre vacío al abrir el modal
             setStatus(project.status || "in progress");
         }
     }, [project]);
@@ -58,23 +60,32 @@ export function EditProject({ project, isOpen, onClose, onUpdate }) {
         const file = e.target.files[0];
         if (file) {
             setImageFile(file);
+            setUrlInputValue("");
             handleFileUpload(file);
         } else {
             setImageFile(null);
             setProjectPictureUrl("");
+            setUrlInputValue("");
         }
     };
 
     const handleUrlChange = (e) => {
-        setImageFile(null);
-        const url = e.target.value;
-        setProjectPictureUrl(url);
+        if (e.key === 'Enter') {
+            setImageFile(null);
+            const url = e.target.value;
+            setProjectPictureUrl(url);
+            setUrlInputValue(url);
+        }
+    };
+
+    const handleUrlInputChange = (e) => {
+        setUrlInputValue(e.target.value);
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
         setError(null);
-        
+
         if (uploading) {
             setError("Please wait for the image upload to complete.");
             return;
@@ -101,7 +112,7 @@ export function EditProject({ project, isOpen, onClose, onUpdate }) {
                     return;
                 }
                 window.alert("¡Proyecto actualizado exitosamente!");
-                onUpdate(data.project); // Callback para actualizar la lista
+                onUpdate(data.project); // Pasar el proyecto actualizado
                 onClose(); // Cerrar el modal
             })
             .catch(() => {
@@ -117,9 +128,9 @@ export function EditProject({ project, isOpen, onClose, onUpdate }) {
                 <div className="modal-content">
                     <div className="modal-header">
                         <h5 className="modal-title">Edit Project</h5>
-                        <button 
-                            type="button" 
-                            className="btn-close" 
+                        <button
+                            type="button"
+                            className="btn-close"
                             onClick={onClose}
                         ></button>
                     </div>
@@ -135,7 +146,7 @@ export function EditProject({ project, isOpen, onClose, onUpdate }) {
                                     required
                                 />
                             </div>
-                            
+
                             <div className="mb-3">
                                 <label className="form-label">Description</label>
                                 <textarea
@@ -180,8 +191,9 @@ export function EditProject({ project, isOpen, onClose, onUpdate }) {
                                         type="url"
                                         className="form-control"
                                         placeholder="Enter image URL"
-                                        value={imageFile ? "" : projectPictureUrl}
-                                        onChange={handleUrlChange}
+                                        value={urlInputValue}
+                                        onChange={handleUrlInputChange}
+                                        onKeyDown={handleUrlChange}
                                         disabled={!!imageFile}
                                     />
                                     <input
@@ -220,15 +232,15 @@ export function EditProject({ project, isOpen, onClose, onUpdate }) {
                         </form>
                     </div>
                     <div className="modal-footer">
-                        <button 
-                            type="button" 
-                            className="btn btn-secondary" 
+                        <button
+                            type="button"
+                            className="btn btn-secondary"
                             onClick={onClose}
                         >
                             Cancel
                         </button>
-                        <button 
-                            type="submit" 
+                        <button
+                            type="submit"
                             className="btn btn-primary"
                             onClick={handleSubmit}
                             disabled={uploading}
