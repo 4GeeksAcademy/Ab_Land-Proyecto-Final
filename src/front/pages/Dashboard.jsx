@@ -64,7 +64,7 @@ export default function Dashboard() {
     };
 
   const handleWelcomeModal = (projectsData) => {
-  if (projectsData && projectsData.admin && projectsData.admin.length > 0) {
+  if (projectsData && projectsData.admin && projectsData.admin.length == 0) {
     setShowModal(true);
   } else {
     setShowModal(false);
