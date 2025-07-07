@@ -111,6 +111,7 @@ export function EditProject({ project, isOpen, onClose, onUpdate }) {
                     setError((data && data.msg) || "An error occurred while updating the project.");
                     return;
                 }
+                dispatch({ type: "success", payload: "¡Proyecto actualizado exitosamente!" });
                 window.alert("¡Proyecto actualizado exitosamente!");
                 onUpdate(data.project); // Pasar el proyecto actualizado
                 onClose(); // Cerrar el modal
