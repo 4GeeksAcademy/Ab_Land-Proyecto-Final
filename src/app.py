@@ -44,7 +44,7 @@ app.url_map.strict_slashes = False
 # Añadir todas las URLs de frontend necesarias para CORS
 CORS(
     app,
-    resources={r"/*": {"origins": [ os.getenv("FRONTEND_URL", "http://localhost:3000")
+    resources={r"/*": {"origins": [ os.getenv("FRONTEND_URL", "http://localhost:3000",)
 
     ]}},
     supports_credentials=True
