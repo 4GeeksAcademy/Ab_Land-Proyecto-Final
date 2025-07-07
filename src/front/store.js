@@ -8,8 +8,20 @@ export const initialStore = () => {
     token: token || null,
     user: user ? JSON.parse(user) : null,
     projects: projects ? JSON.parse(projects) : null,
-    error: null, // so you can track errors in your store
-    profile_colors:["red","brown","orange","yellow","mint","green","aqua","blue","purple"]
+    error: null,
+    success:null,
+    profile_colors: [
+      "red",
+      "brown",
+      "orange",
+      "yellow",
+      "mint",
+      "green",
+      "aqua",
+      "blue",
+      "purple",
+    ],
+
   };
 };
 
@@ -46,6 +58,12 @@ export default function storeReducer(store, action = {}) {
       return {
         ...store,
         error: action.payload ? action.payload : null,
+      };
+
+    case "success":
+      return {
+        ...store,
+        success: action.payload ? action.payload : null,
       };
 
     default:
