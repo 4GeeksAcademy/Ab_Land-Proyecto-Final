@@ -5,6 +5,7 @@ import { useNavigate, Link } from "react-router-dom";
 export function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false)
   const { store, dispatch } = useGlobalReducer();
   const navigate = useNavigate();
 
@@ -34,7 +35,7 @@ export function Login() {
       dispatch({ type: "LOGIN_SUCCESS", payload: { user: data.user, token: data.access_token } });
       navigate("/dashboard");
     } catch (err) {
-      dispatch({ type: "error", payload: "Error de conexión con el servidor" });
+      dispatch({ type: "error", payload: err?.message || "Error de conexión con el servidor" });
     }
   };
 
@@ -51,14 +52,26 @@ export function Login() {
           required
           className="form-control mb-3"
         />
-        <input
-          type="password"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          placeholder="Contraseña"
-          required
-          className="form-control mb-3"
-        />
+        <div className="mb-3 position-relative">
+              
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                className="form-control"
+                onChange={e => setPassword(e.target.value)}
+                id="password"
+                required
+              />
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-secondary top-50 border-0 position-absolute end-0 translate-middle-y me-2"
+                style={{ zIndex: 2, }}
+                tabIndex={-1}
+                onClick={() => setShowPassword((v) => !v)}
+              >
+                {showPassword ? <i className="fa-regular fa-eye-slash"/> : <i className="fa-regular fa-eye"/>}
+              </button>
+            </div>
         <button
           type="submit"
           className="btn btn-primary"

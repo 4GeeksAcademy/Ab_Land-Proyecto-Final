@@ -6,11 +6,10 @@ import useGlobalReducer from "../hooks/useGlobalReducer";
 
 export const RestorePassword = () => {
   const [email, setEmail] = useState("");
-  const [mailSent, setMailSent] = useState(false);
-  const [passwordRestored, setPasswordRestored] = useState(false);
   const [passwordOne, setPasswordOne] = useState("");
   const [passwordTwo, setPasswordTwo] = useState("");
-  const [newPassword, setNewPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const { token } = useParams();
   const navigate = useNavigate();
   const { store, dispatch } = useGlobalReducer();
@@ -20,7 +19,7 @@ export const RestorePassword = () => {
       dispatch({ type: "error", payload: "Passwords do not match" });
       return false;
     } else {
-      setNewPassword(passwordOne);      
+      
       return true;
     }
   };
@@ -48,43 +47,67 @@ export const RestorePassword = () => {
       const data = await res.json();
 
       if (!res.ok) {
-        dispatch({ type: "error", payload: data.msg || "email not found, use a valid email" });
+        dispatch({
+          type: "error",
+          payload: data.msg || "email not found, use a valid email",
+        });
         return;
       }
-      setMailSent(true);
-
+      dispatch({
+        type: "success",
+        payload:
+          "A reset link has been sent to your email. Please check your inbox.",
+      });
     } catch (err) {
-      dispatch({ type: "error", payload: err || "Could not connect to backend." });
-
+      dispatch({
+        type: "error",
+        payload: err?.message  || "Could not connect to backend.",
+      });
     }
   };
 
-  const postNewPassword = async () => {
-
+  const postNewPassword = async () => {    
     try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/restore-password/${token}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ new_password: newPassword }),
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/restore-password/${token}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ new_password: passwordOne }),
+        }
+      );
 
       const data = await res.json();
 
       if (!res.ok) {
-        dispatch({ type: "error", payload: data.msg || "token not valid or expired" });
+        dispatch({
+          type: "error",
+          payload: data.msg || "token not valid or expired",
+        });
         return;
       }
-
-      setPasswordRestored(true);
+      dispatch({
+        type: "success",
+        payload:
+          "Your password has been successfully restored. You can now log in with your new password.",
+      });
+      setTimeout(() => {
+        navigate("/login");
+      }, 1000);
     } catch (err) {
-      dispatch({ type: "error", payload: err || "Could not connect to backend." });
+      dispatch({
+        type: "error",
+        payload: err?.message  || "Could not connect to backend.",
+      });
     }
-  }
+  };
 
   return (
     <div className="container app">
       <div className="card flex-center flex-column p-5 max-w-md mt-10">
-        <Link to="/login" className="me-auto"> ← Back</Link>
+        <Link to="/login" className="me-auto">          
+          ← Back
+        </Link>
 
         <h1 className="mb-4">EchoBoard Restore</h1>
         <p className="mb-4">
@@ -92,9 +115,8 @@ export const RestorePassword = () => {
         </p>
 
         <div className="divider"></div>
-        {!mailSent && !token && (
+        {!token && (
           <form className="w-25 text-center">
-
             <input
               type="email"
               className="form-control mb-3"
@@ -114,18 +136,6 @@ export const RestorePassword = () => {
             </button>
           </form>
         )}
-        {mailSent && (
-          <div
-            className="alert alert-success alert-dismissible fade show mt-3"
-            role="alert"
-          >
-            A reset link has been sent to your email. Please check your inbox.
-            <button
-              className="btn-close"
-              onClick={() => navigate("/login")}
-            ></button>
-          </div>
-        )}
 
         {token && (
           <form className="w-50 text-center">
@@ -133,54 +143,68 @@ export const RestorePassword = () => {
               <label htmlFor="new-password" className="form-label">
                 New Password
               </label>
-              <input
-                type="password"
-                value={passwordOne}
-                className="form-control"
-                onChange={(e) => setPasswordOne(e.target.value)}
-                id="new-password"
-                required
-              />
+              <div className="position-relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={passwordOne}
+                  className="form-control"
+                  onChange={(e) => setPasswordOne(e.target.value)}
+                  id="new-password"
+                  required
+                />
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-secondary border-0 position-absolute top-50 end-0 translate-middle-y me-2"
+                  style={{ zIndex: 2 }}
+                  tabIndex={-1}
+                  onClick={() => setShowPassword((v) => !v)}
+                >
+                  {showPassword ? (
+                    <i className="fa-regular fa-eye-slash" />
+                  ) : (
+                    <i className="fa-regular fa-eye" />
+                  )}
+                </button>
+              </div>
             </div>
             <div className="mb-3">
               <label htmlFor="confirm-password" className="form-label">
                 Confirm New Password
               </label>
-              <input
-                type="password"
-                value={passwordTwo}
-                className="form-control"
-                onChange={(e) => {
-                  setPasswordTwo(e.target.value);
-                }}
-                id="confirm-password"
-                required
-              />
+              <div className="position-relative">
+                <input
+                  type={showConfirm ? "text" : "password"}
+                  value={passwordTwo}
+                  className="form-control"
+                  onChange={(e) => setPasswordTwo(e.target.value)}
+                  id="confirm-password"
+                  required
+                />
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-secondary border-0 position-absolute top-50 end-0 translate-middle-y me-2"
+                  style={{ zIndex: 2 }}
+                  tabIndex={-1}
+                  onClick={() => setShowConfirm((v) => !v)}
+                >
+                  {showConfirm ? (
+                    <i className="fa-regular fa-eye-slash" />
+                  ) : (
+                    <i className="fa-regular fa-eye" />
+                  )}
+                </button>
+              </div>
             </div>
             <button
               type="submit"
-              className="btn btn-primary on"
+              className="btn btn-primary on mt-4"
               onClick={handleSaveNewPassword}
             >
               Save new Password
             </button>
           </form>
         )}
-        {passwordRestored && token && (
-          <div
-            className="alert alert-success alert-dismissible fade show mt-3"
-            role="alert"
-          >
-            Your password has been successfully restored. You can now log in
-            with your new password.
-            <button
-              className="btn-close"
-              onClick={() => navigate("/login")}
-            ></button>
-          </div>
-        )}
       </div>
     </div>
-
   );
 };

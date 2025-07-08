@@ -3,7 +3,7 @@ import useGlobalReducer from "../hooks/useGlobalReducer";
 import { useNavigate } from "react-router-dom";
 
 export function NewProject() {
-    const { store } = useGlobalReducer();
+    const { store, dispatch } = useGlobalReducer();
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [dueDate, setDueDate] = useState("");
@@ -13,6 +13,8 @@ export function NewProject() {
     const [uploadMessage, setUploadMessage] = useState("");
     const [error, setError] = useState(null);
     const [status, setStatus] = useState("in progress");
+    const [checkEmail,setCheckEmail] = useState("")
+    const [checkingEmail, setCheckingEmail] = useState(false);
     const [members, setMembers] = useState([]);
     const [memberEmail, setMemberEmail] = useState("");
     const navigate = useNavigate();
@@ -74,61 +76,77 @@ export function NewProject() {
         e.preventDefault();
         setError(null);
         if (uploading) {
-            setError("Please wait for the image upload to complete.");
+            dispatch({ type: "error", payload:"Please wait for the image upload to complete."});
             return;
         }
-        fetch(`${import.meta.env.VITE_BACKEND_URL}/project`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + store.token,
-            },
-            body: JSON.stringify({
-                title,
-                description,
-                due_date: dueDate,
-                project_picture_url: projectPictureUrl,
-                status,
-                members: members
-            }),
-        })
-            .then(async (res) => {
-                const data = await res.json().catch(() => ({}));
-                if (!res.ok) {
-                    setError((data && data.msg) || "An error occurred while creating the project.");
-                    return;
-                }
+        postNewProject()
+    };
+
+    const postNewProject = async () => {
+        try {
+            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/project`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + store.token,
+                },
+                body: JSON.stringify({
+                    title,
+                    description,
+                    due_date: dueDate,
+                    project_picture_url: projectPictureUrl ? projectPictureUrl : null,
+                    status,
+                    members: members
+                })
+            });
+            const data = await res.json();
+
+            if (res.status === 401 || res.status === 422) {
+                dispatch({ type: "LOGOUT" });
+                dispatch({ type: "error", payload: "Session expired. Please log in again." });
+                navigate("/login");
+                return;
+            }
+            if (!res.ok) {
+                dispatch({ type: "error", payload: data.msg || "An error occurred while creating the project." });
+                return;
+            } else {
 
                 // Preparar mensaje de éxito
                 let successMessage = "¡Proyecto guardado exitosamente!";
+
 
                 // Si hay información de miembros, mostrar warnings si los hay
                 if (data.members_info && data.members_info.errors && data.members_info.errors.length > 0) {
                     successMessage += `\n\nWarnings:\n${data.members_info.errors.join('\n')}`;
                 }
-
-                window.alert(successMessage);
+                dispatch({ type: "reload/delete projects" });
+                dispatch({ type: "success", payload: successMessage, });
                 navigate("/dashboard");
-            })
-            .catch(() => {
-                setError("Connection error with the server.");
-            });
-    };    const handleAddMember = async () => {
+            }
+        } catch (err) {
+            dispatch({ type: "error", payload: err?.message  || "Could not connect to backend." });
+        }
+    }
+
+
+    const handleAddMember = async () => {
         const email = memberEmail.trim();
+        setCheckingEmail(true);
         if (!email) return;
-        
+
         if (members.includes(email)) {
-            setError("This member is already added.");
+            setCheckEmail("This member is already added.");
             return;
         }
 
         const emailRegex = /\S+@\S/;
         if (!emailRegex.test(email)) {
-            setError("Please enter a valid email address.");
+            dispatch({ type: "error", payload:"Please enter a valid email address."});
             return;
         }
 
-        setError("Checking user...");
+        setCheckEmail("Checking user...");
 
         try {
             // Verificar si el usuario existe en el backend
@@ -145,15 +163,18 @@ export function NewProject() {
                     // Usuario existe, agregarlo a la lista
                     setMembers([...members, email]);
                     setMemberEmail("");
-                    setError("");
+                    setCheckEmail("");
                 } else {
-                    setError(`User with email "${email}" not found in the system.`);
+                    throw new Error(`User with email "${email}" not found in the system.`);
                 }
             } else {
-                setError(`User with email "${email}" not found in the system.`);
+               dispatch({ type: "error", payload:`User with email "${email}" not found in the system.`});
             }
         } catch (err) {
-            setError("Error checking user. Please try again.");
+            dispatch({ type: "error", payload: err?.message || "Could not connect to backend." });
+        } finally {
+            setCheckingEmail(false);
+            setCheckEmail("")
         }
     };
 
@@ -191,9 +212,8 @@ export function NewProject() {
                                 className="form-control"
                                 value={description}
                                 placeholder="Describe your project"
-                                onChange={e => setDescription(e.target.value)}
-                                required
-                                rows={8}
+                                onChange={e => setDescription(e.target.value)}                                
+                                rows={5}
                             />
                         </div>
                         <div className="col-6">
@@ -207,7 +227,7 @@ export function NewProject() {
                             />
                         </div>
                         <div className="col-6">
-                            <label htmlFor="validationCustom04" className="form-label textdark">Status</label>
+                            <label htmlFor="validationCustom04" className="form-label text-dark">Status</label>
                             <select
                                 className="form-select"
                                 id="validationCustom04"
@@ -241,15 +261,16 @@ export function NewProject() {
                                     onChange={handleImageChange}
                                     disabled={!!projectPictureUrl && !imageFile || uploading}
                                 />
-                                {uploadMessage && (
-                                    <div className="mt-2 text-muted">
-                                        {uploading ? (
-                                            <div className="spinner-border spinner-border-sm me-2" role="status" />
-                                        ) : null}
-                                        {uploadMessage}
-                                    </div>
-                                )}
+
                             </div>
+                            {uploadMessage && (
+                                <div className="mt-2 text-muted text-end">
+                                    {uploading ? (
+                                        <div className="spinner-border spinner-border-sm me-2 " role="status" />
+                                    ) : null}
+                                    {uploadMessage}
+                                </div>
+                            )}
                             {(projectPictureUrl) && (
                                 <div className="mt-2 text-center">
                                     <img
@@ -280,6 +301,14 @@ export function NewProject() {
                                     Add
                                 </button>
                             </div>
+                            {checkEmail && (
+                                <div className="mt-2 text-muted">
+                                    {uploading ? (
+                                        <div className="spinner-border spinner-border-sm me-2 " role="status" />
+                                    ) : null}
+                                    {checkEmail}
+                                </div>
+                            )}
                             <div>
                                 {members.map((member, index) => (
                                     <div key={index} className="badge bg-blue-500 text-wrap me-2 mb-2">
@@ -294,17 +323,9 @@ export function NewProject() {
                                 ))}
                             </div>
                         </div>
-                        <div className="col-6">
+                        <div className="col text-end">
                             <button className="btn btn-primary" type="submit">Create new Project</button>
                         </div>
-
-                        {error && (
-                            <div className="col-12">
-                                <div className="alert alert-danger" role="alert">
-                                    {error}
-                                </div>
-                            </div>
-                        )}
                     </form>
                 </div>
             </div>
