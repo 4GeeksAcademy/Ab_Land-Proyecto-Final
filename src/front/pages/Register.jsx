@@ -14,9 +14,10 @@ export const Register = () => {
   });
   const [imageFile, setImageFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false)
   const [uploadMessage, setUploadMessage] = useState("");
   const navigate = useNavigate();
-  const { store, dispatch } = useGlobalReducer
+  const { store, dispatch } = useGlobalReducer;
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -98,7 +99,10 @@ export const Register = () => {
 
   const handleSubmit = () => {
     if (uploading) {
-      dispatch({ type: "error", payload: "Please wait for the image upload to complete." });
+      dispatch({
+        type: "error",
+        payload: "Please wait for the image upload to complete.",
+      });
       return;
     }
     postRegister();
@@ -122,10 +126,15 @@ export const Register = () => {
       if (!response.ok) throw new Error("Network response was not ok");
       const data = await response.json();
       window.alert("¡Usuario creado exitosamente!");
+      dispatch({ type: "success", payload: "¡Usuario creado exitosamente!" });
       navigate("/login");
       console.log("Registration successful:", data);
     } catch (error) {
-      dispatch({ type: "error", payload: error || "Error al crear el usuario. Por favor, intenta de nuevo." });
+      dispatch({
+        type: "error",
+        payload:
+          error?.message  || "Error al crear el usuario. Por favor, intenta de nuevo.",
+      });
     }
   };
 
@@ -144,9 +153,7 @@ export const Register = () => {
             <div className="mb-4">
               <span>{currentStep >= 1 ? "✅" : "❌"} Step 1: Basic Info</span>
               <br />
-              <span>
-                {currentStep >= 2 ? "✅" : "❌"} Step 2: Contact Info
-              </span>
+              <span>{currentStep >= 2 ? "✅" : "❌"} Step 2: Contact Info</span>
               <br />
               <span>
                 {currentStep === 3 ? "✅" : "❌"} Step 3: Profile Picture
@@ -169,14 +176,29 @@ export const Register = () => {
                 </div>
                 <div className="mb-3">
                   <label className="form-label">Password</label>
-                  <input
-                    type="password"
-                    name="password"
-                    className="form-control"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                  />
+                  <div className="position-relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      value={formData.password}
+                      className="form-control"
+                      onChange={handleChange}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-secondary border-0 position-absolute top-50 end-0 translate-middle-y me-2"
+                      style={{ zIndex: 2 }}
+                      tabIndex={-1}
+                      onClick={() => setShowPassword((v) => !v)}
+                    >
+                      {showPassword ? (
+                        <i className="fa-regular fa-eye-slash" />
+                      ) : (
+                        <i className="fa-regular fa-eye" />
+                      )}
+                    </button>
+                  </div>
                 </div>
               </form>
             )}
@@ -219,7 +241,9 @@ export const Register = () => {
 
             {currentStep === 3 && (
               <div className="card  p-4 m-2 mt-4 w-50">
-                <label className="form-label">Profile Picture: URL or file (optional)</label>
+                <label className="form-label">
+                  Profile Picture: URL or file (optional)
+                </label>
                 <div className="d-flex gap-2 mb-3">
                   <input
                     type="url"
@@ -234,7 +258,10 @@ export const Register = () => {
                     accept="image/*"
                     className="form-control"
                     onChange={handleImageChange}
-                    disabled={!!formData.profile_picture_url && !imageFile || uploading}
+                    disabled={
+                      (!!formData.profile_picture_url && !imageFile) ||
+                      uploading
+                    }
                   />
                 </div>
                 {uploadMessage && (
@@ -253,7 +280,11 @@ export const Register = () => {
                     <img
                       src={formData.profile_picture_url}
                       alt="Vista previa"
-                      style={{ maxWidth: "100%", maxHeight: "200px", borderRadius: "8px" }}
+                      style={{
+                        maxWidth: "100%",
+                        maxHeight: "200px",
+                        borderRadius: "8px",
+                      }}
                     />
                   </div>
                 )}
@@ -285,4 +316,3 @@ export const Register = () => {
     </div>
   );
 };
-

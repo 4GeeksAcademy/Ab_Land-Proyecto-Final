@@ -9,7 +9,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  
+  const [projectEmpty, setProjectEmpty] = useState(false)
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -17,59 +18,64 @@ export default function Dashboard() {
       navigate("/login");
       return;
     }
-    if (!store.user_projects){
+    if (!store.projects) {
       fetchProjects()
     }
-    setProjects(store.user_projects)    
-    handleWelcomeModal(projects)
-    
-  }, [store.token]);
+    setProjects(store.projects)
+    setTimeout(() => {
+        setLoading(false)
+      }, 1000);
+    handleWelcomeModal()
+
+  }, [store.token, projects]);
 
   const fetchProjects = async () => {
-      setLoading(true);
-      dispatch({ type: "error", payload: null });
+    setLoading(true);
+    dispatch({ type: "error", payload: null });
 
-      try {
-        const res = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/projects`,
-          {
-            headers: {
-              Authorization: "Bearer " + store.token,
-              "Content-Type": "application/json"
-            }
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/projects`,
+        {
+          headers: {
+            Authorization: "Bearer " + store.token,
+            "Content-Type": "application/json"
           }
-        );
-        const data = await res.json();
-
-        if (res.status === 401 || res.status === 422) {
-          dispatch({ type: "LOGOUT" });
-          dispatch({ type: "error", payload: "Session expired. Please log in again." });
-          navigate("/login");
-          return;
         }
+      );
+      const data = await res.json();
 
-        if (!res.ok) {
-          dispatch({ type: "error", payload: data.msg || "Error fetching projects." });
-          setProjects(null);
-        } else {
-          setProjects(data.user_projects);
-          dispatch({ type: "projects", payload: data.user_projects });
-          
-        }
-      } catch (err) {
-        dispatch({ type: "error", payload: "Could not connect to backend." });
-      } finally {
-        setLoading(false);
+      if (res.status === 401 || res.status === 422) {
+        dispatch({ type: "LOGOUT" });
+        dispatch({ type: "error", payload: "Session expired. Please log in again." });
+        navigate("/login");
+        return;
       }
-    };
 
-  const handleWelcomeModal = (projectsData) => {
-  if (projectsData && projectsData.admin && projectsData.admin.length == 0) {
-    setShowModal(true);
-  } else {
-    setShowModal(false);
-  }
-};
+      if (!res.ok) {
+        dispatch({ type: "error", payload: data.msg || "Error fetching projects." });
+        setProjects(null);
+      } else {
+        setProjects(data.user_projects);
+        dispatch({ type: "projects", payload: data.user_projects });
+
+      }
+    } catch (err) {
+      dispatch({ type: "error", payload: err?.message || "Could not connect to backend." });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleWelcomeModal = () => {
+    if (projects &&
+      projects.admin && projects.admin.length == 0 &&
+      projects.member && projects.member.length == 0
+    ) {
+      setShowModal(true);
+      setProjectEmpty(true)
+    }
+  };
 
   if (!store.token) {
     return <p>Redirecting to login...</p>;
@@ -113,14 +119,14 @@ export default function Dashboard() {
               {store.user.full_name ? store.user.full_name[0] : "?"}
             </span>
           )}
-          Welcome, <strong>{store.user.full_name || store.user.email}</strong>! 👋
+          Welcome,&nbsp;<strong className="text-capitalize">{` ${store.user.full_name || store.user.email}`}</strong>! 👋
           <button type="button" className="btn-close mt-2" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
       )}
 
       {loading && <p>Loading projects...</p>}
 
-      {projects ? (
+      {!projectEmpty && projects ? (
         <div>
           <h4>As admin:</h4>
           <ul>
@@ -149,14 +155,14 @@ export default function Dashboard() {
             }
           </ul>
         </div>
-      ) : !loading && <div>No projects found.</div>}
-      
+      ) : !loading && projectEmpty && <div>No projects found.</div>}
+
       {/* Modal no project wellcome */}
-                  <WelcomeModal                     
-                      isOpen={showModal}
-                      onClose={() => setShowModal(false)}
-                      
-                  />
+      <WelcomeModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+
+      />
     </div>
   );
 }

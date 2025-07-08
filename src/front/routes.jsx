@@ -36,32 +36,24 @@ export const router = createBrowserRouter(
       <Route path="/register" element={<Register />} />
       <Route path="/restore-password" element={<RestorePassword />} />
       <Route path="/restore-password/:token" element={<RestorePassword />} />
-      <Route path="/newproject" element={<NewProject />} />
+      
 
       {/* Private routes */}
       <Route
         path="/dashboard"
-        element={
-          <PrivateRoute>
-            <Dashboard />
-          </PrivateRoute>
-        }
+        element={<PrivateRoute><Dashboard /></PrivateRoute>}
+      />
+      <Route 
+        path="/newproject"
+        element={<PrivateRoute><NewProject /></PrivateRoute>} 
       />
       <Route
         path="/project/:id"
-        element={
-          <PrivateRoute>
-            <ProjectFullView />
-          </PrivateRoute>
-        }
+        element={<PrivateRoute><ProjectFullView /></PrivateRoute> }
       />
       <Route
         path="/profile/:id"
-        element={
-          <PrivateRoute>
-            <Profile />
-          </PrivateRoute>
-        }
+        element={<PrivateRoute><Profile/></PrivateRoute>}
       />
     </Route>
   )

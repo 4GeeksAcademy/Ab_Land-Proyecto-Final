@@ -40,10 +40,12 @@ export default function storeReducer(store, action = {}) {
     case "LOGOUT":
       localStorage.removeItem("token");
       localStorage.removeItem("user");
+      localStorage.removeItem("projects");
       return {
         ...store,
         token: null,
         user: null,
+        projects:null,
         error: null,
       };
     case "projects":
@@ -53,7 +55,12 @@ export default function storeReducer(store, action = {}) {
         projects: action.payload,
         error: null,
       };
-
+    case "reload/delete projects":
+      localStorage.removeItem("projects");
+      return {
+        ...store,
+        projects: null,
+      };
     case "error":
       return {
         ...store,
