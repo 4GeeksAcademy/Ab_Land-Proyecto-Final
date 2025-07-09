@@ -24,8 +24,6 @@ export const ProjectFullView = () => {
     const [tab, setTab] = useState("overview");
     const [userRole, setUserRole] = useState("member")
 
-
-    
     const filterProjectById = (projectId) => {
         const roles = Object.keys(store.projects);
 
@@ -33,7 +31,6 @@ export const ProjectFullView = () => {
             const project = store.projects[role].find(project => project.id === projectId);
             if (project) return project;
         }
-
         return null;
     };
 
@@ -61,14 +58,11 @@ export const ProjectFullView = () => {
                 await getProject();
                 await getTasks();
             }
-
         };
-
         fetchData();
-
     }, [id, store.projects]);
 
-    // useEffect para refrescar el proyecto cuando se actualiza
+    // Refetch project after updates
     useEffect(() => {
         if (projectVersion > 0) {
             getProject();
@@ -88,8 +82,6 @@ export const ProjectFullView = () => {
                 dispatch({ type: "error", payload: data.msg || "Something went wrong" });
                 return;
             }
-
-
             setProject(data.project);
         } catch (error) {
             dispatch({ type: "error", payload: "Could not connect to backend." });
@@ -115,21 +107,21 @@ export const ProjectFullView = () => {
         }
     };
 
-    // Función para abrir el modal de edición
+    // Edit modal
     const handleEditProject = (project) => {
         setSelectedProject(project);
         setShowEditModal(true);
     };
 
-    // Función para abrir el modal de añadir miembros
+    // Add members modal
     const handleAddMembers = (project) => {
         setSelectedProject(project);
         setShowAddMembersModal(true);
     };
 
-    // Función para actualizar el proyecto después de editar
+    // Refresh after edit/add
     const handleUpdateProject = () => {
-        setProjectVersion(prev => prev + 1); // Incrementar para disparar useEffect
+        setProjectVersion(prev => prev + 1);
         setShowEditModal(false);
         setShowAddMembersModal(false);
     };
@@ -150,11 +142,32 @@ export const ProjectFullView = () => {
         }, 0);
     };
 
+    // --- Remove Member Handler ---
+    const handleRemoveMember = async (memberId) => {
+        if (!window.confirm("Are you sure you want to remove this member?")) return;
+        try {
+            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/project/${project.id}/member/${memberId}`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + (store.token || localStorage.getItem("token")),
+                },
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                dispatch({ type: "error", payload: data.msg || "Failed to remove member" });
+                return;
+            }
+            // Re-fetch project to update member list
+            getProject();
+        } catch (error) {
+            dispatch({ type: "error", payload: "Could not remove member" });
+        }
+    };
+
     if (!project) {
         return <p className='text-center'>Loading project...</p>;
     }
-
-
 
     return (
         <div className="px-5 container app">
@@ -212,10 +225,13 @@ export const ProjectFullView = () => {
                         <div className="mt-3">
                             {project.members.map((member) =>
                                 <MemberCard
+                                    key={member.id}
                                     member={member}
                                     memberRole={member.id == project.admin_id ? "admin" : "member"}
                                     userRole={userRole}
-                                    onUpdate={handleUpdateProject}
+                                    projectId={project.id}
+                                    token={store.token || localStorage.getItem("token")}
+                                    onMemberRemoved={handleRemoveMember}
                                 />
                             )}
                         </div>
@@ -251,3 +267,4 @@ export const ProjectFullView = () => {
         </div>
     )
 }
+
