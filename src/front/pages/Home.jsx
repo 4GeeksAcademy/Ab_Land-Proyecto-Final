@@ -55,7 +55,7 @@ export const Home = () => {
       </svg>
 
       {/* How It Works Section */}
-      <div className="curved-div text-dark">
+      <div className="curved-div text-dark mb-5">
         <div className="container-fluid text-center mt-5">
           <div className="mb-5">
             <h3 id="howitworks"><strong>How It Works</strong></h3>
@@ -81,19 +81,19 @@ export const Home = () => {
       </div>
 
       {/* Our Team Section */}
-      <div className="container text-center home-b">
+      <div className="container text-center mb-5">
         <h3 className="mb-4" id="ourteam"><strong>Our Team</strong></h3>
         <div className="row justify-content-center pt-3 g-2 px-5">
           {[
             { name: "Luna", github: "https://github.com/LunaB28" },
             { name: "Roberta", github: "https://github.com/robertaval" },
-            { name: "Abraham", github: "https://github.com/Ablandaeta" }
+            { name: "Abraham", github: "https://github.com/Ablandaeta", picURL:"https://res.cloudinary.com/dvawhw99g/image/upload/v1751981162/ta2nbrpkqiqytjjodfen.png" }
           ].map((member, idx) => (
             <div key={idx} className="col-12 col-md-auto">
               <div className="border-dash rounded p-2 m-1 teamcardHW flex-center flex-column">
                 <div className="rounded-circle mb-5 mt-4 flex-center portrait" style={{ width: '150px' }}>
                   <img className='img-cover'
-                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                    src={member.picURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(
                       member.name
                     )}&background=random`}
                     alt={`${member.name}'s portrait`}

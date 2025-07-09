@@ -332,8 +332,10 @@ body {
 }
 .curved-div {
   width: 100%;
-  height: 130vh;
+  min-height: 60vh;
+  /* height: 130vh; because no app pic */
   padding-top: 5%;
+  padding-bottom: 5%;
   background: white;
   clip-path: url(#curvedClip);
 }
@@ -364,7 +366,7 @@ body {
   bottom: -10vh;
 }
 .home-b {
-  margin-top: 15vh;
+  /* margin-top: 15vh; because no app pic */
   margin-bottom: 10vh;
 }
 .border-dash {
