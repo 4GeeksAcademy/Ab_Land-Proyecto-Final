@@ -10,6 +10,7 @@ export default function Dashboard() {
   const [projects, setProjects] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [projectEmpty, setProjectEmpty] = useState(false)
+  const [tab, setTab] = useState("admin")
 
   const navigate = useNavigate();
 
@@ -23,8 +24,8 @@ export default function Dashboard() {
     }
     setProjects(store.projects)
     setTimeout(() => {
-        setLoading(false)
-      }, 1000);
+      setLoading(false)
+    }, 1000);
     handleWelcomeModal()
 
   }, [store.token, projects]);
@@ -83,9 +84,6 @@ export default function Dashboard() {
 
   return (
     <div className="container app ">
-      <h2>User Dashboard: Your Projects</h2>
-      <Link to="/newProject" className="btn btn-primary mb-3">Create New Project</Link>
-
       {/* Welcome message with profile picture */}
       {store.user && (
         <div className="alert alert-info alert-dismissible mb-4 d-flex align-items-center " role="alert">
@@ -124,37 +122,79 @@ export default function Dashboard() {
         </div>
       )}
 
-      {loading && <p>Loading projects...</p>}
+      <div className="mb-4 bg-white text-dark rounded p-2 pt-3 ">
+
+        <h1 className="fw-bold d-flex align-items-center ms-2">
+          <img
+            src={store.user.profile_picture_url}
+            alt="Profile"
+            style={{
+              width: "70px",
+              height: "70px",
+              borderRadius: "50%",
+              objectFit: "cover",
+              border: "3px solid var(--blue-500)",
+              marginRight: "1.5rem",
+            }}
+          />
+          <span className="text-dark">
+            {store.user.full_name}{" "}
+            <span title="Verified" className="text-primary" style={{ fontSize: 28 }}>
+              <i className="fa-solid fa-circle-check"></i>
+            </span>
+          </span>
+        </h1>
+        <div className="d-flex gap-3 mt-3 pt-1 border-top align-items-center">
+          <button
+            className={`btn px-2 ${tab === "admin" ? "border-bottom border-2 border-primary" : ""}`}
+            style={{ color: tab === "admin" ? "#0D8ABC" : "#555", fontWeight: "bold" }}
+            onClick={() => setTab("admin")}
+          >
+            Admin
+          </button>
+          <button
+            className={`btn px-2 ${tab === "member" ? "border-bottom border-2 border-primary" : ""}`}
+            style={{ color: tab === "member" ? "#0D8ABC" : "#555", fontWeight: "bold" }}
+            onClick={() => setTab("member")}
+          >
+            Member
+          </button>
+
+          <Link to="/newProject" className="btn btn-primary ms-auto">Create New Project</Link>
+
+        </div>
+      </div>
+
+      {loading && <div class="flex-center mb-4" >
+        <span class="spinner-border spinner-border me-4" aria-hidden="true"></span>
+        <span role="status">Loading...</span>
+      </div>}
 
       {!projectEmpty && projects ? (
-        <div>
-          <h4>As admin:</h4>
-          <ul>
-            {(projects.admin && projects.admin.length > 0)
-              ? projects.admin.map(proj => (
-                <Link to={`/project/${proj.id}`} key={proj.id}>
-                  <ProjectCard
-                    project={proj}
-                  />
-                </Link>
-              ))
-              : <li>You are not an admin of any project.</li>
-            }
-          </ul>
-          <h4>As member:</h4>
-          <ul>
-            {(projects.member && projects.member.length > 0)
-              ? projects.member.map(proj => (
-                <Link to={`/project/${proj.id}`} key={proj.id}>
-                  <ProjectCard
-                    project={proj}
-                  />
-                </Link>
-              ))
-              : <li>You are not a member of any project.</li>
-            }
-          </ul>
-        </div>
+        <>
+          {tab == "admin" && <>{(projects.admin && projects.admin.length > 0)
+            ? projects.admin.map(proj => (
+              <Link to={`/project/${proj.id}`} key={proj.id}>
+                <ProjectCard
+                  project={proj}
+                />
+              </Link>
+            ))
+            : <>{!loading && <h4 className="text-center">You are not a admin of any project.</h4>}</>
+          }</>}
+          {tab == "member" && <> {(projects.member && projects.member.length > 0)
+            ? projects.member.map(proj => (
+              <Link to={`/project/${proj.id}`} key={proj.id}>
+                <ProjectCard
+                  project={proj}
+                />
+              </Link>
+            ))
+            : <>{!loading && <h4 className="text-center">You are not a member of any project.</h4>}</>
+          }</>}
+
+        </>
+
       ) : !loading && projectEmpty && <div>No projects found.</div>}
 
       {/* Modal no project wellcome */}
@@ -166,9 +206,3 @@ export default function Dashboard() {
     </div>
   );
 }
-
-
-
-
-
-

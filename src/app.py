@@ -62,7 +62,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # JWT CONFIG
 app.config['JWT_SECRET_KEY'] = os.getenv("JWT_SECRET_KEY", "super-secret-key")
-
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(hours=3)
 # MAIL CONFIG
 app.config.update(
     MAIL_SERVER='smtp.gmail.com',
@@ -742,6 +742,8 @@ def create_task(project_id):
                           assigned_user.id in [member.member_id for member in project_members])
         if not valid_assignee:
             return jsonify({'msg': 'Cannot assign task to user who is not part of the project'}), 400
+    else:
+        assigned_to_id = None    
 
     # Validar status de la tarea
     status_value = body.get('status', 'in progress')
@@ -766,6 +768,7 @@ def create_task(project_id):
             'task': new_task.serialize()
         }), 201
     except Exception as e:
+        print(e)
         db.session.rollback()
         return jsonify({'msg': 'Error creating task'}), 500
 
