@@ -45,7 +45,6 @@ export function AddEditTask({ project, isOpen, onClose, onUpdate, task, onEdit }
                 e.target.value.toLowerCase() : e.target.value,
         }));
     };
-    console.log(`task: ${task}`);
 
     const postTask = () => {
         fetch(`${import.meta.env.VITE_BACKEND_URL}/api/project/${project.id}/task`, {

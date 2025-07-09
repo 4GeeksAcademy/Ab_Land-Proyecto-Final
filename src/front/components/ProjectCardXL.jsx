@@ -67,8 +67,9 @@ export const ProjectCardXL = ({ project, onEdit, onAddMembers }) => {
                     <p className="text-muted mb-3" >
                         {description || 'No description provided.'}
                     </p>
-                    <div className="row align-items-center mb-2">
-                        <div className="col me-3 mb-3 p-1 rounded border-dashed text-center">
+                    <div className="row align-items-center mb-2 ps-3">
+                        <div className="col me-3 mb-3 p-1 rounded border-dashed text-center"
+                        style={{minWidth:"70px"}}>
                             <small className="mb-0 text-muted">
                                 <strong>{formattedDate}</strong>
                             </small> <br />

@@ -56,7 +56,7 @@ export const TaskCard = ({ task, userRole, onEdit, onUpdate }) => {
     if (minutes > 0) {
       return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
     }
-    return `${seconds} second${seconds > 1 ? 's' : ''} ago`;
+    return `${seconds > 1? seconds : 1} second${seconds > 1 ? 's' : ''} ago`;
   };
 
   useEffect(() => {
@@ -69,7 +69,7 @@ export const TaskCard = ({ task, userRole, onEdit, onUpdate }) => {
 
   const deleteTask = () => {
         fetch(`${import.meta.env.VITE_BACKEND_URL}/api/project/${project_id}/task/${id}`, {
-            method: "delete",
+            method: "DELETE",
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": "Bearer " + store.token,
@@ -82,6 +82,7 @@ export const TaskCard = ({ task, userRole, onEdit, onUpdate }) => {
                     return;
                 }
                 onUpdate(data); // Callback para actualizar la lista?
+                dispatch({type:"success",payload:data.msg|| "Task Deleted"})
             })
             .catch((err) => {
                 dispatch({ type: "error", payload: err?.message || "Connection error with the server." });

@@ -336,11 +336,13 @@ export function Profile() {
 
         </form>
       )}
+      {console.log(projects)
+      }
 
       {tab === "projects" && (
         <div className="card shadow p-4 border-0">
           <h5 className="mb-4">Projects </h5>
-          {(projects.admin.length && projects.member.length > 0)
+          {(projects.admin.length || projects.member.length > 0)
             ? (<>
               {projects.admin.map(proj => (
                 <Link to={`/project/${proj.id}`} key={proj.id + 1}>
