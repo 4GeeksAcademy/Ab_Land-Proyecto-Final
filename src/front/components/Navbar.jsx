@@ -190,7 +190,7 @@ export const Navbar = () => {
                   cursor: "pointer",
                   transition: "border 0.1s",
                 }}
-                onClick={() =>
+                onDoubleClick={() =>
                   navigate(`/profile/${store.user && store.user.id}`)
                 }
                 title="Go to profile"
