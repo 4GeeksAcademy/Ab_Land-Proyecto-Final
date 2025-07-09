@@ -67,8 +67,8 @@ export const ProjectCardXL = ({ project, onEdit, onAddMembers }) => {
                     <p className="text-muted mb-3" >
                         {description || 'No description provided.'}
                     </p>
-                    <div className="d-flex align-items-center mb-2">
-                        <div className="me-3 p-1 rounded border-dashed text-center">
+                    <div className="row align-items-center mb-2">
+                        <div className="col me-3 mb-3 p-1 rounded border-dashed text-center">
                             <small className="mb-0 text-muted">
                                 <strong>{formattedDate}</strong>
                             </small> <br />
@@ -82,37 +82,39 @@ export const ProjectCardXL = ({ project, onEdit, onAddMembers }) => {
                             <small className="mb-0 text-muted">Budget</small>
 
                         </div> */}
-                        <div className="mx-2">
-                            <img
-                                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
-                                    admin_full_name
-                                )}&background=random`}
-                                alt={admin_full_name}
-                                className="rounded-circle"
-                                width="32"
-                                height="32"
-                            />
-                        </div>
-                        {members.length > 0 &&
-                            members.slice(0, 8).map((member, idx) => (
-                                <div className="me-2" key={idx}>
+                        <div className="col d-flex ">
+                            <div className="mx-2">
+                                <img
+                                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                                        admin_full_name
+                                    )}&background=random`}
+                                    alt={admin_full_name}
+                                    className="rounded-circle"
+                                    width="32"
+                                    height="32"
+                                />
+                            </div>
+                            {members.length > 0 &&
+                                members.slice(0, 8).map((member, idx) => (
+                                    <div className="me-2" key={idx}>
 
-                                    <img
-                                        src={member.profile_picture_url}      
-                                        onError={e => {
-                                            e.target.onerror = null;
-                                            e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(member.full_name || `M${idx + 1}`)}&background=random`;
-                                        }}
-                                        alt={member.full_name || `Member ${idx + 1}`}
-                                        className="rounded-circle"
-                                        width="32"
-                                        height="32"
-                                    />
-                                </div>
-                            ))}
-                        {members.length > 8 && (
-                            <span className="badge bg-secondary">+{members.length - 8}</span>
-                        )}
+                                        <img
+                                            src={member.profile_picture_url}
+                                            onError={e => {
+                                                e.target.onerror = null;
+                                                e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(member.full_name || `M${idx + 1}`)}&background=random`;
+                                            }}
+                                            alt={member.full_name || `Member ${idx + 1}`}
+                                            className="rounded-circle"
+                                            width="32"
+                                            height="32"
+                                        />
+                                    </div>
+                                ))}
+                            {members.length > 8 && (
+                                <span className="badge bg-secondary">+{members.length - 8}</span>
+                            )}
+                        </div>
                         {/* Add Members Button - Only for Admin */}
                         {/* {isAdmin && (
                             <button

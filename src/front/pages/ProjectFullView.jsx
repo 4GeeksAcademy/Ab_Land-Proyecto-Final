@@ -157,8 +157,7 @@ export const ProjectFullView = () => {
 
 
     return (
-        <div className="px-5 container app">
-            <div className=" p-4 ">
+        <div className="container app">            
                 <div className="mb-4 bg-white rounded p-2 pt-3">
 
                     <ProjectCardXL project={project} onEdit={handleEditProject}
@@ -221,7 +220,7 @@ export const ProjectFullView = () => {
                         </div>
                     )}
                 </>)}
-            </div>
+            
 
             {/* Modal de edición */}
             <EditProject
