@@ -19,7 +19,7 @@ export const Home = () => {
     <>
       <div className="flex-center flex-column vh-50" id="home">
         <h1 className="mb-2 text-center">
-          Create Projects and Organize your teams <br /> with
+          Create Projects and Organize Your Teams <br /> with
         </h1>
         <div className="rounded text-center p-2 mb-5">
           <h2 className="gradient-text ">
@@ -63,8 +63,8 @@ export const Home = () => {
           </div>
           <div className="row justify-content-center pt-3 g-2 px-5">
             {[
-              { img: Design2, title: "Setup Your Project", desc: "Start by creating your project, give it a name :D" },
-              { img: Design3, title: "Invite Your Team", desc: "Add all your staff to get to work" },
+              { img: Design2, title: "Set Up Your Project", desc: "Start by creating your project, give it a name :D" },
+              { img: Design3, title: "Invite Your Team", desc: "Add your staff members to get to work" },
               { img: Design1, title: "Feed Back The Progress", desc: "Post your developments, give and receive comments from co-workers" }
             ].map((step, idx) => (
               <div key={idx} className="col-12 col-md-4 mb-4">
