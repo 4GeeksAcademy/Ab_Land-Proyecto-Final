@@ -19,7 +19,7 @@ export const Home = () => {
     <>
       <div className="flex-center flex-column vh-50" id="home">
         <h1 className="mb-2 text-center">
-          Create Projects and Organize your teams <br /> with
+          Create Projects and Organize Your Teams <br /> with
         </h1>
         <div className="rounded text-center p-2 mb-5">
           <h2 className="gradient-text ">
@@ -63,8 +63,8 @@ export const Home = () => {
           </div>
           <div className="row justify-content-center pt-3 g-2 px-5">
             {[
-              { img: Design2, title: "Setup Your Project", desc: "Start by creating your project, give it a name :D" },
-              { img: Design3, title: "Invite Your Team", desc: "Add all your staff to get to work" },
+              { img: Design2, title: "Set Up Your Project", desc: "Start by creating your project, give it a name :D" },
+              { img: Design3, title: "Invite Your Team", desc: "Add your staff members to get to work" },
               { img: Design1, title: "Feed Back The Progress", desc: "Post your developments, give and receive comments from co-workers" }
             ].map((step, idx) => (
               <div key={idx} className="col-12 col-md-4 mb-4">
@@ -86,17 +86,16 @@ export const Home = () => {
         <div className="row justify-content-center pt-3 g-2 px-5">
           {[
             { name: "Luna", github: "https://github.com/LunaB28" },
-            { name: "Roberta", github: "https://github.com/robertaval" },
-            { name: "Abraham", github: "https://github.com/Ablandaeta", picURL:"https://res.cloudinary.com/dvawhw99g/image/upload/v1751981162/ta2nbrpkqiqytjjodfen.png" }
+            { name: "Roberta", github: "https://github.com/robertaval", picURL: "https://res.cloudinary.com/duzqn2kk2/image/upload/v1752075672/slack_20220808152622_gcuvzk.jpg" },
+            { name: "Abraham", github: "https://github.com/Ablandaeta", picURL: "https://res.cloudinary.com/dvawhw99g/image/upload/v1751981162/ta2nbrpkqiqytjjodfen.png" }
           ].map((member, idx) => (
             <div key={idx} className="col-12 col-md-auto">
               <div className="border-dash rounded p-2 m-1 teamcardHW flex-center flex-column">
                 <div className="rounded-circle mb-5 mt-4 flex-center portrait" style={{ width: '150px' }}>
                   <img className='img-cover'
-                    src={member.picURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                      member.name
-                    )}&background=random`}
+                    src={member.picURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=random`}
                     alt={`${member.name}'s portrait`}
+                    style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '50%' }}
                   />
                 </div>
                 <h5 className="mb-5">{member.name}</h5>
@@ -112,4 +111,5 @@ export const Home = () => {
     </>
   );
 };
+
 

@@ -166,7 +166,7 @@ export const Navbar = () => {
                   boxShadow: "0 3px 8px rgba(0,80,60,.08)",
                 }}
               >
-                LogIn
+                Log In
               </button>
             </Link>
           )}
@@ -250,7 +250,7 @@ export const Navbar = () => {
                     onClick={handleLogOut}
                   >
                     <span role="img" aria-label="Logout" className="me-2">🚪</span>
-                    Log out
+                    Log Out
                   </button>
                 </li>
               </ul>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react"; 
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { useNavigate, Link } from "react-router-dom";
 import { ProjectCardS } from "../components/ProjectCardS";
@@ -121,6 +121,34 @@ export function Profile() {
       dispatch({
         type: "error",
         payload: err?.message || "Error updating user. Please try again.",
+      });
+    }
+  };
+
+  // --- Handle user deletion ---
+  const handleDeleteAccount = async () => {
+    if (!window.confirm("Are you sure you want to delete your account? This cannot be undone.")) return;
+    const backendUrl = import.meta.env.VITE_BACKEND_URL;
+    try {
+      const response = await fetch(`${backendUrl}/user`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + store.token,
+        },
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        dispatch({ type: "error", payload: data.msg || "Failed to delete account." });
+        return;
+      }
+      dispatch({ type: "LOGOUT" });
+      dispatch({ type: "success", payload: "Your account has been deleted." });
+      navigate("/login");
+    } catch (err) {
+      dispatch({
+        type: "error",
+        payload: err?.message || "Error deleting account. Please try again.",
       });
     }
   };
@@ -292,6 +320,20 @@ export function Profile() {
               </button>
             </div>
           )}
+
+          {/* ---- Delete account button ---- */}
+          {!editing && (
+            <div className="mt-4 d-flex justify-content-end">
+              <button
+                type="button"
+                className="btn btn-outline-danger"
+                onClick={handleDeleteAccount}
+              >
+                Delete Account
+              </button>
+            </div>
+          )}
+
         </form>
       )}
 

@@ -1,5 +1,5 @@
 import React from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { TaskCard } from '../components/TaskCard'
 import { ProjectCardXL } from '../components/ProjectCardXL'
@@ -12,6 +12,7 @@ import { MemberCard } from '../components/MemberCard'
 export const ProjectFullView = () => {
     const { store, dispatch } = useGlobalReducer();
     const { id } = useParams();
+    const navigate = useNavigate();
     const [project, setProject] = useState(null);
     const [tasks, setTasks] = useState([]);
     const [showEditModal, setShowEditModal] = useState(false);
@@ -24,16 +25,12 @@ export const ProjectFullView = () => {
     const [tab, setTab] = useState("overview");
     const [userRole, setUserRole] = useState("member")
 
-
-    
     const filterProjectById = (projectId) => {
         const roles = Object.keys(store.projects);
-
         for (const role of roles) {
             const project = store.projects[role].find(project => project.id === projectId);
             if (project) return project;
         }
-
         return null;
     };
 
@@ -61,14 +58,11 @@ export const ProjectFullView = () => {
                 await getProject();
                 await getTasks();
             }
-
         };
-
         fetchData();
-
     }, [id, store.projects]);
 
-    // useEffect para refrescar el proyecto cuando se actualiza
+    // Refetch project after updates
     useEffect(() => {
         if (projectVersion > 0) {
             getProject();
@@ -88,8 +82,6 @@ export const ProjectFullView = () => {
                 dispatch({ type: "error", payload: data.msg || "Something went wrong" });
                 return;
             }
-
-
             setProject(data.project);
         } catch (error) {
             dispatch({ type: "error", payload: "Could not connect to backend." });
@@ -115,21 +107,21 @@ export const ProjectFullView = () => {
         }
     };
 
-    // Función para abrir el modal de edición
+    // Edit modal
     const handleEditProject = (project) => {
         setSelectedProject(project);
         setShowEditModal(true);
     };
 
-    // Función para abrir el modal de añadir miembros
+    // Add members modal
     const handleAddMembers = (project) => {
         setSelectedProject(project);
         setShowAddMembersModal(true);
     };
 
-    // Función para actualizar el proyecto después de editar
+    // Refresh after edit/add
     const handleUpdateProject = () => {
-        setProjectVersion(prev => prev + 1); // Incrementar para disparar useEffect
+        setProjectVersion(prev => prev + 1);
         setShowEditModal(false);
         setShowAddMembersModal(false);
     };
@@ -150,11 +142,55 @@ export const ProjectFullView = () => {
         }, 0);
     };
 
+    // --- Remove Member Handler ---
+    const handleRemoveMember = async (memberId) => {
+        if (!window.confirm("Are you sure you want to remove this member?")) return;
+        try {
+            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/project/${project.id}/member/${memberId}`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + (store.token || localStorage.getItem("token")),
+                },
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                dispatch({ type: "error", payload: data.msg || "Failed to remove member" });
+                return;
+            }
+            // Re-fetch project to update member list
+            getProject();
+        } catch (error) {
+            dispatch({ type: "error", payload: "Could not remove member" });
+        }
+    };
+
+    // --- Delete Project Handler ---
+    const handleDeleteProject = async () => {
+        if (!window.confirm("Are you sure you want to delete this project? This action cannot be undone.")) return;
+        try {
+            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/project/${id}`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + (store.token || localStorage.getItem("token")),
+                },
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                dispatch({ type: "error", payload: data.msg || "Could not delete project." });
+                return;
+            }
+            dispatch({ type: "success", payload: "Project deleted successfully!" });
+            navigate("/"); // Redirect to home or projects list
+        } catch (error) {
+            dispatch({ type: "error", payload: "Could not connect to backend." });
+        }
+    };
+
     if (!project) {
         return <p className='text-center'>Loading project...</p>;
     }
-
-
 
     return (
         <div className="container app">            
@@ -177,6 +213,14 @@ export const ProjectFullView = () => {
                         >
                             Members
                         </button>
+                        {userRole === "admin" && (
+                            <button
+                                className="btn btn-outline-danger ms-auto"
+                                onClick={handleDeleteProject}
+                            >
+                                <i className="fa-regular fa-trash-can me-2"></i> Delete Project
+                            </button>
+                        )}
                     </div>
                 </div>
                 {tab == "overview" && (<>
@@ -203,7 +247,7 @@ export const ProjectFullView = () => {
                         <div></div>
                         {project.members && project.members.length > 0 ? (<h3 className="mb-2 p-2">Team Members</h3>) : (<h3>No Member found</h3>)}
                         {userRole == "admin" ?
-                            (<button className='btn btn-warning text-white' 
+                            (<button className='btn btn-warning text-white'
                                 onClick={() => { handleAddMembers(project) }}> Add </button>)
                             : (<div></div>)}
                     </div>
@@ -211,10 +255,13 @@ export const ProjectFullView = () => {
                         <div className="mt-3">
                             {project.members.map((member) =>
                                 <MemberCard
+                                    key={member.id}
                                     member={member}
                                     memberRole={member.id == project.admin_id ? "admin" : "member"}
                                     userRole={userRole}
-                                    onUpdate={handleUpdateProject}
+                                    projectId={project.id}
+                                    token={store.token || localStorage.getItem("token")}
+                                    onMemberRemoved={handleRemoveMember}
                                 />
                             )}
                         </div>
@@ -250,3 +297,4 @@ export const ProjectFullView = () => {
         </div>
     )
 }
+
