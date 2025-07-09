@@ -1,10 +1,15 @@
 import React from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
+import { useNavigate } from "react-router-dom";
 
 export const ErrorAlert = () => {
   const { store, dispatch } = useGlobalReducer();
 
   if (!store.error) return null;
+  if (store.error == "Token has expired"){
+    dispatch({type: "LOGOUT"})
+    useNavigate("/login")
+  }
 
   return (
     <div

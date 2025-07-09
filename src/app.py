@@ -659,7 +659,7 @@ def create_task(project_id):
     if not body.get('title', '').strip():
         return jsonify({'msg': 'Debes enviar un título válido'}), 400
 
-    assigned_to_id = body.get('asignated_to_id')
+    assigned_to_id = body.get('assigned_to_id')
     if assigned_to_id:
         assigned_user = User.query.get(assigned_to_id)
         if not assigned_user:
@@ -747,6 +747,33 @@ def update_task(project_id, task_id):
     except Exception:
         db.session.rollback()
         return jsonify({'msg': 'Error updating task'}), 500
+    
+@app.route('/api/project/<int:project_id>/task/<int:task_id>', methods=['DELETE'])
+@jwt_required()
+def delete_task(project_id, task_id):
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'msg': 'User not found'}), 404
+    project = Project.query.get(project_id)
+    if not project:
+        return jsonify({'msg': 'Project not found'}), 404
+    task = Task.query.filter_by(id=task_id, project_id=project_id).first()
+    if not task:
+        return jsonify({'msg': 'Task not found'}), 404
+    if task.author_id != user.id and project.admin_id != user.id:
+        return jsonify({'msg': 'You are not authorized to edit this task'}), 400
+
+    try:
+        db.session.delete(task)
+        db.session.commit()
+        return jsonify({
+            'msg': 'Task deleted successfully',
+            'task': task.serialize()
+        }), 200
+    except Exception:
+        db.session.rollback()
+        return jsonify({'msg': 'Error updating task'}), 500    
 
 # ========== TASK DELETE FALTANTE ==========
 # @app.route('/project/<int:project_id>/task/<int:task_id>', methods=['DELETE'])  # Eliminar tarea (admin o autor)

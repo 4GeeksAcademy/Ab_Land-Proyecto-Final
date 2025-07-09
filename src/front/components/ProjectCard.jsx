@@ -91,9 +91,11 @@ export const ProjectCard = ({ project, onEdit, onAddMembers }) => {
                 <div className="me-2" key={idx}>
 
                   <img
-                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
-                      member.full_name || `M${idx + 1}`
-                    )}&background=0D8ABC&color=fff`}
+                    src={member.profile_picture_url}
+                    onError={e => {
+                      e.target.onerror = null;
+                      e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(member.full_name || `M${idx + 1}`)}&background=random`;
+                    }}
                     alt={member.full_name || `Member ${idx + 1}`}
                     className="rounded-circle"
                     width="32"
@@ -105,7 +107,7 @@ export const ProjectCard = ({ project, onEdit, onAddMembers }) => {
               <span className="badge bg-secondary me-2">+{members.length - 2}</span>
             )}
 
-            
+
           </div>
         </div>
         {/* <div className="text-center mx-auto"> div to ad a summay with ai (optional)</div> */}
@@ -115,7 +117,7 @@ export const ProjectCard = ({ project, onEdit, onAddMembers }) => {
             {status}
           </span>
 
-         
+
         </div>
       </div>
     </div>

@@ -4,8 +4,7 @@ import { useState } from 'react';
 
 export const ProjectCardS = ({ project, role }) => {
     const [statusColor, setStatusColor] = useState('');
-    const navigate = useNavigate();
-    console.log(project);
+    const navigate = useNavigate();    
 
     useEffect(() => {
         if (project.status === 'in progress') {

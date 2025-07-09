@@ -98,9 +98,11 @@ export const ProjectCardXL = ({ project, onEdit, onAddMembers }) => {
                                 <div className="me-2" key={idx}>
 
                                     <img
-                                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
-                                            member.full_name || `M${idx + 1}`
-                                        )}&background=0D8ABC&color=fff`}
+                                        src={member.profile_picture_url}      
+                                        onError={e => {
+                                            e.target.onerror = null;
+                                            e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(member.full_name || `M${idx + 1}`)}&background=random`;
+                                        }}
                                         alt={member.full_name || `Member ${idx + 1}`}
                                         className="rounded-circle"
                                         width="32"
@@ -112,7 +114,7 @@ export const ProjectCardXL = ({ project, onEdit, onAddMembers }) => {
                             <span className="badge bg-secondary">+{members.length - 8}</span>
                         )}
                         {/* Add Members Button - Only for Admin */}
-                        {isAdmin && (
+                        {/* {isAdmin && (
                             <button
                                 className="btn btn-sm btn-outline-primary rounded-circle d-flex align-items-center justify-content-center"
                                 style={{ width: "32px", height: "32px", padding: "0" }}
@@ -121,7 +123,7 @@ export const ProjectCardXL = ({ project, onEdit, onAddMembers }) => {
                             >
                                 <span style={{ fontSize: "16px", lineHeight: "1" }}>+</span>
                             </button>
-                        )}
+                        )} */}
                     </div>
 
 

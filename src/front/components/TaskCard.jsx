@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { useNavigate } from "react-router-dom";
 
-export const TaskCard = ({ task, userRole = 'member', onEdit }) => {
+export const TaskCard = ({ task, userRole, onEdit, onUpdate }) => {
   const { id = '',
     title = '',
     description = '',
@@ -34,14 +34,14 @@ export const TaskCard = ({ task, userRole = 'member', onEdit }) => {
     else { setCanEdit(false) }
   }
 
-  console.log(userRole, canEdit, store.user.id, author_id);
-
-
-
   const timeSinceCreation = () => {
     const now = new Date();
-    const createdDate = new Date(created_at);
-    const diff = now - createdDate; // difference in milliseconds
+    let createdDate = created_at;
+    if (typeof created_at === "string" && !created_at.endsWith("Z")) {
+      createdDate = created_at + "Z";
+    }
+    const created = new Date(createdDate);
+    const diff = now - created; // difference in milliseconds
     const seconds = Math.floor(diff / 1000);
     const minutes = Math.floor(seconds / 60);
     const hours = Math.floor(minutes / 60);
@@ -67,6 +67,27 @@ export const TaskCard = ({ task, userRole = 'member', onEdit }) => {
     editAble()
   }, [status, created_at]);
 
+  const deleteTask = () => {
+        fetch(`${import.meta.env.VITE_BACKEND_URL}/api/project/${project_id}/task/${id}`, {
+            method: "delete",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + store.token,
+            }
+        })
+            .then(async (res) => {
+                const data = await res.json()
+                if (!res.ok) {
+                    dispatch({ type: "error", payload: data.msg || "There was an error deleting the task" });
+                    return;
+                }
+                onUpdate(data); // Callback para actualizar la lista?
+            })
+            .catch((err) => {
+                dispatch({ type: "error", payload: err?.message || "Connection error with the server." });
+            });
+    }
+
   return (
     <div className={`card task-${statusColor} p-3 m-1 shadow-sm`} >
       <div className='d-flex align-items-center mb-2'>
@@ -84,8 +105,13 @@ export const TaskCard = ({ task, userRole = 'member', onEdit }) => {
         )}
         <div className="ms-auto">
           {canEdit &&
-            <button className="btn btn-sm btn-outline-secondary" onClick={onEdit}>
+            <button className="btn btn-sm btn-outline-secondary me-2" onClick={onEdit}>
               Edit
+            </button>}
+          {canEdit &&
+            <button className="btn btn-outline-danger btn-sm"
+            onClick={()=>{deleteTask()}}>
+              <i className="fa-regular fa-trash-can"></i>
             </button>}
         </div>
       </div>
