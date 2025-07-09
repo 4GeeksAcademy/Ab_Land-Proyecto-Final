@@ -119,7 +119,7 @@ export function AddMembersModal({ project, isOpen, onClose, onUpdate }) {
                     </div>
                     <div className="modal-body">
                         <p className="mb-3">
-                            Add a new member to <strong>{currentProject.title}</strong>
+                            Add a new member to <strong className='text-capitalize'>{currentProject.title}</strong>
                         </p>
 
                         <div className="mb-3">

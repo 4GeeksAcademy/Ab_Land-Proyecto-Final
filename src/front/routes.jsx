@@ -31,7 +31,7 @@ export const router = createBrowserRouter(
     <Route path="/" element={<Layout />} errorElement={<NotFound />}>
       {/* Public routes */}
       <Route index element={<Home />} />
-      <Route path="/cpp" element={<ColorPalettePreview />} />
+      <Route path="/api/cpp" element={<ColorPalettePreview />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/restore-password" element={<RestorePassword />} />
