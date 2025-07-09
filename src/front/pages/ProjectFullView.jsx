@@ -1,5 +1,5 @@
 import React from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { TaskCard } from '../components/TaskCard'
 import { ProjectCardXL } from '../components/ProjectCardXL'
@@ -12,6 +12,7 @@ import { MemberCard } from '../components/MemberCard'
 export const ProjectFullView = () => {
     const { store, dispatch } = useGlobalReducer();
     const { id } = useParams();
+    const navigate = useNavigate();
     const [project, setProject] = useState(null);
     const [tasks, setTasks] = useState([]);
     const [showEditModal, setShowEditModal] = useState(false);
@@ -26,7 +27,6 @@ export const ProjectFullView = () => {
 
     const filterProjectById = (projectId) => {
         const roles = Object.keys(store.projects);
-
         for (const role of roles) {
             const project = store.projects[role].find(project => project.id === projectId);
             if (project) return project;
@@ -165,6 +165,29 @@ export const ProjectFullView = () => {
         }
     };
 
+    // --- Delete Project Handler ---
+    const handleDeleteProject = async () => {
+        if (!window.confirm("Are you sure you want to delete this project? This action cannot be undone.")) return;
+        try {
+            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/project/${id}`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + (store.token || localStorage.getItem("token")),
+                },
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                dispatch({ type: "error", payload: data.msg || "Could not delete project." });
+                return;
+            }
+            dispatch({ type: "success", payload: "Project deleted successfully!" });
+            navigate("/"); // Redirect to home or projects list
+        } catch (error) {
+            dispatch({ type: "error", payload: "Could not connect to backend." });
+        }
+    };
+
     if (!project) {
         return <p className='text-center'>Loading project...</p>;
     }
@@ -191,6 +214,14 @@ export const ProjectFullView = () => {
                         >
                             Members
                         </button>
+                        {userRole === "admin" && (
+                            <button
+                                className="btn btn-outline-danger ms-auto"
+                                onClick={handleDeleteProject}
+                            >
+                                <i className="fa-regular fa-trash-can me-2"></i> Delete Project
+                            </button>
+                        )}
                     </div>
                 </div>
                 {tab == "overview" && (<>
@@ -217,7 +248,7 @@ export const ProjectFullView = () => {
                         <div></div>
                         {project.members && project.members.length > 0 ? (<h3 className="mb-2 p-2">Team Members</h3>) : (<h3>No Member found</h3>)}
                         {userRole == "admin" ?
-                            (<button className='btn btn-warning text-white' 
+                            (<button className='btn btn-warning text-white'
                                 onClick={() => { handleAddMembers(project) }}> Add </button>)
                             : (<div></div>)}
                     </div>
