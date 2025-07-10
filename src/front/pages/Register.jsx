@@ -17,7 +17,7 @@ export const Register = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [uploadMessage, setUploadMessage] = useState("");
   const navigate = useNavigate();
-  const { store, dispatch } = useGlobalReducer;
+  const { store, dispatch } = useGlobalReducer();
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -108,7 +108,6 @@ export const Register = () => {
     postRegister();
   };
 
-  // --- FIXED: Send phone as number or null ---
   const postRegister = async () => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
     const submitData = { ...formData };
@@ -118,17 +117,22 @@ export const Register = () => {
       submitData.phone = Number(submitData.phone);
     }
     try {
-      const response = await fetch(`${backendUrl}/register`, {
+      const response = await fetch(`${backendUrl}/api/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(submitData),
       });
-      if (!response.ok) throw new Error("Network response was not ok");
       const data = await response.json();
-      window.alert("¡Usuario creado exitosamente!");
-      dispatch({ type: "success", payload: "¡Usuario creado exitosamente!" });
-      navigate("/login");
-      console.log("Registration successful:", data);
+      if (!response.ok) {
+        dispatch({ type: "error", payload: data.msg || "Network response was not ok" });
+        return;
+      } else {
+        let successMessage = "¡Usuario creado exitosamente!";
+        dispatch({ type: "success", payload: successMessage });
+        setTimeout(() => {
+          navigate("/login");
+        }, 2000);
+      }
     } catch (error) {
       dispatch({
         type: "error",
@@ -142,6 +146,7 @@ export const Register = () => {
     <div className="container app ">
       <div className="card p-4 max-w-md  mt-10 ">
         <Link to="/login"> ← Back</Link>
+        
         <div className="text-center border-bottom">
           <h1 className="text-center mb-4">EchoBoard Registration</h1>
           <p className="text-center mb-4">

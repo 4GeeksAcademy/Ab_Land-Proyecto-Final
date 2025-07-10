@@ -91,7 +91,7 @@ export function EditProject({ project, isOpen, onClose, onUpdate }) {
             return;
         }
 
-        fetch(`${import.meta.env.VITE_BACKEND_URL}/project/${project.id}`, {
+        fetch(`${import.meta.env.VITE_BACKEND_URL}/api/project/${project.id}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",

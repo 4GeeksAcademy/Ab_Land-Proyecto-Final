@@ -13,7 +13,7 @@ export function NewProject() {
     const [uploadMessage, setUploadMessage] = useState("");
     const [error, setError] = useState(null);
     const [status, setStatus] = useState("in progress");
-    const [checkEmail,setCheckEmail] = useState("")
+    const [checkEmail, setCheckEmail] = useState("")
     const [checkingEmail, setCheckingEmail] = useState(false);
     const [members, setMembers] = useState([]);
     const [memberEmail, setMemberEmail] = useState("");
@@ -76,7 +76,7 @@ export function NewProject() {
         e.preventDefault();
         setError(null);
         if (uploading) {
-            dispatch({ type: "error", payload:"Please wait for the image upload to complete."});
+            dispatch({ type: "error", payload: "Please wait for the image upload to complete." });
             return;
         }
         postNewProject()
@@ -84,7 +84,7 @@ export function NewProject() {
 
     const postNewProject = async () => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/project`, {
+            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/project`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -112,11 +112,9 @@ export function NewProject() {
                 return;
             } else {
 
-                // Preparar mensaje de éxito
                 let successMessage = "¡Proyecto guardado exitosamente!";
 
 
-                // Si hay información de miembros, mostrar warnings si los hay
                 if (data.members_info && data.members_info.errors && data.members_info.errors.length > 0) {
                     successMessage += `\n\nWarnings:\n${data.members_info.errors.join('\n')}`;
                 }
@@ -125,7 +123,7 @@ export function NewProject() {
                 navigate("/dashboard");
             }
         } catch (err) {
-            dispatch({ type: "error", payload: err?.message  || "Could not connect to backend." });
+            dispatch({ type: "error", payload: err?.message || "Could not connect to backend." });
         }
     }
 
@@ -142,15 +140,14 @@ export function NewProject() {
 
         const emailRegex = /\S+@\S/;
         if (!emailRegex.test(email)) {
-            dispatch({ type: "error", payload:"Please enter a valid email address."});
+            dispatch({ type: "error", payload: "Please enter a valid email address." });
             return;
         }
 
         setCheckEmail("Checking user...");
 
         try {
-            // Verificar si el usuario existe en el backend
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/user?email=${encodeURIComponent(email)}`, {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user?email=${encodeURIComponent(email)}`, {
                 method: "GET",
                 headers: {
                     "Authorization": "Bearer " + store.token,
@@ -160,7 +157,6 @@ export function NewProject() {
             if (response.ok) {
                 const data = await response.json();
                 if (data.found) {
-                    // Usuario existe, agregarlo a la lista
                     setMembers([...members, email]);
                     setMemberEmail("");
                     setCheckEmail("");
@@ -168,7 +164,7 @@ export function NewProject() {
                     throw new Error(`User with email "${email}" not found in the system.`);
                 }
             } else {
-               dispatch({ type: "error", payload:`User with email "${email}" not found in the system.`});
+                dispatch({ type: "error", payload: `User with email "${email}" not found in the system.` });
             }
         } catch (err) {
             dispatch({ type: "error", payload: err?.message || "Could not connect to backend." });
@@ -212,7 +208,7 @@ export function NewProject() {
                                 className="form-control"
                                 value={description}
                                 placeholder="Describe your project"
-                                onChange={e => setDescription(e.target.value)}                                
+                                onChange={e => setDescription(e.target.value)}
                                 rows={5}
                             />
                         </div>

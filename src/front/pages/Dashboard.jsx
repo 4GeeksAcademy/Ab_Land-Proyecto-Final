@@ -36,7 +36,7 @@ export default function Dashboard() {
 
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/projects`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/projects`,
         {
           headers: {
             Authorization: "Bearer " + store.token,

@@ -36,7 +36,7 @@ export function AddMembersModal({ project, isOpen, onClose, onUpdate }) {
 
         try {
             // Verificar si el usuario existe
-            const checkResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL}/user?email=${encodeURIComponent(email)}`, {
+            const checkResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user?email=${encodeURIComponent(email)}`, {
                 method: "GET",
                 headers: {
                     "Authorization": "Bearer " + store.token,
@@ -55,7 +55,7 @@ export function AddMembersModal({ project, isOpen, onClose, onUpdate }) {
             }
 
             // Agregar el miembro al proyecto
-            const addResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL}/project/${currentProject.id}/members`, {
+            const addResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/project/${currentProject.id}/members`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -67,13 +67,13 @@ export function AddMembersModal({ project, isOpen, onClose, onUpdate }) {
             });
 
             const data = await addResponse.json();
-            
+
             if (addResponse.ok) {
                 if (data.added_members && data.added_members.length > 0) {
                     setSuccess(`Successfully added ${userData.user.full_name} to the project!`);
                     setMemberEmail(""); // Limpiar el input pero no cerrar el modal
                     onUpdate(); // Actualizar el proyecto en el Dashboard
-                    
+
                     // Limpiar el mensaje de éxito después de 3 segundos
                     setTimeout(() => {
                         setSuccess("");

@@ -14,23 +14,23 @@ export function AddEditTask({ project, isOpen, onClose, onUpdate, task, onEdit }
 
 
     useEffect(() => {
-    if (onEdit && task !== null) {
-        setFormData({
-            title: task.title,
-            description: task.description,
-            status: task.status,
-            assigned_to_id: task.assigned_to_id,
-        });
-    } else if (isOpen) {
-        // Reset form when opening for a new task
-        setFormData({
-            title: "",
-            description: "",
-            status: "in progress",
-            assigned_to_id: "",
-        });
-    }
-}, [task, project, onEdit, isOpen]);
+        if (onEdit && task !== null) {
+            setFormData({
+                title: task.title,
+                description: task.description,
+                status: task.status,
+                assigned_to_id: task.assigned_to_id || "",
+            });
+        } else if (isOpen) {
+            // Reset form when opening for a new task
+            setFormData({
+                title: "",
+                description: "",
+                status: "in progress",
+                assigned_to_id: "",
+            });
+        }
+    }, [task, project, onEdit, isOpen]);
 
 
     const handleSubmit = (e) => {
@@ -62,7 +62,7 @@ export function AddEditTask({ project, isOpen, onClose, onUpdate, task, onEdit }
 
                     return;
                 }
-                dispatch({type:"success", payload: data.msg?.message || "Task Created"})
+                dispatch({ type: "success", payload: data.msg?.message || "Task Created" })
                 onUpdate(data); // Callback para actualizar la lista?
                 onClose(); // Cerrar el modal
             })
@@ -93,7 +93,7 @@ export function AddEditTask({ project, isOpen, onClose, onUpdate, task, onEdit }
                 dispatch({ type: "error", payload: err || "Connection error with the server." });
             });
     }
-    
+
 
     if (!isOpen) return null;
 

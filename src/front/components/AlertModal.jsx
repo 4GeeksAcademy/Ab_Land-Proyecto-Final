@@ -18,12 +18,13 @@ export const AlertModal = ({ isOpen, onClose, response }) => {
             <div className="card border-0 p-4 text-center" >
                 <div className=" position-relative text-center p-3 mb-2">
                     <i className="fa-solid fa-circle-exclamation text-warning"
+
                     style={{fontSize:"10vh"}} />
                     <button
                         type="button"
                         className="btn-close position-absolute top-0 end-0 m-2"
                         onClick={handleClose}
-                    ></button>                    
+                    ></button>          
                 </div>
                 <h1 className="mb-3"> Are you sure?</h1>
                 <h4 className="mb-4">You won't be able to revert this!</h4>

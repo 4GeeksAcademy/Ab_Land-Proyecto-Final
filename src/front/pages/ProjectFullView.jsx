@@ -74,7 +74,7 @@ export const ProjectFullView = () => {
 
     const getProject = async () => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/project/${id}`, {
+            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/project/${id}`, {
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: "Bearer " + (store.token || localStorage.getItem("token")),
@@ -92,7 +92,7 @@ export const ProjectFullView = () => {
     };
     const getTasks = async () => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/project/${id}/tasks`, {
+            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/project/${id}/tasks`, {
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: "Bearer " + (store.token || localStorage.getItem("token")),
@@ -149,7 +149,7 @@ export const ProjectFullView = () => {
     const handleRemoveMember = async (memberId) => {
         if (!window.confirm("Are you sure you want to remove this member?")) return;
         try {
-            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/project/${project.id}/member/${memberId}`, {
+            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/project/${project.id}/member/${memberId}`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
@@ -174,7 +174,7 @@ export const ProjectFullView = () => {
 
         try {
             const res = await fetch(
-                `${import.meta.env.VITE_BACKEND_URL}/projects`,
+                `${import.meta.env.VITE_BACKEND_URL}/api/projects`,
                 {
                     headers: {
                         Authorization: "Bearer " + store.token,
@@ -221,7 +221,7 @@ export const ProjectFullView = () => {
     };
     const deleteProject = async () => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/project/${id}`, {
+            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/project/${id}`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
@@ -241,7 +241,6 @@ export const ProjectFullView = () => {
         }
 
     }
-
 
     if (!project) {
         return (<div class="flex-center my-4" >

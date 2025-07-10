@@ -9,7 +9,7 @@ export const Navbar = () => {
 
   const tokenVerification = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/jwtcheck`, {
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/jwtcheck`, {
         headers: {
           Authorization: "Bearer " + store.token,
           "Content-Type": "application/json",

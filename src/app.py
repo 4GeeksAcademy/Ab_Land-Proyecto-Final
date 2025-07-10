@@ -63,6 +63,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # JWT CONFIG
 app.config['JWT_SECRET_KEY'] = os.getenv("JWT_SECRET_KEY", "super-secret-key")
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(hours=3)
+
 # MAIL CONFIG
 app.config.update(
     MAIL_SERVER='smtp.gmail.com',
@@ -115,7 +116,7 @@ def serve_any_other_file(path):
 # ========== AUTH & USER ENDPOINTS ==========
 
 
-@app.route('/register', methods=['POST'])
+@app.route('/api/register', methods=['POST'])
 def register():
     body = request.get_json(silent=True)
     if body is None:
@@ -167,7 +168,7 @@ def register():
     return jsonify({'msg': 'ok', 'new_user': new_user.serialize()}), 201
 
 
-@app.route('/login', methods=['POST'])
+@app.route('/api/login', methods=['POST'])
 def login():
     body = request.get_json()
     if not body or 'email' not in body or 'password' not in body:
@@ -184,13 +185,13 @@ def login():
     }), 200
 
 
-@app.route('/jwtcheck', methods=['GET'])
+@app.route('/api/jwtcheck', methods=['GET'])
 @jwt_required()
 def verification_token():
     return jsonify({'msg': 'Token is valid'}), 200
 
 
-@app.route('/restore-password', methods=['POST'])
+@app.route('/api/restore-password', methods=['POST'])
 def restore_password():
     body = request.get_json(silent=True)
     if body is None or not body.get('email', '').strip():
@@ -235,7 +236,7 @@ def restore_password():
     return jsonify({'msg': 'Password reset email sent'}), 200
 
 
-@app.route('/restore-password/<token>', methods=['POST'])
+@app.route('/api/restore-password/<token>', methods=['POST'])
 def restore_password_confirmation(token):
     body = request.get_json(silent=True)
     if body is None or not body.get('new_password', '').strip():
@@ -259,7 +260,7 @@ def restore_password_confirmation(token):
     return jsonify({'msg': 'Password updated successfully'}), 200
 
 
-@app.route('/profile', methods=['GET'])
+@app.route('/api/profile', methods=['GET'])
 @jwt_required()
 def get_profile():
     user_id = get_jwt_identity()
@@ -269,7 +270,7 @@ def get_profile():
     return jsonify({'user': user.serialize()}), 200
 
 
-@app.route('/profile', methods=['PUT'])
+@app.route('/api/profile', methods=['PUT'])
 @jwt_required()
 def update_profile():
     user_id = get_jwt_identity()
@@ -302,7 +303,7 @@ def update_profile():
 #  ALIAS for PUT /user and GET /user
 
 
-@app.route('/user', methods=['GET', 'PUT'])
+@app.route('/api/user', methods=['GET', 'PUT'])
 @jwt_required()
 def user_alias():
     if request.method == 'GET':
@@ -330,8 +331,9 @@ def user_alias():
             return get_profile()
     elif request.method == 'PUT':
         return update_profile()
-    
-@app.route('/user', methods=['DELETE'])
+
+
+@app.route('/api/user', methods=['DELETE'])
 @jwt_required()
 def delete_user():
     user_id = get_jwt_identity()
@@ -355,10 +357,9 @@ def delete_user():
         return jsonify({'msg': 'Error deleting user'}), 500
 
 
-
 # ========== PROJECT ENDPOINTS ==========
 
-@app.route('/project', methods=['POST'])
+@app.route('/api/project', methods=['POST'])
 @jwt_required()
 def new_project():
     user_id = get_jwt_identity()
@@ -443,7 +444,7 @@ def new_project():
         return jsonify({'msg': 'Error creating project'}), 500
 
 
-@app.route('/projects', methods=['GET'])
+@app.route('/api/projects', methods=['GET'])
 @jwt_required()
 def get_projects():
     user_id = get_jwt_identity()
@@ -463,7 +464,7 @@ def get_projects():
     }), 200
 
 
-@app.route('/project/<int:project_id>', methods=['GET'])
+@app.route('/api/project/<int:project_id>', methods=['GET'])
 @jwt_required()
 def get_project(project_id):
     user_id = get_jwt_identity()
@@ -491,7 +492,7 @@ def get_project(project_id):
     }), 200
 
 
-@app.route('/project/<int:project_id>', methods=['PUT'])
+@app.route('/api/project/<int:project_id>', methods=['PUT'])
 @jwt_required()
 def edit_project(project_id):
     user_id = get_jwt_identity()
@@ -533,7 +534,8 @@ def edit_project(project_id):
         db.session.rollback()
         return jsonify({'msg': 'Error updating project'}), 500
 
-@app.route('/project/<int:project_id>', methods=['DELETE'])
+
+@app.route('/api/project/<int:project_id>', methods=['DELETE'])
 @jwt_required()
 def delete_project(project_id):
     user_id = get_jwt_identity()
@@ -563,7 +565,7 @@ def delete_project(project_id):
 # ========== PROJECT MEMBERS ENDPOINTS ==========
 
 
-@app.route('/project/<int:project_id>/members', methods=['POST'])
+@app.route('/api/project/<int:project_id>/members', methods=['POST'])
 @jwt_required()
 def add_project_members(project_id):
     user_id = get_jwt_identity()
@@ -621,7 +623,8 @@ def add_project_members(project_id):
         db.session.rollback()
         return jsonify({'msg': 'Error adding members'}), 500
 
-@app.route('/project/<int:project_id>/member/<int:member_id>', methods=['DELETE'])
+
+@app.route('/api/project/<int:project_id>/member/<int:member_id>', methods=['DELETE'])
 @jwt_required()
 def delete_project_member(project_id, member_id):
     user_id = get_jwt_identity()
@@ -638,7 +641,8 @@ def delete_project_member(project_id, member_id):
     if member_id == user.id:
         return jsonify({'msg': 'Admin cannot be removed from members'}), 400
 
-    member = Project_Member.query.filter_by(project_id=project_id, member_id=member_id).first()
+    member = Project_Member.query.filter_by(
+        project_id=project_id, member_id=member_id).first()
     if not member:
         return jsonify({'msg': 'Member not found in project'}), 404
 
@@ -654,7 +658,7 @@ def delete_project_member(project_id, member_id):
 # ========== TASK ENDPOINTS ==========
 
 
-@app.route('/project/<int:project_id>/tasks', methods=['GET'])
+@app.route('/api/project/<int:project_id>/tasks', methods=['GET'])
 @jwt_required()
 def get_project_tasks(project_id):
     user_id = get_jwt_identity()
@@ -692,7 +696,7 @@ def get_project_tasks(project_id):
 
     else:
         member_tasks = Task.query.filter_by(project_id=project_id).filter(
-            (Task.asignated_to_id == user.id) | (Task.author_id == user.id)
+            (Task.assigned_to_id == user.id) | (Task.author_id == user.id)
         ).all()
 
         tasks_data = [task.serialize_for_member(
@@ -726,13 +730,18 @@ def create_task(project_id):
 
     if not is_admin and not is_member:
         return jsonify({'msg': 'You are not authorized to create tasks in this project'}), 400
+
     body = request.get_json(silent=True)
+    print(f"DEBUG: Received body: {body}")
+
     if body is None:
         return jsonify({'msg': 'Debes enviar información en el body'}), 400
     if not body.get('title', '').strip():
         return jsonify({'msg': 'Debes enviar un título válido'}), 400
 
     assigned_to_id = body.get('assigned_to_id')
+    print(f"DEBUG: assigned_to_id: {assigned_to_id}")
+
     if assigned_to_id:
         assigned_user = User.query.get(assigned_to_id)
         if not assigned_user:
@@ -745,32 +754,43 @@ def create_task(project_id):
     else:
         assigned_to_id = None    
 
+
     # Validar status de la tarea
     status_value = body.get('status', 'in progress')
+    print(f"DEBUG: status_value: {status_value}")
+
     if status_value not in TASK_STATUS_MAPPING:
         return jsonify({'msg': 'Invalid task status'}), 400
-    new_task = Task(
-        title=body['title'],
-        description=body.get('description'),
-        created_at=datetime.datetime.now(),
-        status=TASK_STATUS_MAPPING[status_value],
-        author_id=user.id,
-        project_id=project_id,
-        asignated_to_id=assigned_to_id
-    )
 
-    db.session.add(new_task)
+    print(
+        f"DEBUG: About to create task with data: title={body['title']}, status={TASK_STATUS_MAPPING[status_value]}, assigned_to_id={assigned_to_id}")
 
     try:
+        new_task = Task(
+            title=body['title'],
+            description=body.get('description'),
+            created_at=datetime.datetime.now(),
+            status=TASK_STATUS_MAPPING[status_value],
+            author_id=user.id,
+            project_id=project_id,
+            assigned_to_id=assigned_to_id
+        )
+
+        db.session.add(new_task)
         db.session.commit()
+        print(f"DEBUG: Task created successfully with id: {new_task.id}")
+
         return jsonify({
             'msg': 'Task created successfully',
             'task': new_task.serialize()
         }), 201
+
     except Exception as e:
         print(e)
         db.session.rollback()
-        return jsonify({'msg': 'Error creating task'}), 500
+        print(f"DEBUG: Error creating task: {str(e)}")
+        print(e)
+        return jsonify({'msg': f'Error creating task: {str(e)}'}), 500
 
 
 @app.route('/api/project/<int:project_id>/task/<int:task_id>', methods=['PUT'])
@@ -800,8 +820,8 @@ def update_task(project_id, task_id):
         if body['status'] in TASK_STATUS_MAPPING:
             task.status = TASK_STATUS_MAPPING[body['status']]
 
-    if 'asignated_to_id' in body and project.admin_id == user.id:
-        assigned_to_id = body['asignated_to_id']
+    if 'assigned_to_id' in body and project.admin_id == user.id:
+        assigned_to_id = body['assigned_to_id']
         if assigned_to_id:
             assigned_user = User.query.get(assigned_to_id)
             if not assigned_user:
@@ -812,7 +832,7 @@ def update_task(project_id, task_id):
                               assigned_user.id in [member.member_id for member in project_members])
             if not valid_assignee:
                 return jsonify({'msg': 'Cannot assign task to user who is not part of the project'}), 400
-        task.asignated_to_id = assigned_to_id
+        task.assigned_to_id = assigned_to_id
 
     try:
         db.session.commit()
@@ -823,7 +843,8 @@ def update_task(project_id, task_id):
     except Exception:
         db.session.rollback()
         return jsonify({'msg': 'Error updating task'}), 500
-    
+
+
 @app.route('/api/project/<int:project_id>/task/<int:task_id>', methods=['DELETE'])
 @jwt_required()
 def delete_task(project_id, task_id):
@@ -849,7 +870,7 @@ def delete_task(project_id, task_id):
         }), 200
     except Exception:
         db.session.rollback()
-        return jsonify({'msg': 'Error updating task'}), 500    
+        return jsonify({'msg': 'Error updating task'}), 500
 
 # ========== TASK DELETE FALTANTE ==========
 # @app.route('/project/<int:project_id>/task/<int:task_id>', methods=['DELETE'])  # Eliminar tarea (admin o autor)

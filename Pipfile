@@ -20,8 +20,8 @@ wtforms = "==3.1.2"
 flask-cors = "*"
 sqlalchemy = "*"
 six = "*"
-flask-mail = "*"
 flask-migrate = "*"
+flask-mail = "*"
 
 [requires]
 python_version = "3.13"
