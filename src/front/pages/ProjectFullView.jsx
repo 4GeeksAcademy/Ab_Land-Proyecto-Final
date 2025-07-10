@@ -8,6 +8,7 @@ import { EditProject } from "../components/EditProject";
 import { AddMembersModal } from "../components/AddMembersModal";
 import { AddEditTask } from '../components/Add-Edit-Task'
 import { MemberCard } from '../components/MemberCard'
+import { AlertModal } from '../components/AlertModal'
 
 export const ProjectFullView = () => {
     const { store, dispatch } = useGlobalReducer();
@@ -24,6 +25,8 @@ export const ProjectFullView = () => {
     const [projectVersion, setProjectVersion] = useState(0);
     const [tab, setTab] = useState("overview");
     const [userRole, setUserRole] = useState("member")
+    const [showAlertModal, setShowAlertModal] = useState(false)
+    const [alertResponse, setAlertResponse] = useState("")
 
     const filterProjectById = (projectId) => {
         const roles = Object.keys(store.projects);
@@ -71,7 +74,7 @@ export const ProjectFullView = () => {
 
     const getProject = async () => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/project/${id}`, {
+            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/project/${id}`, {
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: "Bearer " + (store.token || localStorage.getItem("token")),
@@ -89,7 +92,7 @@ export const ProjectFullView = () => {
     };
     const getTasks = async () => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/project/${id}/tasks`, {
+            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/project/${id}/tasks`, {
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: "Bearer " + (store.token || localStorage.getItem("token")),
@@ -146,7 +149,7 @@ export const ProjectFullView = () => {
     const handleRemoveMember = async (memberId) => {
         if (!window.confirm("Are you sure you want to remove this member?")) return;
         try {
-            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/project/${project.id}/member/${memberId}`, {
+            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/project/${project.id}/member/${memberId}`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
@@ -165,11 +168,60 @@ export const ProjectFullView = () => {
         }
     };
 
-    // --- Delete Project Handler ---
-    const handleDeleteProject = async () => {
-        if (!window.confirm("Are you sure you want to delete this project? This action cannot be undone.")) return;
+    const fetchProjects = async () => {
+
+        dispatch({ type: "error", payload: null });
+
         try {
-            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/project/${id}`, {
+            const res = await fetch(
+                `${import.meta.env.VITE_BACKEND_URL}/api/projects`,
+                {
+                    headers: {
+                        Authorization: "Bearer " + store.token,
+                        "Content-Type": "application/json"
+                    }
+                }
+            );
+            const data = await res.json();
+
+            if (res.status === 401 || res.status === 422) {
+                dispatch({ type: "LOGOUT" });
+                dispatch({ type: "error", payload: "Session expired. Please log in again." });
+                navigate("/login");
+                return;
+            }
+
+            if (!res.ok) {
+                dispatch({ type: "error", payload: data.msg || "Error fetching projects." });
+                //setProjects(null);
+            } else {
+                //setProjects(data.user_projects);        
+                dispatch({ type: "projects", payload: data.user_projects });
+                navigate("/dashboard");
+
+            }
+        } catch (err) {
+            dispatch({ type: "error", payload: err?.message || "Could not connect to backend." });
+        } finally {
+
+        }
+    };
+
+    // --- Delete Project Handler ---
+    const handleDeleteProject = () => {
+        setShowAlertModal(true);
+    };
+    // Confirm the delete logic here:
+    const handleAlertResponse = (res) => {
+        setShowAlertModal(false);
+        if (res === true) {
+            deleteProject();
+        }
+        setAlertResponse(res);
+    };
+    const deleteProject = async () => {
+        try {
+            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/project/${id}`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
@@ -182,11 +234,13 @@ export const ProjectFullView = () => {
                 return;
             }
             dispatch({ type: "success", payload: "Project deleted successfully!" });
-            navigate("/"); // Redirect to home or projects list
+            fetchProjects()
+            // Redirect to home or projects list
         } catch (error) {
             dispatch({ type: "error", payload: "Could not connect to backend." });
         }
-    };
+
+    }
 
     if (!project) {
         return <p className='text-center'>Loading project...</p>;
@@ -293,6 +347,11 @@ export const ProjectFullView = () => {
                 task={taskToEdit || null}
                 onClose={() => setShowTaskModal(false)}
                 onUpdate={handleUpdateTasks}
+            />
+            <AlertModal
+                isOpen={showAlertModal}
+                onClose={() => setShowAlertModal(false)}
+                response={handleAlertResponse}
             />
 
         </div>

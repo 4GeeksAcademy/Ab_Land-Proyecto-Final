@@ -23,8 +23,8 @@ export default function Dashboard() {
     }
     setProjects(store.projects)
     setTimeout(() => {
-        setLoading(false)
-      }, 1000);
+      setLoading(false)
+    }, 1000);
     handleWelcomeModal()
 
   }, [store.token, projects]);
@@ -35,7 +35,7 @@ export default function Dashboard() {
 
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/projects`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/projects`,
         {
           headers: {
             Authorization: "Bearer " + store.token,

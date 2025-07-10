@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"; 
+import React, { useEffect, useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { useNavigate, Link } from "react-router-dom";
 import { ProjectCardS } from "../components/ProjectCardS";
@@ -99,7 +99,7 @@ export function Profile() {
       submitData.phone = Number(submitData.phone);
     }
     try {
-      const response = await fetch(`${backendUrl}/profile`, {
+      const response = await fetch(`${backendUrl}/api/profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -130,7 +130,7 @@ export function Profile() {
     if (!window.confirm("Are you sure you want to delete your account? This cannot be undone.")) return;
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
     try {
-      const response = await fetch(`${backendUrl}/user`, {
+      const response = await fetch(`${backendUrl}/api/user`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

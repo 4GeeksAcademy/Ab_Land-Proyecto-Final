@@ -16,7 +16,7 @@ export const TaskCard = ({ task, userRole, onEdit, onUpdate }) => {
     comments = [],
     tags = [],
     assigned_to = null,
-    asignated_to_id = null,
+    assigned_to_id = null,
     is_unassigned = true,
     user_relation = null } = task;
 
@@ -56,7 +56,7 @@ export const TaskCard = ({ task, userRole, onEdit, onUpdate }) => {
     if (minutes > 0) {
       return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
     }
-    return `${seconds} second${seconds > 1 ? 's' : ''} ago`;
+    return `${seconds > 1 ? seconds : 1} second${seconds > 1 ? 's' : ''} ago`;
   };
 
   useEffect(() => {
@@ -67,26 +67,26 @@ export const TaskCard = ({ task, userRole, onEdit, onUpdate }) => {
     editAble()
   }, [status, created_at]);
 
-  const deleteTask = () => {
-        fetch(`${import.meta.env.VITE_BACKEND_URL}/api/project/${project_id}/task/${id}`, {
-            method: "delete",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + store.token,
-            }
-        })
-            .then(async (res) => {
-                const data = await res.json()
-                if (!res.ok) {
-                    dispatch({ type: "error", payload: data.msg || "There was an error deleting the task" });
-                    return;
-                }
-                onUpdate(data); // Callback para actualizar la lista?
-            })
-            .catch((err) => {
-                dispatch({ type: "error", payload: err?.message || "Connection error with the server." });
-            });
-    }
+  const deleteTask = () => {        fetch(`${import.meta.env.VITE_BACKEND_URL}/api/project/${project_id}/task/${id}`, {
+            method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + store.token,
+      }
+    })
+      .then(async (res) => {
+        const data = await res.json()
+        if (!res.ok) {
+          dispatch({ type: "error", payload: data.msg || "There was an error deleting the task" });
+          return;
+        }
+        onUpdate(data); // Callback para actualizar la lista?
+        dispatch({type:"success",payload:data.msg|| "Task Deleted"})
+      })
+      .catch((err) => {
+        dispatch({ type: "error", payload: err?.message || "Connection error with the server." });
+      });
+  }
 
   return (
     <div className={`card task-${statusColor} p-3 m-1 shadow-sm`} >
@@ -110,7 +110,7 @@ export const TaskCard = ({ task, userRole, onEdit, onUpdate }) => {
             </button>}
           {canEdit &&
             <button className="btn btn-outline-danger btn-sm"
-            onClick={()=>{deleteTask()}}>
+              onClick={() => { deleteTask() }}>
               <i className="fa-regular fa-trash-can"></i>
             </button>}
         </div>
@@ -120,7 +120,7 @@ export const TaskCard = ({ task, userRole, onEdit, onUpdate }) => {
       <h5 className='text-capitalize text-black'>{title}</h5>
       <p>{description}</p>
       <div className="d-flex align-items-center">
-        {/* Si es la misma persona creador y asignado */}
+
         {assigned_to && assigned_to.full_name === task_author ? (
           <div className="d-flex align-items-center me-3">
             <div className="me-2">
@@ -141,7 +141,7 @@ export const TaskCard = ({ task, userRole, onEdit, onUpdate }) => {
           </div>
         ) : (
           <>
-            {/* Mostrar autor de la tarea */}
+
             <div className="d-flex align-items-center me-3">
               <div className="me-2">
                 <img
@@ -160,7 +160,6 @@ export const TaskCard = ({ task, userRole, onEdit, onUpdate }) => {
               </small>
             </div>
 
-            {/* Mostrar información de asignación */}
             <div className="d-flex align-items-center me-3">
               {assigned_to && assigned_to.full_name ? (
                 <>

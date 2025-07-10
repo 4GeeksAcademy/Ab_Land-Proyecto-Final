@@ -59,7 +59,7 @@ class User(db.Model):
     restore_passwords: Mapped[list['RestorePassword']] = relationship(
         back_populates='user', cascade='all, delete-orphan')
     tasks_asigned: Mapped[list['Task']] = relationship(
-        'Task', back_populates='asignated_to', foreign_keys='Task.asignated_to_id', cascade='all, delete-orphan')
+        'Task', back_populates='assigned_to', foreign_keys='Task.assigned_to_id', cascade='all, delete-orphan')
 
     def __str__(self):
         return f'User {self.full_name}'
@@ -159,10 +159,10 @@ class Task(db.Model):
         'User', back_populates='author_of_task', foreign_keys=[author_id])
     project_id: Mapped[int] = mapped_column(ForeignKey('project.id'))
     project: Mapped[Project] = relationship(back_populates='tasks')
-    asignated_to_id: Mapped[int] = mapped_column(
+    assigned_to_id: Mapped[int] = mapped_column(
         ForeignKey('user.id'), nullable=True)
-    asignated_to: Mapped[User] = relationship(
-        'User', back_populates='tasks_asigned', foreign_keys=[asignated_to_id])
+    assigned_to: Mapped[User] = relationship(
+        'User', back_populates='tasks_asigned', foreign_keys=[assigned_to_id])
     comments: Mapped[list['Comment']] = relationship(
         back_populates='task', cascade='all, delete-orphan')
     tags: Mapped[list['Tags']] = relationship(
@@ -184,34 +184,34 @@ class Task(db.Model):
             'project': self.project.title if self.project else None,
             'comments': [comment.serialize() for comment in self.comments],
             'tags': [tag.tag for tag in self.tags],
-            'asignated_to_id': self.asignated_to_id,
-            'is_unassigned': self.asignated_to_id is None
+            'assigned_to_id': self.assigned_to_id,
+            'is_unassigned': self.assigned_to_id is None
         }
 
         if include_assigned_to:
             data['assigned_to'] = {
-                'id': self.asignated_to.id if self.asignated_to else None,
-                'full_name': self.asignated_to.full_name if self.asignated_to else None,
-                'email': self.asignated_to.email if self.asignated_to else None
-            } if self.asignated_to_id else None
+                'id': self.assigned_to.id if self.assigned_to else None,
+                'full_name': self.assigned_to.full_name if self.assigned_to else None,
+                'email': self.assigned_to.email if self.assigned_to else None
+            } if self.assigned_to_id else None
 
         return data
 
     def serialize_for_member(self, user_id):
         data = self.serialize()
         data['user_relation'] = {
-            'is_assigned': self.asignated_to_id == user_id,
+            'is_assigned': self.assigned_to_id == user_id,
             'is_author': self.author_id == user_id,
             'can_edit': self.author_id == user_id
         }
-        if self.asignated_to_id:
+        if self.assigned_to_id:
             data['assigned_to'] = {
-                'id': self.asignated_to.id if self.asignated_to else None,
-                'full_name': self.asignated_to.full_name if self.asignated_to else None
+                'id': self.assigned_to.id if self.assigned_to else None,
+                'full_name': self.assigned_to.full_name if self.assigned_to else None
             }
         else:
             data['assigned_to'] = None
-        data['is_unassigned'] = self.asignated_to_id is None
+        data['is_unassigned'] = self.assigned_to_id is None
         return data
 
 # --- COMMENT MODEL ---

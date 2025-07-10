@@ -12,32 +12,9 @@ export const MemberCard = ({
     const [error, setError] = useState(null);
 
     const handleDelete = async () => {
-        if (!window.confirm(`Remove ${member.full_name} from project?`)) return;
-        setLoading(true);
-        setError(null);
-
-        try {
-            const res = await fetch(
-                `${process.env.BACKEND_URL || 'http://localhost:3001'}/project/${projectId}/member/${member.id}`,
-                {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                }
-            );
-            const data = await res.json();
-            if (res.ok) {
-                // Notify parent to refresh member list, or remove from UI
-                if (onMemberRemoved) onMemberRemoved(member.id);
-            } else {
-                setError(data.msg || 'Error removing member');
-            }
-        } catch (err) {
-            setError('Server error');
-        } finally {
-            setLoading(false);
-        }
+        console.log("entre a la funcion");
+        onMemberRemoved(member.id)
+        
     };
 
     return (

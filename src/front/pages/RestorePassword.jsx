@@ -36,7 +36,7 @@ export const RestorePassword = () => {
 
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/restore-password`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/restore-password`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -69,7 +69,7 @@ export const RestorePassword = () => {
   const postNewPassword = async () => {    
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/restore-password/${token}`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/restore-password/${token}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
