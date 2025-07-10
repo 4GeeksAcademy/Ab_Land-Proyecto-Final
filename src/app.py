@@ -752,7 +752,9 @@ def create_task(project_id):
         if not valid_assignee:
             return jsonify({'msg': 'Cannot assign task to user who is not part of the project'}), 400
     else:
-        assigned_to_id = None
+        assigned_to_id = None    
+
+
     # Validar status de la tarea
     status_value = body.get('status', 'in progress')
     print(f"DEBUG: status_value: {status_value}")
@@ -784,6 +786,7 @@ def create_task(project_id):
         }), 201
 
     except Exception as e:
+        print(e)
         db.session.rollback()
         print(f"DEBUG: Error creating task: {str(e)}")
         print(e)

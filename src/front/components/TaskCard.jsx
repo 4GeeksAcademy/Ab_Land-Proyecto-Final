@@ -56,7 +56,7 @@ export const TaskCard = ({ task, userRole, onEdit, onUpdate }) => {
     if (minutes > 0) {
       return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
     }
-    return `${seconds > 1 ? seconds : 1} second${seconds > 1 ? 's' : ''} ago`;
+    return `${seconds > 1? seconds : 1} second${seconds > 1 ? 's' : ''} ago`;
   };
 
   useEffect(() => {
@@ -67,26 +67,28 @@ export const TaskCard = ({ task, userRole, onEdit, onUpdate }) => {
     editAble()
   }, [status, created_at]);
 
-  const deleteTask = () => {        fetch(`${import.meta.env.VITE_BACKEND_URL}/api/project/${project_id}/task/${id}`, {
+
+  const deleteTask = () => {
+        fetch(`${import.meta.env.VITE_BACKEND_URL}/api/project/${project_id}/task/${id}`, {
             method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + store.token,
-      }
-    })
-      .then(async (res) => {
-        const data = await res.json()
-        if (!res.ok) {
-          dispatch({ type: "error", payload: data.msg || "There was an error deleting the task" });
-          return;
-        }
-        onUpdate(data); // Callback para actualizar la lista?
-        dispatch({type:"success",payload:data.msg|| "Task Deleted"})
-      })
-      .catch((err) => {
-        dispatch({ type: "error", payload: err?.message || "Connection error with the server." });
-      });
-  }
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + store.token,
+            }
+        })
+            .then(async (res) => {
+                const data = await res.json()
+                if (!res.ok) {
+                    dispatch({ type: "error", payload: data.msg || "There was an error deleting the task" });
+                    return;
+                }
+                onUpdate(data); // Callback para actualizar la lista?
+                dispatch({type:"success",payload:data.msg|| "Task Deleted"})
+            })
+            .catch((err) => {
+                dispatch({ type: "error", payload: err?.message || "Connection error with the server." });
+            });
+    }
 
   return (
     <div className={`card task-${statusColor} p-3 m-1 shadow-sm`} >
