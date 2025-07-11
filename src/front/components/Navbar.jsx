@@ -194,11 +194,14 @@ export const Navbar = () => {
                   navigate(`/profile/${store.user && store.user.id}`)
                 }
                 title="Go to profile"
-              >
-                {store.user && store.user.profile_picture_url ? (
+              >                
                   <img
                     src={store.user.profile_picture_url}
                     alt="Profile"
+                    onError={e => {
+                        e.target.onerror = null;
+                        e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(store.user.full_name)}&background=random`;
+                    }}
                     style={{
                       width: "100%",
                       height: "100%",
@@ -206,23 +209,7 @@ export const Navbar = () => {
                       borderRadius: "50%",
                     }}
                   />
-                ) : (
-                  <span
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontWeight: "bold",
-                      fontSize: "1.4rem",
-                      color: "white",
-                      letterSpacing: ".06em",
-                    }}
-                  >
-                    {store.user.full_name ? store.user.full_name[0] : "?"}
-                  </span>
-                )}
+                
               </button>
               <ul className="dropdown-menu dropdown-menu-end shadow-sm" style={{ minWidth: 155 }}>
                 <li>

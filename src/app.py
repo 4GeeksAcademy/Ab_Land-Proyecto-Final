@@ -343,7 +343,7 @@ def delete_user():
 
     # Optional: delete all user-related objects
     # Remove user from all projects
-    Project_Member.query.filter_by(member_id=user_id).delete()
+    
     # Remove all projects where user is admin (optional, or force them to transfer)
     # Project.query.filter_by(admin_id=user_id).delete()
     # Remove user's tasks, comments, etc, as needed

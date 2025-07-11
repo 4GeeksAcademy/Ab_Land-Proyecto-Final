@@ -2,6 +2,7 @@ import React from 'react'
 import { useState, useEffect } from 'react';
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { useNavigate } from "react-router-dom";
+import { AlertModal } from "../components/AlertModal"
 
 export const TaskCard = ({ task, userRole, onEdit, onUpdate }) => {
   const { id = '',
@@ -23,6 +24,7 @@ export const TaskCard = ({ task, userRole, onEdit, onUpdate }) => {
   const [statusColor, setStatusColor] = useState('');
   const [timeAgo, setTimeAgo] = useState('');
   const [canEdit, setCanEdit] = useState(false)
+  const [showAlertModal, setShowAlertModal] = useState(false)
 
   const { store, dispatch } = useGlobalReducer();
   const navigate = useNavigate();
@@ -67,7 +69,14 @@ export const TaskCard = ({ task, userRole, onEdit, onUpdate }) => {
     editAble()
   }, [status, created_at]);
 
-
+  const handleDeleteTask = ()=>{
+    setShowAlertModal(true)
+  };
+  const handleAlertResponse = (res)=>{
+    if (res === true){
+      deleteTask()
+    }
+  }
   const deleteTask = () => {
         fetch(`${import.meta.env.VITE_BACKEND_URL}/api/project/${project_id}/task/${id}`, {
             method: "DELETE",
@@ -83,7 +92,7 @@ export const TaskCard = ({ task, userRole, onEdit, onUpdate }) => {
                     return;
                 }
                 onUpdate(data); // Callback para actualizar la lista?
-                dispatch({type:"success",payload:data.msg|| "Task Deleted"})
+                dispatch({type:"success", payload:data.msg|| "Task Deleted"})
             })
             .catch((err) => {
                 dispatch({ type: "error", payload: err?.message || "Connection error with the server." });
@@ -112,7 +121,7 @@ export const TaskCard = ({ task, userRole, onEdit, onUpdate }) => {
             </button>}
           {canEdit &&
             <button className="btn btn-outline-danger btn-sm"
-              onClick={() => { deleteTask() }}>
+              onClick={handleDeleteTask}>
               <i className="fa-regular fa-trash-can"></i>
             </button>}
         </div>
@@ -192,8 +201,11 @@ export const TaskCard = ({ task, userRole, onEdit, onUpdate }) => {
 
         <small className='text-muted ms-auto'> {timeAgo}</small>
       </div>
-
-
+      <AlertModal
+      isOpen={showAlertModal}
+      onClose={()=>{setShowAlertModal(false)}}
+      response={handleAlertResponse}
+      />
     </div>
   )
 }

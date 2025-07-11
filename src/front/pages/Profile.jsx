@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { useNavigate, Link } from "react-router-dom";
 import { ProjectCardS } from "../components/ProjectCardS";
-import { array } from "prop-types";
+import { AlertModal } from "../components/AlertModal";
 
 export function Profile() {
   const { store, dispatch } = useGlobalReducer();
@@ -18,6 +18,7 @@ export function Profile() {
   const [uploading, setUploading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState("");
   const [editing, setEditing] = useState(false);
+  const [showAlertModal, setShowAlertModal] = useState(false)
   const getAvatarUrl = () =>
     formData.profile_picture_url ||
     `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.full_name || "U")}&background=0D8ABC&color=fff`;
@@ -90,6 +91,10 @@ export function Profile() {
     putProfile();
   };
 
+  // --- Handle user deletion ---
+  const handleDeleteAccount = () => {
+    setShowAlertModal(true)
+  };
   const putProfile = async () => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
     const submitData = { ...formData };
@@ -124,10 +129,13 @@ export function Profile() {
       });
     }
   };
-
-  // --- Handle user deletion ---
-  const handleDeleteAccount = async () => {
-    if (!window.confirm("Are you sure you want to delete your account? This cannot be undone.")) return;
+  const handleAlertResponse = (res) => {
+    setShowAlertModal(false)
+    if (res == true) {
+      deleteAccount()
+    }
+  }
+  const deleteAccount = async () => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
     try {
       const response = await fetch(`${backendUrl}/api/user`, {
@@ -151,7 +159,7 @@ export function Profile() {
         payload: err?.message || "Error deleting account. Please try again.",
       });
     }
-  };
+  }
 
   return (
     <div className="container py-5" style={{ maxWidth: 950, minHeight: "92vh", color: "var(--blue-800)" }}>
@@ -336,8 +344,6 @@ export function Profile() {
 
         </form>
       )}
-      {console.log(projects)
-      }
 
       {tab === "projects" && (
         <div className="card shadow p-4 border-0">
@@ -364,6 +370,10 @@ export function Profile() {
             : <p>You are not a member of any project.</p>}
         </div>
       )}
+      <AlertModal
+        isOpen={showAlertModal}
+        onClose={() => { setShowAlertModal(false) }}
+        response={handleAlertResponse} />
     </div>
   );
 }

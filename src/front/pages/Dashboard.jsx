@@ -11,6 +11,7 @@ export default function Dashboard() {
   const [showModal, setShowModal] = useState(false);
   const [projectEmpty, setProjectEmpty] = useState(false)
   const [tab, setTab] = useState("admin")
+  const [welcomeMsg, setWelcomeMsg] = useState(true)
 
   const navigate = useNavigate();
 
@@ -27,6 +28,9 @@ export default function Dashboard() {
       setLoading(false)
     }, 1000);
     handleWelcomeModal()
+    setTimeout(()=>{
+      setWelcomeMsg(false)
+    },10000)
 
   }, [store.token, projects]);
 
@@ -85,12 +89,16 @@ export default function Dashboard() {
   return (
     <div className="container app ">
       {/* Welcome message with profile picture */}
-      {store.user && (
+      {store.user && welcomeMsg &&(
         <div className="alert alert-info alert-dismissible mb-4 d-flex align-items-center " role="alert">
-          {store.user.profile_picture_url ? (
+          
             <img
               src={store.user.profile_picture_url}
               alt="Profile"
+              onError={e => {
+                        e.target.onerror = null;
+                        e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(store.user.full_name)}&background=random`;
+                    }}
               style={{
                 width: "48px",
                 height: "48px",
@@ -100,23 +108,7 @@ export default function Dashboard() {
                 border: "2px solid var(--green-500)"
               }}
             />
-          ) : (
-            <span
-              className="d-inline-flex align-items-center justify-content-center"
-              style={{
-                width: "48px",
-                height: "48px",
-                borderRadius: "50%",
-                background: "#eee",
-                marginRight: "1rem",
-                fontSize: "1.5rem",
-                fontWeight: "bold",
-                border: "2px solid var(--green-500)"
-              }}
-            >
-              {store.user.full_name ? store.user.full_name[0] : "?"}
-            </span>
-          )}
+          
           Welcome,&nbsp;<strong className="text-capitalize">{` ${store.user.full_name || store.user.email}`}</strong>! 👋
           <button type="button" className="btn-close mt-2" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
@@ -128,6 +120,10 @@ export default function Dashboard() {
           <img
             src={store.user.profile_picture_url}
             alt="Profile"
+            onError={e => {
+                        e.target.onerror = null;
+                        e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(store.user.full_name)}&background=random`;
+                    }}
             style={{
               width: "70px",
               height: "70px",

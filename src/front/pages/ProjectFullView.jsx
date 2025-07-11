@@ -26,7 +26,7 @@ export const ProjectFullView = () => {
     const [tab, setTab] = useState("overview");
     const [userRole, setUserRole] = useState("member")
     const [showAlertModal, setShowAlertModal] = useState(false)
-    const [alertResponse, setAlertResponse] = useState("")
+    
 
     const filterProjectById = (projectId) => {
         const roles = Object.keys(store.projects);
@@ -143,30 +143,7 @@ export const ProjectFullView = () => {
         setTimeout(() => {
             setShowTaskModal(true);
         }, 0);
-    };
-
-    // --- Remove Member Handler ---
-    const handleRemoveMember = async (memberId) => {
-        if (!window.confirm("Are you sure you want to remove this member?")) return;
-        try {
-            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/project/${project.id}/member/${memberId}`, {
-                method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: "Bearer " + (store.token || localStorage.getItem("token")),
-                },
-            });
-            const data = await res.json();
-            if (!res.ok) {
-                dispatch({ type: "error", payload: data.msg || "Failed to remove member" });
-                return;
-            }
-            // Re-fetch project to update member list
-            getProject();
-        } catch (error) {
-            dispatch({ type: "error", payload: "Could not remove member" });
-        }
-    };
+    };   
 
     const fetchProjects = async () => {
 
@@ -210,14 +187,14 @@ export const ProjectFullView = () => {
     // --- Delete Project Handler ---
     const handleDeleteProject = () => {
         setShowAlertModal(true);
+        setWhatToDelete("project")
     };
     // Confirm the delete logic here:
     const handleAlertResponse = (res) => {
         setShowAlertModal(false);
         if (res === true) {
-            deleteProject();
-        }
-        setAlertResponse(res);
+            deleteProject();            
+        };        
     };
     const deleteProject = async () => {
         try {
@@ -317,8 +294,8 @@ export const ProjectFullView = () => {
                                 memberRole={member.id == project.admin_id ? "admin" : "member"}
                                 userRole={userRole}
                                 projectId={project.id}
-                                token={store.token || localStorage.getItem("token")}
-                                onMemberRemoved={handleRemoveMember}
+                                onUpdate={handleUpdateProject}
+                                                              
                             />
                         )}
                     </div>
