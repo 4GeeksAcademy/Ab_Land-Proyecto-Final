@@ -1,20 +1,47 @@
 import React, { useState } from 'react';
+import { AlertModal } from "../components/AlertModal"
+import useGlobalReducer from "../hooks/useGlobalReducer";
 
 export const MemberCard = ({
     member,
     memberRole,
     userRole,
     projectId,
-    token,
-    onMemberRemoved
-}) => {
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+    onUpdate
 
-    const handleDelete = async () => {
-        console.log("entre a la funcion");
-        onMemberRemoved(member.id)
-        
+}) => {
+
+    const [showAlertModal, setShowAlertModal] = useState(false)
+    const { store, dispatch } = useGlobalReducer();
+
+    const handleDeleteMember = () => {
+        setShowAlertModal(true)
+    };
+    const handleAlertResponse = (res)=>{
+    if (res === true){
+      deleteMember()
+    }
+  }
+    const deleteMember = async () => {
+        try {
+            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/project/${projectId}/member/${member.id}`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + (store.token || localStorage.getItem("token")),
+                },
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                dispatch({ type: "error", payload: data.msg || "Failed to remove member" });
+                return;
+            }
+            // Re-fetch project to update member list
+            onUpdate(data)
+            dispatch({ type: "success", payload: data.msg || "Member removed! " })
+        } catch (error) {
+            dispatch({ type: "error", payload: error || "Could not remove member" });
+        }
     };
 
     return (
@@ -35,19 +62,18 @@ export const MemberCard = ({
                 {userRole === "admin" && (
                     <button
                         className="btn btn-outline-danger btn-sm rounded-circle ms-auto"
-                        onClick={handleDelete}
-                        disabled={loading}
+                        onClick={handleDeleteMember}
                         title="Remove member"
                     >
                         <i className="fa-regular fa-trash-can"></i>
                     </button>
                 )}
             </div>
-            {error && (
-                <div className="text-danger small mt-1 ms-5">
-                    {error}
-                </div>
-            )}
+            <AlertModal
+                isOpen={showAlertModal}
+                onClose={() => { setShowAlertModal(false) }}
+                response={handleAlertResponse}
+            />
         </div>
     );
 };
