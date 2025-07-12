@@ -269,6 +269,14 @@ def get_profile():
         return jsonify({'msg': 'User not found'}), 404
     return jsonify({'user': user.serialize()}), 200
 
+@app.route('/api/profile/<int:user_id>', methods=['GET'])
+@jwt_required()
+def get_profile_by(user_id):    
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'msg': 'User not found'}), 404
+    return jsonify({'user': user.serialize()}), 200
+
 
 @app.route('/api/profile', methods=['PUT'])
 @jwt_required()
@@ -448,6 +456,24 @@ def new_project():
 @jwt_required()
 def get_projects():
     user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'msg': 'User not found'}), 404
+
+    admin_of = [project.serialize() for project in user.admin_of]
+    member_of = [project.project.serialize() for project in user.member_of]
+
+    return jsonify({
+        'msg': 'Projects retrieved successfully',
+        'user_projects': {
+            'admin': admin_of,
+            'member': member_of
+        }
+    }), 200
+
+@app.route('/api/projects/<int:user_id>', methods=['GET'])
+@jwt_required()
+def get_projects_by(user_id):
     user = User.query.get(user_id)
     if not user:
         return jsonify({'msg': 'User not found'}), 404

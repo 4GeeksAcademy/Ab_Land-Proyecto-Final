@@ -6,7 +6,7 @@ import { WelcomeModal } from "../components/WelcomeModal";
 
 export default function Dashboard() {
   const { store, dispatch } = useGlobalReducer();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [projects, setProjects] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [projectEmpty, setProjectEmpty] = useState(false)
@@ -23,16 +23,13 @@ export default function Dashboard() {
     if (!store.projects) {
       fetchProjects()
     }
-    setProjects(store.projects)
-    setTimeout(() => {
-      setLoading(false)
-    }, 1000);
+    setProjects(store.projects)    
     handleWelcomeModal()
     setTimeout(()=>{
       setWelcomeMsg(false)
     },10000)
 
-  }, [store.token, projects]);
+  }, [store.token]);
 
   const fetchProjects = async () => {
     setLoading(true);
@@ -62,7 +59,7 @@ export default function Dashboard() {
         setProjects(null);
       } else {
         setProjects(data.user_projects);
-        dispatch({ type: "projects", payload: data.user_projects });
+        dispatch({ type: "projects", payload: data.user_projects})
 
       }
     } catch (err) {
@@ -161,8 +158,8 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {loading && <div class="flex-center mb-4" >
-        <span class="spinner-border spinner-border me-4" aria-hidden="true"></span>
+      {loading && <div className="flex-center mb-4" >
+        <span className="spinner-border spinner-border me-4" aria-hidden="true"></span>
         <span role="status">Loading...</span>
       </div>}
 

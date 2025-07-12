@@ -1,7 +1,7 @@
 import React from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { useNavigate } from "react-router-dom";
-import {useEffect} from "react";
+import { useEffect } from "react";
 
 export const ErrorAlert = () => {
   const { store, dispatch } = useGlobalReducer();

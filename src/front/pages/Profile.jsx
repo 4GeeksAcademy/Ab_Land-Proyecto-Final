@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useParams } from "react-router-dom";
 import { ProjectCardS } from "../components/ProjectCardS";
 import { AlertModal } from "../components/AlertModal";
 
@@ -8,30 +8,115 @@ export function Profile() {
   const { store, dispatch } = useGlobalReducer();
   const [tab, setTab] = useState("overview");
   const [formData, setFormData] = useState({
-    full_name: store.user.full_name || "",
-    country: store.user.country || "",
-    phone: store.user.phone || "",
-    profile_picture_url: store.user.profile_picture_url || "",
-    email: store.user.email || "",
+    full_name: "",
+    country: "",
+    phone: "",
+    profile_picture_url: "",
+    email: "",
   });
   const [imageFile, setImageFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState("");
   const [editing, setEditing] = useState(false);
-  const [showAlertModal, setShowAlertModal] = useState(false)
+  const [showAlertModal, setShowAlertModal] = useState(false);
+  const [isUserProfile, setIsUserProfile] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [projects, setProjects] = useState({ admin: [], member: [] });
+  const navigate = useNavigate();
+  const { id } = useParams();
+
   const getAvatarUrl = () =>
     formData.profile_picture_url ||
-    `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.full_name || "U")}&background=0D8ABC&color=fff`;
-
-  const [projects, setProjects] = useState(store.projects || { admin: [], member: [] });
-
-  const navigate = useNavigate()
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.full_name || "U")}&background=0D8ABC&color=fff`;  
 
   const handleChange = (e) => {
     setFormData(prev => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
+  };
+  
+  useEffect(() => {
+    if (store.user.id == id) {
+      setIsUserProfile(true)
+      setFormData(prev => ({
+        ...prev,
+        full_name: store.user.full_name,
+        country: store.user.country,
+        phone: store.user.phone,
+        profile_picture_url: store.user.profile_picture_url,
+        email: store.user.email,
+      }))
+      if (store.projects) { setProjects(store.projects) }
+    } else {
+      getProfile()
+      fetchProjects()
+    }
+  }, [id]);
+
+  const getProfile = async () => {
+    setLoading(true)
+    const backendUrl = import.meta.env.VITE_BACKEND_URL;
+    try {
+      const res = await fetch(`${backendUrl}/api/profile/${id}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + (store.token || localStorage.getItem("token")),
+        },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        dispatch({ type: "error", payload: data.msg || "Something went wrong" });
+        return;
+      }
+      setFormData(prev => ({
+        ...prev,
+        full_name: data.user.full_name,
+        country: data.user.country,
+        phone: data.user.phone,
+        profile_picture_url: data.user.profile_picture_url,
+        email: data.user.email
+      }))
+    } catch (error) {
+      dispatch({ type: "error", payload: "Could not connect to backend." });
+    } finally {
+      setLoading(false)
+    }
+  };
+
+  const fetchProjects = async () => {
+
+    dispatch({ type: "error", payload: null });
+
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/api/projects/${id}`,
+        {
+          headers: {
+            Authorization: "Bearer " + store.token,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+      const data = await res.json();
+
+      if (res.status === 401 || res.status === 422) {
+        dispatch({ type: "LOGOUT" });
+        dispatch({ type: "error", payload: "Session expired. Please log in again." });
+        navigate("/login");
+        return;
+      }
+
+      if (!res.ok) {
+        dispatch({ type: "error", payload: data.msg || "Error fetching projects." });
+
+      } else {
+        setProjects(data.user_projects);
+
+      }
+    } catch (err) {
+      dispatch({ type: "error", payload: err?.message || "Could not connect to backend." });
+    }
   };
 
   const handleFileUpload = async (file) => {
@@ -91,7 +176,6 @@ export function Profile() {
     putProfile();
   };
 
-  // --- Handle user deletion ---
   const handleDeleteAccount = () => {
     setShowAlertModal(true)
   };
@@ -134,7 +218,7 @@ export function Profile() {
     if (res == true) {
       deleteAccount()
     }
-  }
+  };
   const deleteAccount = async () => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
     try {
@@ -159,7 +243,14 @@ export function Profile() {
         payload: err?.message || "Error deleting account. Please try again.",
       });
     }
-  }
+  };
+
+  if (loading) {
+    return (<div className="flex-center my-4" >
+      <span className="spinner-border spinner-border me-4" aria-hidden="true"></span>
+      <span role="status">Loading...</span>
+    </div>)
+  };
 
   return (
     <div className="container py-5" style={{ maxWidth: 950, minHeight: "92vh", color: "var(--blue-800)" }}>
@@ -207,9 +298,9 @@ export function Profile() {
         <form className="card shadow p-4 border-0" style={{ background: "#fff" }} onSubmit={handleSubmit}>
           <div className="d-flex justify-content-between mb-2">
             <h5 className="mb-3 fw-bold">Basic Info</h5>
-            {!editing && (
+            {!editing && isUserProfile && (
               <button
-                className="btn btn-outline-warning btn-sm"
+                className="btn btn-outline-secondary btn-sm"
                 type="button"
                 onClick={() => setEditing(true)}
               >
@@ -278,7 +369,7 @@ export function Profile() {
                     type="text"
                     className="form-control"
                     name="full_name"
-                    value={formData.full_name}
+                    value={formData.full_name || ""}
                     onChange={handleChange}
                     required
                     disabled={!editing}
@@ -290,7 +381,7 @@ export function Profile() {
                     type="text"
                     className="form-control"
                     name="country"
-                    value={formData.country}
+                    value={formData.country || ""}
                     onChange={handleChange}
                     disabled={!editing}
                   />
@@ -303,7 +394,7 @@ export function Profile() {
                     type="text"
                     className="form-control"
                     name="phone"
-                    value={formData.phone}
+                    value={formData.phone || ""}
                     onChange={handleChange}
                     disabled={!editing}
                   />
@@ -313,7 +404,7 @@ export function Profile() {
                   <input
                     type="email"
                     className="form-control"
-                    value={formData.email}
+                    value={formData.email || ""}
                     disabled
                   />
                 </div>
@@ -330,7 +421,7 @@ export function Profile() {
           )}
 
           {/* ---- Delete account button ---- */}
-          {!editing && (
+          {!editing && isUserProfile && (
             <div className="mt-4 d-flex justify-content-end">
               <button
                 type="button"
