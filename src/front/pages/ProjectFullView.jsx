@@ -220,8 +220,8 @@ export const ProjectFullView = () => {
     }
 
     if (!project) {
-        return (<div class="flex-center my-4" >
-        <span class="spinner-border spinner-border me-4" aria-hidden="true"></span>
+        return (<div className="flex-center my-4" >
+        <span className="spinner-border spinner-border me-4" aria-hidden="true"></span>
         <span role="status">Loading...</span>
       </div>)
     }

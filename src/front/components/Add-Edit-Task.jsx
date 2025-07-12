@@ -9,9 +9,7 @@ export function AddEditTask({ project, isOpen, onClose, onUpdate, task, onEdit }
         description: "",
         status: "in progress",
         assigned_to_id: "",
-
     });
-
 
     useEffect(() => {
         if (onEdit && task !== null) {
@@ -19,81 +17,86 @@ export function AddEditTask({ project, isOpen, onClose, onUpdate, task, onEdit }
                 title: task.title,
                 description: task.description,
                 status: task.status,
-                assigned_to_id: task.assigned_to_id || "",
+                assigned_to_id: task.assigned_to_id || (store.user.id !== project.admin_id ? store.user.id : ""),
             });
         } else if (isOpen) {
-            // Reset form when opening for a new task
             setFormData({
                 title: "",
                 description: "",
                 status: "in progress",
-                assigned_to_id: "",
+                assigned_to_id: store.user.id !== project.admin_id ? store.user.id : "",
             });
         }
-    }, [task, project, onEdit, isOpen]);
-
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        onEdit ? putTask() : postTask()
-    };
+    }, [task, project, onEdit, isOpen, store.user.id, project.admin_id]);
 
     const handleChange = (e) => {
         setFormData((prev) => ({
             ...prev,
-            [e.target.name]: e.target.name === "status" ?
-                e.target.value.toLowerCase() : e.target.value,
+            [e.target.name]: e.target.name === "status"
+                ? e.target.value.toLowerCase()
+                : e.target.value,
         }));
     };
 
-    const postTask = () => {
+    const postTask = (dataToSend) => {
         fetch(`${import.meta.env.VITE_BACKEND_URL}/api/project/${project.id}/task`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": "Bearer " + store.token,
             },
-            body: JSON.stringify(formData),
+            body: JSON.stringify(dataToSend),
         })
             .then(async (res) => {
-                const data = await res.json()
+                const data = await res.json();
                 if (!res.ok) {
                     dispatch({ type: "error", payload: (data.msg?.toString?.() || "There was an error posting the task") });
-
                     return;
                 }
-                dispatch({ type: "success", payload: data.msg?.message || "Task Created" })
-                onUpdate(data); // Callback para actualizar la lista?
-                onClose(); // Cerrar el modal
+                dispatch({ type: "success", payload: data.msg?.message || "Task Created" });
+                onUpdate(data);
+                onClose();
             })
             .catch((err) => {
-                dispatch({ type: "error", payload: err || "Connection error with the server." });
+                dispatch({ type: "error", payload: err?.message || "Connection error with the server." });
             });
-    }
+    };
 
-    const putTask = () => {
+    const putTask = (dataToSend) => {
         fetch(`${import.meta.env.VITE_BACKEND_URL}/api/project/${project.id}/task/${task.id}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": "Bearer " + store.token,
             },
-            body: JSON.stringify(formData),
+            body: JSON.stringify(dataToSend),
         })
             .then(async (res) => {
-                const data = await res.json()
+                const data = await res.json();
                 if (!res.ok) {
                     dispatch({ type: "error", payload: data.msg || "There was an error posting the task" });
                     return;
                 }
-                onUpdate(data); // Callback para actualizar la lista?
-                onClose(); // Cerrar el modal
+                onUpdate(data);
+                onClose();
             })
             .catch((err) => {
-                dispatch({ type: "error", payload: err || "Connection error with the server." });
+                dispatch({ type: "error", payload: err?.message || "Connection error with the server." });
             });
-    }
+    };
 
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        let dataToSend = { ...formData };
+        if (store.user.id === project.admin_id) {
+            if (!formData.assigned_to_id || formData.assigned_to_id === "") {
+                dataToSend.assigned_to_id = null;
+            } else {
+                dataToSend.assigned_to_id = Number(formData.assigned_to_id);
+            }
+        }
+        onEdit ? putTask(dataToSend) : postTask(dataToSend);
+    };
 
     if (!isOpen) return null;
 
@@ -137,7 +140,6 @@ export function AddEditTask({ project, isOpen, onClose, onUpdate, task, onEdit }
                             </div>
 
                             <div className="row">
-
                                 <div className="col-6">
                                     <label className="form-label">Status</label>
                                     <select
@@ -152,7 +154,6 @@ export function AddEditTask({ project, isOpen, onClose, onUpdate, task, onEdit }
                                         <option value="done">Done</option>
                                         <option value="urgent">Urgent</option>
                                     </select>
-
                                 </div>
                                 <div className="col-6">
                                     <label className="form-label">assigned</label>
@@ -161,17 +162,23 @@ export function AddEditTask({ project, isOpen, onClose, onUpdate, task, onEdit }
                                         name='assigned_to_id'
                                         value={formData.assigned_to_id}
                                         onChange={handleChange}
-
+                                        required
+                                        disabled={store.user.id !== project.admin_id}
                                     >
-                                        <option value="" disabled>Select a member</option>
-                                        {project?.members?.map((member) => (
-                                            <option key={member.id} value={member.id}>
-                                                {member.full_name}
-                                            </option>
-                                        ))}
-
+                                        {store.user.id === project.admin_id ? (
+                                            <>
+                                                <option value={""}>Select assignee</option>
+                                                <option value={store.user.id}>{store.user.full_name} (admin)</option>
+                                                {(project.members ?? []).map((member) => (
+                                                    <option key={member.member_id} value={member.id}>
+                                                        {member.full_name}
+                                                    </option>
+                                                ))}
+                                            </>
+                                        ) : (
+                                            <option value={store.user.id}>{store.user.full_name}</option>
+                                        )}
                                     </select>
-
                                 </div>
                             </div>
                         </form>
