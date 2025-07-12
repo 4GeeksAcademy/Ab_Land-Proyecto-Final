@@ -136,7 +136,7 @@ export const ProjectCardXL = ({ project, onEdit, onAddMembers }) => {
                     {/* Edit Button for Admin */}
                     {isAdmin && (
                         <button
-                            className="btn btn-sm btn-outline-warning mb-2"
+                            className="btn btn-sm btn-outline-secondary mb-2"
                             onClick={() => onEdit && onEdit(project)}
                         >
                             Edit

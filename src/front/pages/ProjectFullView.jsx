@@ -53,13 +53,14 @@ export const ProjectFullView = () => {
                 const foundProject = filterProjectById(id);
                 if (foundProject) {
                     setProject(foundProject);
+                    await getTasks();
                 } else {
                     await getProject();
-                    await getTasks();
+                    
                 }
             } else {
                 await getProject();
-                await getTasks();
+                
             }
         };
         fetchData();
@@ -83,9 +84,11 @@ export const ProjectFullView = () => {
             const data = await res.json();
             if (!res.ok) {
                 dispatch({ type: "error", payload: data.msg || "Something went wrong" });
+                navigate("/dashboard")
                 return;
             }
             setProject(data.project);
+            getTasks()
         } catch (error) {
             dispatch({ type: "error", payload: "Could not connect to backend." });
         }
@@ -105,8 +108,10 @@ export const ProjectFullView = () => {
                 return;
             }
             setTasks(data.tasks || []);
+            
         } catch (error) {
             console.error("Error fetching tasks:", error);
+            dispatch({ type: "error", payload: error || "Something went wrong when getting tasks" });
         }
     };
 
@@ -261,7 +266,8 @@ export const ProjectFullView = () => {
                 <div className="my-3 d-flex align-items-center justify-content-between">
                     <div></div>
                     {tasks && tasks.length > 0 ? (<h3 className="mb-2 p-2">Tasks</h3>) : (<h3>No tasks available</h3>)}
-                    <button className='btn btn-warning text-white' onClick={() => { setShowTaskModal(true) }}> Add </button>
+                    <button className='btn btn-warning text-white' onClick={() => { setShowTaskModal(true) }}>
+                        <i className="fa-regular fa-calendar-plus me-2"/> Add </button>
                 </div>
                 {tasks && tasks.length > 0 && (
                     <div className="mt-3">
@@ -282,12 +288,15 @@ export const ProjectFullView = () => {
                     {project.members && project.members.length > 0 ? (<h3 className="mb-2 p-2">Team Members</h3>) : (<h3>No Member found</h3>)}
                     {userRole == "admin" ?
                         (<button className='btn btn-warning text-white'
-                            onClick={() => { handleAddMembers(project) }}> Add </button>)
+                            onClick={() => { handleAddMembers(project) }}>
+                                <i className="fa-solid fa-user-plus me-2"/>
+                                 Add </button>)
                         : (<div></div>)}
                 </div>
                 {project.members && project.members.length > 0 && (
                     <div className="mt-3">
                         {project.members.map((member) =>
+                        <Link to={`/profile/${member.id}`}>
                             <MemberCard
                                 key={member.id}
                                 member={member}
@@ -297,6 +306,7 @@ export const ProjectFullView = () => {
                                 onUpdate={handleUpdateProject}
                                                               
                             />
+                            </Link>
                         )}
                     </div>
                 )}
