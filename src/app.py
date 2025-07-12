@@ -751,11 +751,11 @@ def create_task(project_id):
                           assigned_user.id in [member.member_id for member in project_members])
         if not valid_assignee:
             return jsonify({'msg': 'Cannot assign task to user who is not part of the project'}), 400
+        if is_member and assigned_user.id != user.id:
+            return jsonify({'msg': 'You can only assign tasks to yourself'}), 400
     else:
-        assigned_to_id = None    
+        assigned_to_id = None
 
-
-    # Validar status de la tarea
     status_value = body.get('status', 'in progress')
     print(f"DEBUG: status_value: {status_value}")
 
@@ -803,6 +803,10 @@ def update_task(project_id, task_id):
     project = Project.query.get(project_id)
     if not project:
         return jsonify({'msg': 'Project not found'}), 404
+    project_members = Project_Member.query.filter_by(
+        project_id=project_id).all()
+    is_admin = (user.id == project.admin_id)
+    is_member = user.id in [member.member_id for member in project_members]
     task = Task.query.filter_by(id=task_id, project_id=project_id).first()
     if not task:
         return jsonify({'msg': 'Task not found'}), 404
@@ -832,6 +836,11 @@ def update_task(project_id, task_id):
                               assigned_user.id in [member.member_id for member in project_members])
             if not valid_assignee:
                 return jsonify({'msg': 'Cannot assign task to user who is not part of the project'}), 400
+            if is_member and assigned_user.id != user.id:
+                return jsonify({'msg': 'You can only assign tasks to yourself'}), 400
+        else:
+            assigned_to_id = None
+
         task.assigned_to_id = assigned_to_id
 
     try:
@@ -872,11 +881,6 @@ def delete_task(project_id, task_id):
         db.session.rollback()
         return jsonify({'msg': 'Error updating task'}), 500
 
-# ========== TASK DELETE FALTANTE ==========
-# @app.route('/project/<int:project_id>/task/<int:task_id>', methods=['DELETE'])  # Eliminar tarea (admin o autor)
-# ========== TASK DELETE FALTANTE ==========
-
-
 # ======================== POSIBLES ENDPOINTS ADICIONALES ========================
 # Basado en los modelos disponibles en models.py que aún no tienen endpoints implementados
 
@@ -910,6 +914,7 @@ def delete_task(project_id, task_id):
 # @app.route('/project/<int:project_id>/task/<int:task_id>/assign', methods=['POST'])
 # @app.route('/project/<int:project_id>/task/<int:task_id>/unassign', methods=['POST'])
 # @app.route('/my-tasks', methods=['GET'])  # Todas las tareas asignadas al usuario
+
 
 # ---- RUN APP ----
 if __name__ == '__main__':
