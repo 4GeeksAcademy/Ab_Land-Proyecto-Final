@@ -168,9 +168,8 @@ export function AddEditTask({ project, isOpen, onClose, onUpdate, task, onEdit }
                                         {store.user.id === project.admin_id ? (
                                             <>
                                                 <option value={""}>Select assignee</option>
+                                                <option value={store.user.id}>{store.user.full_name} (admin)</option>
                                                 {(project.members ?? []).map((member) => (
-                                                    console.log(member.id),
-                                                    
                                                     <option key={member.member_id} value={member.id}>
                                                         {member.full_name}
                                                     </option>
