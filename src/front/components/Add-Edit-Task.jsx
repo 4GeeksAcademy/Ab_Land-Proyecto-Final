@@ -12,20 +12,22 @@ export function AddEditTask({ project, isOpen, onClose, onUpdate, task, onEdit }
     });
 
     useEffect(() => {
-        if (onEdit && task !== null) {
-            setFormData({
-                title: task.title,
-                description: task.description,
-                status: task.status,
-                assigned_to_id: task.assigned_to_id || (store.user.id !== project.admin_id ? store.user.id : ""),
-            });
-        } else if (isOpen) {
-            setFormData({
-                title: "",
-                description: "",
-                status: "in progress",
-                assigned_to_id: store.user.id !== project.admin_id ? store.user.id : "",
-            });
+        if (isOpen) {
+            if (onEdit && task !== null) {
+                setFormData({
+                    title: task.title,
+                    description: task.description,
+                    status: task.status,
+                    assigned_to_id: task.assigned_to_id || (store.user.id !== project.admin_id ? store.user.id : ""),
+                });
+            } else {
+                setFormData({
+                    title: "",
+                    description: "",
+                    status: "in progress",
+                    assigned_to_id: store.user.id !== project.admin_id ? store.user.id : "",
+                });
+            }
         }
     }, [task, project, onEdit, isOpen, store.user.id, project.admin_id]);
 

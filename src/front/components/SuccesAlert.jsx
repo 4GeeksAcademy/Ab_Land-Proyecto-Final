@@ -1,17 +1,18 @@
-import React from "react";
+import React, { useEffect } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
-import {useEffect} from "react"
 
 export const SuccessAlert = () => {
   const { store, dispatch } = useGlobalReducer();
 
-  if (!store.success) return null;
+  useEffect(() => {
+    if (!store.success) return;
+    const timeout = setTimeout(() => {
+      dispatch({ type: "success", payload: null });
+    }, 10000);
+    return () => clearTimeout(timeout);
+  }, [store.success, dispatch]);
 
-  useEffect(()=>{
-      setTimeout(()=>{
-        dispatch({type:"success",payload:null})
-      },10000)
-    },[])
+  if (!store.success) return null;
 
   return (
     <div
