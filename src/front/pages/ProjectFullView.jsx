@@ -9,6 +9,7 @@ import { AddMembersModal } from "../components/AddMembersModal";
 import { AddEditTask } from '../components/Add-Edit-Task'
 import { MemberCard } from '../components/MemberCard'
 import { AlertModal } from '../components/AlertModal'
+import TimelineView  from'../components/TimeLineView'
 
 export const ProjectFullView = () => {
     const { store, dispatch } = useGlobalReducer();
@@ -246,6 +247,13 @@ export const ProjectFullView = () => {
                         Overview
                     </button>
                     <button
+                        className={`btn px-2 ${tab === "tasks" ? "border-bottom border-2 border-primary" : ""}`}
+                        style={{ color: tab === "tasks" ? "#0D8ABC" : "#555", fontWeight: "bold" }}
+                        onClick={() => setTab("tasks")}
+                    >
+                        Tasks
+                    </button>
+                    <button
                         className={`btn px-2 ${tab === "members" ? "border-bottom border-2 border-primary" : ""}`}
                         style={{ color: tab === "members" ? "#0D8ABC" : "#555", fontWeight: "bold" }}
                         onClick={() => setTab("members")}
@@ -262,7 +270,8 @@ export const ProjectFullView = () => {
                     )}
                 </div>
             </div>
-            {tab == "overview" && (<>
+            {tab == "overview" && <TimelineView tasks={tasks} onTaskClick={handleEditTask} />}
+            {tab == "tasks" && (<>
                 <div className="my-3 d-flex align-items-center justify-content-between">
                     <div></div>
                     {tasks && tasks.length > 0 ? (<h3 className="mb-2 p-2">Tasks</h3>) : (<h3>No tasks available</h3>)}

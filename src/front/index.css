@@ -288,6 +288,9 @@ body {
 .task-inProgress {
   border-color: var(--yellow-500);
 }
+.status-inProgress{
+  background-color: var(--yellow-500);
+}
 .badge-inProgress {
   height: 1.5rem;
   background-color: var(--yellow-100);
@@ -295,6 +298,9 @@ body {
 }
 .task-delegated {
   border-color: var(--blue-500);
+}
+.status-delegated {
+  background-color: var(--blue-500);
 }
 .badge-delegated {
   height: 1.5rem;
@@ -304,6 +310,9 @@ body {
 .task-urgent {
   border-color: var(--red-500);
 }
+.status-urgent {
+  background-color: var(--red-500);
+}
 .badge-urgent {
   height: 1.5rem;
   background-color: var(--red-100);
@@ -311,6 +320,9 @@ body {
 }
 .task-done {
   border-color: var(--green-500);
+}
+.status-done {
+  background-color: var(--green-500);
 }
 .badge-done {
   height: 1.5rem;
