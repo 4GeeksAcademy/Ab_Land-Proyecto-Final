@@ -8,7 +8,7 @@ export default function Dashboard() {
   const { store, dispatch } = useGlobalReducer();
   const [loading, setLoading] = useState(false);
   const [projects, setProjects] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(true);
   const [projectEmpty, setProjectEmpty] = useState(false)
   const [tab, setTab] = useState("admin")
   const [welcomeMsg, setWelcomeMsg] = useState(true)
@@ -21,14 +21,35 @@ export default function Dashboard() {
       return;
     }
     if (!store.projects) {
-      fetchProjects()
-    } else {setProjects(store.projects)}  
-    handleWelcomeModal()
-    setTimeout(()=>{
-      setWelcomeMsg(false)
-    },10000)
-
+      fetchProjects();
+    } else {
+      setProjects(store.projects);
+    }
   }, [store.token]);
+  
+  useEffect(() => {  
+  if (!loading && projects) {
+    if (
+      projects.admin && projects.admin.length === 0 &&
+      projects.member && projects.member.length === 0
+    ) {
+      setShowModal(true);
+      setProjectEmpty(true);
+    } else {
+      setProjectEmpty(false);
+      setShowModal(false); 
+    }
+  }
+}, [loading, projects]);
+  
+  useEffect(() => {
+    if (welcomeMsg) {
+      const timer = setTimeout(() => {
+        setWelcomeMsg(false);
+      }, 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [welcomeMsg]);
 
   const fetchProjects = async () => {
     setLoading(true);
@@ -65,16 +86,6 @@ export default function Dashboard() {
       dispatch({ type: "error", payload: err?.message || "Could not connect to backend." });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleWelcomeModal = () => {
-    if (projects &&
-      projects.admin && projects.admin.length == 0 &&
-      projects.member && projects.member.length == 0
-    ) {
-      setShowModal(true);
-      setProjectEmpty(true)
     }
   };
 
