@@ -1,0 +1,497 @@
+:root {
+  /* RED */
+  --red-100: #fde8ed;
+  --red-300: #f9a3b5;
+  --red-500: #d9214e;
+  --red-700: #a21538;
+  --red-900: #6c0c25;
+
+  /* BROWN */
+  --brown-100: #f3e9e5;
+  --brown-300: #d0a897;
+  --brown-500: #98654f;
+  --brown-700: #6a4333;
+  --brown-900: #3d251a;
+
+  /* ORANGE */
+  --orange-100: #fff3db;
+  --orange-300: #fdc56b;
+  --orange-500: #f69b11;
+  --orange-700: #b96d00;
+  --orange-900: #804800;
+
+  /* YELLOW */
+  --yellow-100: #fffbe3;
+  --yellow-300: #ffe566;
+  --yellow-500: #ffc700;
+  --yellow-700: #a88400;
+  --yellow-900: #665100;
+
+  /* MINT */
+  --mint-100: #e4f7ed;
+  --mint-300: #88d8ae;
+  --mint-500: #47be7d;
+  --mint-700: #2f7c53;
+  --mint-900: #1d4d33;
+
+  /* GREEN */
+  --green-100: #c1f6d6;
+  --green-300: #70efa7;
+  --green-500: #00cf53;
+  --green-700: #009e3e;
+  --green-900: #005b26;
+
+  /* AQUA */
+  --aqua-100: #dff7fb;
+  --aqua-300: #76dbec;
+  --aqua-500: #06b6d4;
+  --aqua-700: #047a91;
+  --aqua-900: #035160;
+
+  /* BLUE */
+  --blue-100: #dbf1ff;
+  --blue-300: #7dcefa;
+  --blue-500: #0095e8;
+  --blue-700: #0068a3;
+  --blue-900: #004066;
+
+  /* PURPLE */
+  --purple-100: #e8e8ff;
+  --purple-300: #9c9bf0;
+  --purple-500: #3f3ce1;
+  --purple-700: #2b28a5;
+  --purple-900: #1b1a6c;
+
+  /* GRAYSCALE */
+  --gray-100: #f7fafc;
+  --gray-300: #cbd5e0;
+  --gray-500: #a0aec0;
+  --gray-700: #4a5568;
+  --gray-900: #1a202c;
+
+  /*BLACK & WHITE*/
+  --black: #000000;
+  --white: #ffffff;
+}
+
+/* GLOBAL BACKGROUND */
+body {
+  background-image: linear-gradient(
+    180deg,
+    #051322,
+    var(--blue-500),
+    var(--mint-500)
+  );
+  color: white;
+  background-repeat: no-repeat;
+  min-height: 100vh
+}
+
+.gradient-text {
+  background: linear-gradient(to right, #00a3ff, var(--green-500));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 4rem;
+}
+
+/* Profile Card Styles */
+.profile-container {
+  max-width: 420px;
+  margin: 2rem auto;
+  padding: 2.5rem 2rem 2rem 2rem;
+  background: rgba(20, 32, 46, 0.78); /* glass effect */
+  border-radius: 2rem;
+  box-shadow: 0 8px 24px 0 rgba(6, 182, 212, 0.10), 0 1.5px 18px 0 rgba(71, 190, 125, 0.08);
+  border: 2px solid var(--blue-300);
+  position: relative;
+  overflow: visible;
+}
+
+.profile-avatar {
+  width: 7rem;
+  height: 7rem;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center;
+  box-shadow: 0 2px 12px 0 var(--aqua-300);
+  border: 4px solid var(--green-500);
+  margin-bottom: 1rem;
+  background: var(--mint-300);
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.profile-color-bg {
+  /* fallback bg if no avatar */
+  width: 7rem;
+  height: 7rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  font-weight: bold;
+  color: var(--white);
+  margin-bottom: 1rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.profile-name {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--white);
+  text-align: center;
+  margin-bottom: 0.1rem;
+  letter-spacing: 1px;
+}
+
+.profile-email {
+  font-size: 1.15rem;
+  color: var(--aqua-300);
+  font-weight: 400;
+  text-align: center;
+  margin-bottom: 0.8rem;
+  letter-spacing: 0.2px;
+  word-break: break-all;
+}
+
+.profile-country {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--mint-300);
+  font-weight: 500;
+  font-size: 1.05rem;
+  margin-bottom: 1.2rem;
+  justify-content: center;
+}
+
+.profile-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1.2rem;
+  margin-top: 2rem;
+}
+
+.profile-btn {
+  background: linear-gradient(95deg, var(--green-500), var(--aqua-500));
+  color: var(--white);
+  border: none;
+  border-radius: 1.2rem;
+  padding: 0.65rem 2.2rem;
+  font-size: 1.13rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: background 0.14s;
+  box-shadow: 0 2px 10px 0 rgba(71,190,125,0.12);
+}
+
+.profile-btn.secondary {
+  background: linear-gradient(95deg, var(--blue-500), var(--mint-500));
+  color: var(--white);
+}
+
+.profile-btn:active, .profile-btn:hover {
+  filter: brightness(1.08) saturate(1.12);
+  background: linear-gradient(120deg, var(--aqua-500), var(--green-500));
+}
+
+.profile-divider {
+  border: 0;
+  border-top: 2px solid var(--blue-100);
+  margin: 2rem 0 1rem 0;
+  opacity: 0.18;
+}
+
+/* --- Avatar Upload --- */
+.profile-avatar-upload {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+.profile-avatar-upload input[type="file"] {
+  display: none;
+}
+.profile-avatar-upload label {
+  cursor: pointer;
+  background: var(--aqua-500);
+  color: var(--white);
+  border-radius: 0.7rem;
+  padding: 0.35rem 1.1rem;
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 0 auto;
+  display: block;
+  transition: background 0.16s;
+}
+.profile-avatar-upload label:hover {
+  background: var(--mint-500);
+}
+
+/* Editable fields */
+.profile-edit-field {
+  width: 100%;
+  background: rgba(255,255,255,0.03);
+  color: var(--aqua-100);
+  border: 1.5px solid var(--blue-300);
+  border-radius: 0.6rem;
+  padding: 0.45rem 1rem;
+  font-size: 1.07rem;
+  margin-bottom: 0.85rem;
+  font-weight: 400;
+}
+
+.profile-edit-field:focus {
+  outline: none;
+  border-color: var(--aqua-500);
+  background: rgba(255,255,255,0.08);
+  color: var(--white);
+}
+
+.profile-field-label {
+  color: var(--blue-100);
+  font-size: 0.99rem;
+  font-weight: 500;
+  margin-bottom: 0.23rem;
+  display: block;
+}
+
+/* END Profile Styles */
+
+/* Responsive profile card for mobile */
+@media (max-width: 600px) {
+  .profile-container {
+    max-width: 97vw;
+    padding: 1.4rem 0.4rem 2.3rem 0.4rem;
+    border-radius: 1.3rem;
+  }
+}
+
+/* The rest of your CSS below is unchanged... */
+.vh-100 {
+  min-height: 100vh;
+}
+.vh-50 {
+  min-height: 50vh;
+}
+.vh-70 {
+  min-height: 70vh;
+}
+.app {
+  min-height: 70vh;
+  margin-top: 5rem;
+}
+.task-inProgress {
+  border-color: var(--yellow-500);
+}
+.status-inProgress{
+  background-color: var(--yellow-500);
+}
+.badge-inProgress {
+  height: 1.5rem;
+  background-color: var(--yellow-100);
+  color: var(--yellow-500)
+}
+.task-delegated {
+  border-color: var(--blue-500);
+}
+.status-delegated {
+  background-color: var(--blue-500);
+}
+.badge-delegated {
+  height: 1.5rem;
+  background-color: var(--blue-100);
+  color: var(--blue-500)
+}
+.task-urgent {
+  border-color: var(--red-500);
+}
+.status-urgent {
+  background-color: var(--red-500);
+}
+.badge-urgent {
+  height: 1.5rem;
+  background-color: var(--red-100);
+  color: var(--red-500)
+}
+.task-done {
+  border-color: var(--green-500);
+}
+.status-done {
+  background-color: var(--green-500);
+}
+.badge-done {
+  height: 1.5rem;
+  background-color: var(--green-100);
+  color: var(--green-500)
+}
+.badge-yetToStart {
+  height: 1.5rem;
+  background-color: var(--purple-100);
+  color: var(--purple-500);
+}
+.badge-dismissed {
+  height: 1.5rem;
+  background-color: var(--gray-300);
+  color: var(--gray-700);
+}
+.border-dashed {
+  border: 1px dashed var(--gray-500);
+}
+.curved-div {
+  width: 100%;
+  min-height: 60vh;
+  /* height: 130vh; because no app pic */
+  padding-top: 5%;
+  padding-bottom: 5%;
+  background: white;
+  clip-path: url(#curvedClip);
+}
+
+.circle {
+  display: inline-block;
+  line-height: 0px;
+  border-radius: 50%;
+  background-color: var(--green-100);
+  color: var(--green-500);
+}
+
+.circle span {
+  display: inline-block;
+  padding-top: 50%;
+  padding-bottom: 50%;
+  margin-left: 8px;
+  margin-right: 8px;
+}
+
+.home {
+  position: relative;
+}
+.home span {
+  position: absolute;
+  width: 70vw;
+  height: 80vh;
+  bottom: -10vh;
+}
+.home-b {
+  /* margin-top: 15vh; because no app pic */
+  margin-bottom: 10vh;
+}
+.border-dash {
+  border: var(--gray-500);
+  border: dashed 2px;
+}
+.home-tech {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+.home-tech-box {
+  background-color: rgba(0, 0, 0, 0.5);
+  color: var(--gray-500);
+  border: 2px var(--gray-900);
+  box-shadow:
+    0 0 10px rgba(255, 255, 255, 0.4),
+    0 0 20px rgba(255, 255, 255, 0.25),
+    0 0 30px rgba(255, 255, 255, 0.1);
+}
+
+.portrait {
+  border-radius: 50%;
+  aspect-ratio: 1/1;
+  overflow: hidden;
+}
+.img-cover{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.teamcardHW {
+  height: 400px;
+  width: 360px;
+}
+a {
+  text-decoration: none;
+}
+
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.not-found-container {
+  background: white;
+  position: relative;
+  color: var(--gray-500);
+  min-height: 100vh;
+}
+.not-found-container img {
+  z-index: 1;
+}
+
+.not-found-number {
+  position: absolute;
+  font-size: 80vh;
+  font-weight: 100;
+  color: var(--gray-100);
+}
+
+.not-found-message{
+  font-size: 5vh;
+}
+
+/* --- Alert styles --- */
+.alert {
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 1rem;
+  border-radius: 0.375rem;
+  border: 1px solid transparent;
+  font-size: 1rem;
+  font-weight: 500;
+  position: relative;
+  display: block;
+}
+
+.alert-danger {
+  background: var(--red-100);
+  color: var(--red-700);
+  border-color: var(--red-300);
+}
+
+.alert-success {
+  background: var(--green-100);
+  color: var(--green-900);
+  border-color: var(--green-300);
+}
+
+.alert-warning {
+  background: var(--yellow-100);
+  color: var(--yellow-900);
+  border-color: var(--yellow-300);
+}
+
+.alert-info {
+  background: var(--aqua-100);
+  color: var(--aqua-700);
+  border-color: var(--aqua-300);
+}
+
+.alert .close {
+  position: absolute;
+  right: 0.75rem;
+  top: 0.75rem;
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.bg-blue-500 {
+  background-color: var(--blue-500);
+}
+

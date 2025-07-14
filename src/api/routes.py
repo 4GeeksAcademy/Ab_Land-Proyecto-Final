@@ -1,22 +1,20 @@
-"""
-This module takes care of starting the API Server, Loading the DB and Adding the endpoints
-"""
-from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User
-from api.utils import generate_sitemap, APIException
-from flask_cors import CORS
+from flask import Blueprint, jsonify
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from api.models import User
 
 api = Blueprint('api', __name__)
 
-# Allow CORS requests to this API
-CORS(api)
-
-
-@api.route('/hello', methods=['POST', 'GET'])
+@api.route('/hello', methods=['GET'])
 def handle_hello():
+    return jsonify({"message": "Hello from backend!"}), 200
 
-    response_body = {
-        "message": "Hello! I'm a message that came from the backend, check the network tab on the google inspector and you will see the GET request"
-    }
+@api.route('/private', methods=['GET'])
+@jwt_required()
+def api_private():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'msg': 'User not found'}), 404
+    return jsonify({'msg': 'Este es un endpoint privado!', 'user': user.serialize()}), 200
 
-    return jsonify(response_body), 200
+
