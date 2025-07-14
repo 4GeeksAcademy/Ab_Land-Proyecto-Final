@@ -41,14 +41,7 @@ app = Flask(__name__)
 app.url_map.strict_slashes = False
 
 # ====== CORS: HARDCODE YOUR FRONTEND URLS! ======
-CORS(
-    app,
-    origins=[
-        "http://localhost:3000",
-        os.getenv("FRONTEND_URL")
-    ],
-    supports_credentials=True
-)
+CORS(app)
 # =================================================
 
 # DATABASE CONFIG
