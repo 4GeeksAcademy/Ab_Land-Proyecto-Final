@@ -22,6 +22,7 @@ sqlalchemy = "*"
 six = "*"
 flask-mail = "*"
 flask-migrate = "*"
+tomli = "*"
 
 [requires]
 python_version = "3.13"
