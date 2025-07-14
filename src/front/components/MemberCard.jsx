@@ -17,11 +17,11 @@ export const MemberCard = ({
     const handleDeleteMember = () => {
         setShowAlertModal(true)
     };
-    const handleAlertResponse = (res)=>{
-    if (res === true){
-      deleteMember()
+    const handleAlertResponse = (res) => {
+        if (res === true) {
+            deleteMember()
+        }
     }
-  }
     const deleteMember = async () => {
         try {
             const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/project/${projectId}/member/${member.id}`, {
@@ -48,14 +48,11 @@ export const MemberCard = ({
         <div className="card shadow rounded-pill p-2 mb-2 border-0 ">
             <div className="d-flex align-items-center px-1 ">
                 <img
-                    src={member.profile_picture_url}
-                    alt={`${member.full_name}'s portrait`}
-                    onError={e => {
-                        e.target.onerror = null;
-                        e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(member.full_name)}&background=random`;
-                    }}
+                    src={member.profile_picture_url ||
+                        `https://ui-avatars.com/api/?name=${encodeURIComponent(member.full_name)}&background=random`}
                     className="rounded-circle cover me-4"
                     style={{ width: 40, height: 40 }}
+                    alt={`${member.full_name}'s portrait`}
                 />
                 <h5 className="me-2 text-capitalize" style={{ width: "20%" }}>{member.full_name}</h5>
                 <h6 className='me-2 text-capitalize'><strong>Role:</strong> {memberRole}</h6>

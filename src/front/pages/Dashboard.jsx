@@ -22,8 +22,7 @@ export default function Dashboard() {
     }
     if (!store.projects) {
       fetchProjects()
-    }
-    setProjects(store.projects)    
+    } else {setProjects(store.projects)}  
     handleWelcomeModal()
     setTimeout(()=>{
       setWelcomeMsg(false)

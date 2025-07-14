@@ -91,11 +91,8 @@ export const ProjectCard = ({ project, onEdit, onAddMembers }) => {
                 <div className="me-2" key={idx}>
 
                   <img
-                    src={member.profile_picture_url}
-                    onError={e => {
-                      e.target.onerror = null;
-                      e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(member.full_name || `M${idx + 1}`)}&background=random`;
-                    }}
+                    src={member.profile_picture_url ||
+                      `https://ui-avatars.com/api/?name=${encodeURIComponent(member.full_name || `M${idx + 1}`)}&background=random`}
                     alt={member.full_name || `Member ${idx + 1}`}
                     className="rounded-circle"
                     width="32"

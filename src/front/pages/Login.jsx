@@ -57,6 +57,7 @@ export function Login() {
                 value={password}
                 className="form-control"
                 onChange={e => setPassword(e.target.value)}
+                placeholder="Password"
                 id="password"
                 required
               />

@@ -69,7 +69,7 @@ export const ProjectCardXL = ({ project, onEdit, onAddMembers }) => {
                     </p>
                     <div className="row align-items-center mb-2 ps-3">
                         <div className="col me-3 mb-3 p-1 rounded border-dashed text-center"
-                        style={{minWidth:"70px"}}>
+                            style={{ minWidth: "70px" }}>
                             <small className="mb-0 text-muted">
                                 <strong>{formattedDate}</strong>
                             </small> <br />
@@ -88,7 +88,7 @@ export const ProjectCardXL = ({ project, onEdit, onAddMembers }) => {
                                 <img
                                     src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
                                         admin_full_name
-                                    )}&background=random`}
+                                    )}&background=random`}                                    
                                     alt={admin_full_name}
                                     className="rounded-circle"
                                     width="32"
@@ -100,11 +100,7 @@ export const ProjectCardXL = ({ project, onEdit, onAddMembers }) => {
                                     <div className="me-2" key={idx}>
 
                                         <img
-                                            src={member.profile_picture_url}
-                                            onError={e => {
-                                                e.target.onerror = null;
-                                                e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(member.full_name || `M${idx + 1}`)}&background=random`;
-                                            }}
+                                            src={member.profile_picture_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.full_name || `M${idx + 1}`)}&background=random`}
                                             alt={member.full_name || `Member ${idx + 1}`}
                                             className="rounded-circle"
                                             width="32"
@@ -116,17 +112,6 @@ export const ProjectCardXL = ({ project, onEdit, onAddMembers }) => {
                                 <span className="badge bg-secondary">+{members.length - 8}</span>
                             )}
                         </div>
-                        {/* Add Members Button - Only for Admin */}
-                        {/* {isAdmin && (
-                            <button
-                                className="btn btn-sm btn-outline-primary rounded-circle d-flex align-items-center justify-content-center"
-                                style={{ width: "32px", height: "32px", padding: "0" }}
-                                onClick={() => onAddMembers && onAddMembers(project)}
-                                title="Add team members"
-                            >
-                                <span style={{ fontSize: "16px", lineHeight: "1" }}>+</span>
-                            </button>
-                        )} */}
                     </div>
 
 
