@@ -20,7 +20,8 @@ from flask_cors import CORS
 
 # ENVIRONMENT
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
-static_file_dir = os.path.dirname(os.path.realpath(__file__))
+static_file_dir = os.path.join(os.path.dirname(
+    os.path.realpath(__file__)), '../dist/')
 
 # CONSTANTS
 TASK_STATUS_MAPPING = {
