@@ -104,7 +104,7 @@ export const RestorePassword = () => {
 
   return (
     <div className="container app">
-      <div className="card flex-center flex-column p-4 max-w-md mt-10">
+      <div className="card flex-center flex-column p-4 w-md-75 mx-auto mt-10">
         <Link to="/login" className="me-auto">          
           ← Back
         </Link>
@@ -115,7 +115,7 @@ export const RestorePassword = () => {
         </p>
         
         {!token && (
-          <form className="w-50 text-center">
+          <form className="w-lg-50 w-75 text-center">
             <input
               type="email"
               className="form-control mb-3"
@@ -137,7 +137,7 @@ export const RestorePassword = () => {
         )}
 
         {token && (
-          <form className="w-50 text-center">
+          <form className="w-lg-50 w-75 text-center">
             <div className="mb-3">
               <label htmlFor="new-password" className="form-label">
                 New Password

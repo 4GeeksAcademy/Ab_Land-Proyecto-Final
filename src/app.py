@@ -67,7 +67,7 @@ app.config.update(
     MAIL_USERNAME=os.getenv('MAIL_DEFAULT_SENDER'),
     MAIL_DEFAULT_SENDER=os.getenv('MAIL_DEFAULT_SENDER'),
     MAIL_PASSWORD=os.getenv('MAIL_PASSWORD'),
-    DEBUG=False
+    DEBUG=True
 )
 
 # INIT EXTENSIONS
@@ -157,7 +157,10 @@ def register():
             recipients=[new_user.email],
         )
         msg.html = html_content
-        mail.send(msg)
+        try:
+            mail.send(msg)
+        except Exception as e:
+            print("MAIL ERROR:", e)
 
     return jsonify({'msg': 'ok', 'new_user': new_user.serialize()}), 201
 
@@ -225,7 +228,10 @@ def restore_password():
             recipients=[user.email],
         )
         msg.html = html_content
-        mail.send(msg)
+        try:
+            mail.send(msg)
+        except Exception as e:
+            print("MAIL ERROR:", e)
 
     return jsonify({'msg': 'Password reset email sent'}), 200
 

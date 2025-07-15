@@ -270,6 +270,33 @@ body {
     border-radius: 1.3rem;
   }
 }
+@media (min-width: 768px) {
+  
+  .border-md-end {
+    border-right: 1px solid #dee2e6 !important;
+  }
+  .w-md-25 {
+    width: 25% !important;
+  }
+  .w-md-50 {
+    width: 50% !important;
+  }
+  .w-md-75 {
+    width: 75% ;
+  }
+}
+@media (min-width: 992px) {
+  .w-lg-25 {
+    width: 25% !important;
+  }
+  .w-lg-50 {
+    width: 50% !important;
+  }
+  .w-lg-75 {
+    width: 75% ;
+  }
+
+}
 
 /* The rest of your CSS below is unchanged... */
 .vh-100 {

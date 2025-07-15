@@ -154,7 +154,7 @@ export const Register = () => {
           </p>
         </div>
         <div className="row g-2">
-          <div className="col-md-4 flex-center border-end-0 border-end-md">
+          <div className="col-md-4 flex-center border-end-0 border-md-end">
             <div className="mb-4">
               <span>{currentStep >= 1 ? "✅" : "❌"} Step 1: Basic Info</span>
               <br />
