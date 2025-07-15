@@ -22,6 +22,8 @@ sqlalchemy = "*"
 six = "*"
 flask-mail = "*"
 flask-migrate = "*"
+openai = "*"
+requests = "*"
 
 [requires]
 python_version = "3.13"

@@ -495,3 +495,41 @@ a {
   background-color: var(--blue-500);
 }
 
+/* --- AI SUGGEST BUTTON STYLES --- */
+.btn-ai-suggest {
+  background: linear-gradient(95deg, #7f53ac, #43e97b 100%);
+  color: #fff;
+  font-weight: 500;
+  border-radius: 0.6em;
+  border: none;
+  box-shadow: 0 1px 6px 0 rgba(71,190,125,0.10);
+  padding: 0.52em 1.1em;
+  font-size: 1.06em;
+  line-height: 1.3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+  width: 100%;
+  max-width: 340px;
+  transition: filter 0.12s, background 0.14s;
+  cursor: pointer;
+}
+.btn-ai-suggest:active,
+.btn-ai-suggest:focus,
+.btn-ai-suggest:hover {
+  filter: brightness(1.07) saturate(1.12);
+  background: linear-gradient(95deg, #43e97b 0%, #38f9d7 100%);
+}
+.btn-ai-suggest[disabled] {
+  filter: grayscale(0.7) opacity(0.5);
+  cursor: not-allowed;
+}
+.ai-sparkle {
+  font-size: 1.25em;
+  margin-right: 0.18em;
+  vertical-align: -2px;
+}
+
+
+
