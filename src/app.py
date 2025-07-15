@@ -941,6 +941,56 @@ def delete_task(project_id, task_id):
 # @app.route('/project/<int:project_id>/task/<int:task_id>/unassign', methods=['POST'])
 # @app.route('/my-tasks', methods=['GET'])  # Todas las tareas asignadas al usuario
 
+# ========== OPENAI ENDPOINTS ==========
+import os
+import requests
+from flask import request, jsonify
+
+@app.route("/api/ai/suggest-description", methods=["POST"])
+def ai_suggest_description():
+    data = request.get_json()
+    task_title = data.get("title", "")
+
+    if not task_title:
+        return jsonify({"msg": "No title provided"}), 400
+
+    mistral_api_key = os.getenv("MISTRAL_API_KEY")
+    if not mistral_api_key:
+        return jsonify({"msg": "Mistral API key not configured"}), 500
+
+    headers = {
+        "Authorization": f"Bearer {mistral_api_key}",
+        "Content-Type": "application/json",
+    }
+
+    payload = {
+        "model": "mistral-tiny",  # Or mistral-small, mistral-medium
+        "messages": [
+            {"role": "system", "content": "You help write clear, concise task descriptions for dev teams."},
+            {"role": "user", "content": f"Write a clear and concise description for this task: {task_title}"}
+        ],
+        "max_tokens": 60,
+        "temperature": 0.7
+    }
+
+    try:
+        response = requests.post(
+            "https://api.mistral.ai/v1/chat/completions",
+            headers=headers,
+            json=payload
+        )
+        if response.status_code != 200:
+            print("Mistral API Error:", response.text)
+            return jsonify({"msg": "Error generating description", "error": response.text}), 500
+
+        suggestion = response.json()["choices"][0]["message"]["content"].strip()
+        return jsonify({"suggestion": suggestion})
+    except Exception as e:
+        print("Mistral API Error:", e)
+        return jsonify({"msg": "Error generating description", "error": str(e)}), 500
+
+
+
 
 # ---- RUN APP ----
 if __name__ == '__main__':
