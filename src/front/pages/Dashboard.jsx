@@ -26,29 +26,28 @@ export default function Dashboard() {
       setProjects(store.projects);
     }
   }, [store.token]);
-  
-  useEffect(() => {  
-  if (!loading && projects) {
-    if (
-      projects.admin && projects.admin.length === 0 &&
-      projects.member && projects.member.length === 0
-    ) {
-      setShowModal(true);
-      setProjectEmpty(true);
-    } else {
-      setProjectEmpty(false);
-      setShowModal(false); 
-    }
-  }
-}, [loading, projects]);
-  
+
   useEffect(() => {
-    if (welcomeMsg) {
-      const timer = setTimeout(() => {
-        setWelcomeMsg(false);
-      }, 10000);
-      return () => clearTimeout(timer);
+    if (!loading && projects) {
+      if (
+        projects.admin && projects.admin.length === 0 &&
+        projects.member && projects.member.length === 0
+      ) {
+        setShowModal(true);
+        setProjectEmpty(true);
+      } else {
+        setProjectEmpty(false);
+        setShowModal(false);
+      }
     }
+  }, [loading, projects]);
+
+  useEffect(() => {
+    if (!welcomeMsg) return;
+    const timer = setTimeout(() =>
+      setWelcomeMsg(false)
+      , 10000);
+    return () => clearTimeout(timer);
   }, [welcomeMsg]);
 
   const fetchProjects = async () => {
@@ -79,7 +78,7 @@ export default function Dashboard() {
         setProjects(null);
       } else {
         setProjects(data.user_projects);
-        dispatch({ type: "projects", payload: data.user_projects})
+        dispatch({ type: "projects", payload: data.user_projects })
 
       }
     } catch (err) {
@@ -96,28 +95,28 @@ export default function Dashboard() {
   return (
     <div className="container app ">
       {/* Welcome message with profile picture */}
-      {store.user && welcomeMsg &&(
+      {store.user && welcomeMsg && (
         <div className="alert alert-info alert-dismissible mb-4 d-flex align-items-center " role="alert">
-          
-            <img
-              src={store.user.profile_picture_url}
-              alt="Profile"
-              onError={e => {
-                        e.target.onerror = null;
-                        e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(store.user.full_name)}&background=random`;
-                    }}
-              style={{
-                width: "48px",
-                height: "48px",
-                borderRadius: "50%",
-                objectFit: "cover",
-                marginRight: "1rem",
-                border: "2px solid var(--green-500)"
-              }}
-            />
-          
+
+          <img
+            src={store.user.profile_picture_url}
+            alt="Profile"
+            onError={e => {
+              e.target.onerror = null;
+              e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(store.user.full_name)}&background=random`;
+            }}
+            style={{
+              width: "48px",
+              height: "48px",
+              borderRadius: "50%",
+              objectFit: "cover",
+              marginRight: "1rem",
+              border: "2px solid var(--green-500)"
+            }}
+          />
+
           Welcome,&nbsp;<strong className="text-capitalize">{` ${store.user.full_name || store.user.email}`}</strong>! 👋
-          <button type="button" className="btn-close mt-2" data-bs-dismiss="alert" aria-label="Close"></button>
+          <button type="button" className="btn-close mt-2" aria-label="Close" onClick={() => setWelcomeMsg(false)}></button>
         </div>
       )}
 
@@ -128,9 +127,9 @@ export default function Dashboard() {
             src={store.user.profile_picture_url}
             alt="Profile"
             onError={e => {
-                        e.target.onerror = null;
-                        e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(store.user.full_name)}&background=random`;
-                    }}
+              e.target.onerror = null;
+              e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(store.user.full_name)}&background=random`;
+            }}
             style={{
               width: "70px",
               height: "70px",

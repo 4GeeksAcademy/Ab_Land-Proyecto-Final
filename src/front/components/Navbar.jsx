@@ -64,7 +64,7 @@ export const Navbar = () => {
         zIndex: 20,
       }}
     >
-      <div className="container-fluid mx-5 py-1">
+      <div className="container-fluid mx-md-5 py-1">
         <a
           className="navbar-brand d-flex align-items-center text-white"
           href="/"
@@ -90,7 +90,7 @@ export const Navbar = () => {
         </a>
 
         <button
-          className="navbar-toggler"
+          className="navbar-toggler navbar-dark"
           type="button"
           data-bs-toggle="collapse"
           data-bs-target="#navbarSupportedContent"
@@ -172,7 +172,7 @@ export const Navbar = () => {
           )}
 
           {store.token && (
-            <div className="dropdown-center ms-auto me-2">
+            <div className="dropdown-center ms-auto me-2 d-lg-block d-none">
               <button
                 className="ms-auto text-white rounded-circle portrait flex-center shadow-sm"
                 type="button"
@@ -194,22 +194,22 @@ export const Navbar = () => {
                   navigate(`/profile/${store.user && store.user.id}`)
                 }
                 title="Go to profile"
-              >                
-                  <img
-                    src={store.user.profile_picture_url}
-                    alt="Profile"
-                    onError={e => {
-                        e.target.onerror = null;
-                        e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(store.user.full_name)}&background=random`;
-                    }}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      borderRadius: "50%",
-                    }}
-                  />
-                
+              >
+                <img
+                  src={store.user.profile_picture_url}
+                  alt="Profile"
+                  onError={e => {
+                    e.target.onerror = null;
+                    e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(store.user.full_name)}&background=random`;
+                  }}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    borderRadius: "50%",
+                  }}
+                />
+
               </button>
               <ul className="dropdown-menu dropdown-menu-end shadow-sm" style={{ minWidth: 155 }}>
                 <li>
@@ -243,6 +243,36 @@ export const Navbar = () => {
               </ul>
             </div>
           )}
+          {store.token && <ul className="navbar-nav navbar-dark d-lg-none ">
+            <li className="nav-link">
+              <Link
+                className="dropdown-item text-end"
+                to={`/profile/${store.user.id}`}
+              >
+                <span role="img" aria-label="Profile" className="me-2">👤</span>
+                Profile
+              </Link>
+            </li>
+            <li className="nav-link">
+              <Link
+                className="dropdown-item text-end"
+                to="/dashboard"
+              >
+                <span role="img" aria-label="Dashboard" className="me-2">📊</span>
+                Dashboard
+              </Link>
+            </li>
+            <div className="dropdown-divider bg-white "></div>
+            <li className="nav-link">
+              <button
+                className="dropdown-item text-danger text-end"
+                onClick={handleLogOut}
+              >
+                <span role="img" aria-label="Logout" className="me-2">🚪</span>
+                Log Out
+              </button>
+            </li>
+          </ul>}
         </div>
       </div>
     </nav>

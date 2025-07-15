@@ -147,14 +147,14 @@ export const Register = () => {
       <div className="card p-4 max-w-md  mt-10 ">
         <Link to="/login"> ← Back</Link>
         
-        <div className="text-center border-bottom">
+        <div className="text-center border-bottom mb-4 mb-md-0">
           <h1 className="text-center mb-4">EchoBoard Registration</h1>
           <p className="text-center mb-4">
             Please fill in the details below to create your account.
           </p>
         </div>
-        <div className="row">
-          <div className="col-md-3 flex-center border-end ">
+        <div className="row g-2">
+          <div className="col-md-4 flex-center border-end-0 border-end-md">
             <div className="mb-4">
               <span>{currentStep >= 1 ? "✅" : "❌"} Step 1: Basic Info</span>
               <br />
@@ -165,9 +165,9 @@ export const Register = () => {
               </span>
             </div>
           </div>
-          <div className=" col-md-8 flex-center flex-column px-0 pt-4 ">
+          <div className="col-md-8 flex-center flex-column px-0 pt-md-4 ">
             {currentStep === 1 && (
-              <form className="card p-4 m-2 mt-4 w-50">
+              <form className="card p-4 m-2 mt-4 w-lg-50 w-75">
                 <div className="mb-3">
                   <label className="form-label">Email</label>
                   <input
@@ -209,7 +209,7 @@ export const Register = () => {
             )}
 
             {currentStep === 2 && (
-              <form className="card p-4 m-2 mt-4 w-50">
+              <form className="card p-4 m-2 mt-4 w-lg-50 w-75">
                 <div className="mb-3">
                   <label className="form-label">Full Name</label>
                   <input
@@ -245,7 +245,7 @@ export const Register = () => {
             )}
 
             {currentStep === 3 && (
-              <div className="card  p-4 m-2 mt-4 w-50">
+              <div className="card p-4 m-2 mt-4 w-lg-50 w-75">
                 <label className="form-label">
                   Profile Picture: URL or file (optional)
                 </label>

@@ -282,8 +282,8 @@ body {
   min-height: 70vh;
 }
 .app {
-  min-height: 70vh;
-  margin-top: 5rem;
+  min-height: 90vh;
+  margin-top: 3rem;
 }
 .task-inProgress {
   border-color: var(--yellow-500);

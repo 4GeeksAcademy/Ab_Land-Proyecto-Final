@@ -41,7 +41,7 @@ export function Login() {
     <div className="container app">
       <div className="card flex-center flex-column p-5 max-w-md mt-10">
       <h1 className="mb-4">Log in to Your Account</h1>
-      <form className="w-25 text-center" onSubmit={handleSubmit} >
+      <form className="w-lg-25 text-center" onSubmit={handleSubmit} >
         <input
           type="email"
           value={email}
