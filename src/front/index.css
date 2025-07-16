@@ -522,7 +522,7 @@ a {
   background-color: var(--blue-500);
 }
 
-/* --- AI SUGGEST BUTTON STYLES --- */
+/* --- AI SUGGEST BUTTON --- */
 .btn-ai-suggest {
   background: linear-gradient(95deg, #7f53ac, #43e97b 100%);
   color: #fff;
@@ -557,6 +557,80 @@ a {
   margin-right: 0.18em;
   vertical-align: -2px;
 }
+
+/* ======== AI STANDUP BUTTON AND OUTPUT ======== */
+.dashboard-main-action {
+  width: 100%;
+  max-width: 340px;
+  min-width: 160px;
+  margin-right: 0;
+  margin-top: 0.45em;
+  box-sizing: border-box;
+}
+
+.btn-ai-standup {
+  background: linear-gradient(95deg, #7f53ac, #43e97b 100%);
+  color: #fff;
+  font-weight: 500;
+  border-radius: 0.6em;
+  border: none;
+  box-shadow: 0 1px 6px 0 rgba(71,190,125,0.10);
+  padding: 0.52em 1.1em;
+  font-size: 1.06em;
+  line-height: 1.3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+  transition: filter 0.12s, background 0.14s;
+  cursor: pointer;
+}
+.btn-ai-standup:active,
+.btn-ai-standup:focus,
+.btn-ai-standup:hover {
+  filter: brightness(1.07) saturate(1.12);
+  background: linear-gradient(95deg, #43e97b 0%, #38f9d7 100%);
+}
+.btn-ai-standup[disabled] {
+  filter: grayscale(0.7) opacity(0.5);
+  cursor: not-allowed;
+}
+
+.ai-standup-card {
+  background: var(--blue-100);
+  color: var(--blue-900);
+  border-radius: 0.6em;
+  box-shadow: 0 1px 7px 0 rgba(71, 190, 125, 0.08);
+  padding: 1.1em 1.3em;
+  font-size: 1.09em;
+  line-height: 1.4;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  word-break: break-word;
+}
+
+.standup-spinner {
+  display: flex;
+  align-items: center;
+  color: var(--blue-700);
+  font-size: 1.03em;
+}
+
+@media (max-width: 600px) {
+  .dashboard-main-action {
+    max-width: 98vw;
+    min-width: 100px;
+  }
+  .ai-standup-card {
+    padding: 0.8em 0.6em;
+    font-size: 1em;
+  }
+}
+
+
+
+
+
 
 
 
