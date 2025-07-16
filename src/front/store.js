@@ -48,6 +48,13 @@ export default function storeReducer(store, action = {}) {
         projects:null,
         error: null,
       };
+    case "profile_change":
+      localStorage.setItem("user", JSON.stringify(action.payload));
+      return {
+        ...store,
+        user: action.payload,
+        error: null,
+      } 
     case "projects":
       localStorage.setItem("projects", JSON.stringify(action.payload));
       return {

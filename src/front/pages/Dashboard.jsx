@@ -279,7 +279,8 @@ export default function Dashboard() {
             : <>{!loading && <h4 className="text-center">You are not a member of any project.</h4>}</>
           }</>}
         </>
-      ) : !loading && projectEmpty && <div>No projects found.</div>}
+      ) : !loading && projectEmpty && <div className="text-center"><h3>No projects found.</h3></div>}
+      
 
       {/* Only render WelcomeModal if we know user has NO projects */}
       {showModal && (
