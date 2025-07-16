@@ -10,7 +10,7 @@ export const WelcomeModal = ({isOpen, onClose}) => {
         <div className="modal show flex-center" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
             <div className="card border-0" style={{ height: "70vh", aspectRatio: "1/1.25", }}>
                 <div className=" position-relative">
-                    <img src="https://res.cloudinary.com/dvawhw99g/image/upload/cld-sample-2.jpg" className="card-img-top cover" alt="..." />
+                    <img src="https://res.cloudinary.com/dvawhw99g/image/upload/cld-sample-2.jpg" className="card-img-top cover"/>
                     <button
                         type="button"
                         className="btn-close position-absolute top-0 end-0 m-2"
