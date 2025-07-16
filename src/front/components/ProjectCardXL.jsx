@@ -48,11 +48,7 @@ export const ProjectCardXL = ({ project, onEdit, onAddMembers }) => {
             <div className="d-flex align-items-start">
                 {/* Project Icon */}
                 <img
-                    src={project_picture_url}
-                    onError={({ currentTarget }) => {
-                        currentTarget.onerror = null; // prevents looping
-                        currentTarget.src = "'https://placehold.co/150x150/png?text=No+Image'";
-                    }}
+                    src={project_picture_url || "https://placehold.co/150x150/png?text=No+Image"}                    
                     alt="Project icon"
                     className="rounded cover me-2"
                     style={{ width: 150, height: 150 }}
