@@ -12,11 +12,13 @@ export const ErrorAlert = () => {
     useNavigate("/login")
   };
 
-  useEffect(()=>{
-    setTimeout(()=>{
-      dispatch({type:"error",payload:null})
-    },10000)
-  },[])
+  useEffect(() => {
+      if (!store.error) return;
+      const timeout = setTimeout(() => {
+        dispatch({ type: "error", payload: null });
+      }, 10000);
+      return () => clearTimeout(timeout);
+    }, [store.error, dispatch]);
 
   return (
     <div

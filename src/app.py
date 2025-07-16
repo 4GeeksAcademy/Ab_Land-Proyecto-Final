@@ -20,7 +20,8 @@ from flask_cors import CORS
 
 # ENVIRONMENT
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
-static_file_dir = os.path.dirname(os.path.realpath(__file__))
+static_file_dir = os.path.join(os.path.dirname(
+    os.path.realpath(__file__)), '../dist/')
 
 # CONSTANTS
 TASK_STATUS_MAPPING = {
@@ -41,14 +42,7 @@ app = Flask(__name__)
 app.url_map.strict_slashes = False
 
 # ====== CORS: HARDCODE YOUR FRONTEND URLS! ======
-CORS(
-    app,
-    origins=[
-        "http://localhost:3000",
-        os.getenv("FRONTEND_URL")
-    ],
-    supports_credentials=True
-)
+CORS(app)
 # =================================================
 
 # DATABASE CONFIG
@@ -73,7 +67,7 @@ app.config.update(
     MAIL_USERNAME=os.getenv('MAIL_DEFAULT_SENDER'),
     MAIL_DEFAULT_SENDER=os.getenv('MAIL_DEFAULT_SENDER'),
     MAIL_PASSWORD=os.getenv('MAIL_PASSWORD'),
-    DEBUG=False
+    DEBUG=True
 )
 
 # INIT EXTENSIONS
@@ -163,7 +157,10 @@ def register():
             recipients=[new_user.email],
         )
         msg.html = html_content
-        mail.send(msg)
+        try:
+            mail.send(msg)
+        except Exception as e:
+            print("MAIL ERROR:", e)
 
     return jsonify({'msg': 'ok', 'new_user': new_user.serialize()}), 201
 
@@ -231,7 +228,10 @@ def restore_password():
             recipients=[user.email],
         )
         msg.html = html_content
-        mail.send(msg)
+        try:
+            mail.send(msg)
+        except Exception as e:
+            print("MAIL ERROR:", e)
 
     return jsonify({'msg': 'Password reset email sent'}), 200
 

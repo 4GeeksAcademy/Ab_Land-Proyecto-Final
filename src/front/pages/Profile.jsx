@@ -253,7 +253,7 @@ export function Profile() {
   };
 
   return (
-    <div className="container py-5" style={{ maxWidth: 950, minHeight: "92vh", color: "var(--blue-800)" }}>
+    <div className="container py-5 app" style={{ maxWidth: 950, minHeight: "90vh", color: "var(--blue-800)" }}>
       <div className="mb-4 bg-white rounded p-2 pt-3">
         {/* <span className="text-muted small">Account &nbsp; / &nbsp; Profile</span> */}
         <h1 className="fw-bold d-flex align-items-center ms-2">

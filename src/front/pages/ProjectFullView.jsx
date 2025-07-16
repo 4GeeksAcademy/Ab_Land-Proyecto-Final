@@ -9,7 +9,7 @@ import { AddMembersModal } from "../components/AddMembersModal";
 import { AddEditTask } from '../components/Add-Edit-Task'
 import { MemberCard } from '../components/MemberCard'
 import { AlertModal } from '../components/AlertModal'
-import TimelineView  from'../components/TimeLineView'
+import TimelineView from '../components/TimeLineView'
 
 export const ProjectFullView = () => {
     const { store, dispatch } = useGlobalReducer();
@@ -27,7 +27,7 @@ export const ProjectFullView = () => {
     const [tab, setTab] = useState("overview");
     const [userRole, setUserRole] = useState("member")
     const [showAlertModal, setShowAlertModal] = useState(false)
-    
+
 
     const filterProjectById = (projectId) => {
         const roles = Object.keys(store.projects);
@@ -57,11 +57,11 @@ export const ProjectFullView = () => {
                     await getTasks();
                 } else {
                     await getProject();
-                    
+
                 }
             } else {
                 await getProject();
-                
+
             }
         };
         fetchData();
@@ -109,7 +109,7 @@ export const ProjectFullView = () => {
                 return;
             }
             setTasks(data.tasks || []);
-            
+
         } catch (error) {
             console.error("Error fetching tasks:", error);
             dispatch({ type: "error", payload: error || "Something went wrong when getting tasks" });
@@ -149,7 +149,7 @@ export const ProjectFullView = () => {
         setTimeout(() => {
             setShowTaskModal(true);
         }, 0);
-    };   
+    };
 
     const fetchProjects = async () => {
 
@@ -193,14 +193,13 @@ export const ProjectFullView = () => {
     // --- Delete Project Handler ---
     const handleDeleteProject = () => {
         setShowAlertModal(true);
-        setWhatToDelete("project")
     };
     // Confirm the delete logic here:
     const handleAlertResponse = (res) => {
         setShowAlertModal(false);
         if (res === true) {
-            deleteProject();            
-        };        
+            deleteProject();
+        };
     };
     const deleteProject = async () => {
         try {
@@ -227,9 +226,9 @@ export const ProjectFullView = () => {
 
     if (!project) {
         return (<div className="flex-center my-4" >
-        <span className="spinner-border spinner-border me-4" aria-hidden="true"></span>
-        <span role="status">Loading...</span>
-      </div>)
+            <span className="spinner-border spinner-border me-4" aria-hidden="true"></span>
+            <span role="status">Loading...</span>
+        </div>)
     }
 
     return (
@@ -270,13 +269,21 @@ export const ProjectFullView = () => {
                     )}
                 </div>
             </div>
-            {tab == "overview" && <TimelineView tasks={tasks} onTaskClick={handleEditTask} />}
+            {tab == "overview" && (<>
+                <div className="my-3 d-flex align-items-center justify-content-between">
+                    <div></div>
+                    {tasks && tasks.length > 0 ? (<h3 className="mb-2 p-2">Tasks</h3>) : (<h3>No tasks available</h3>)}
+                    <button className='btn btn-warning text-white' onClick={() => { setShowTaskModal(true) }}>
+                        <i className="fa-regular fa-calendar-plus me-2" /> Add </button>
+                </div>
+                <TimelineView tasks={tasks} onTaskClick={handleEditTask} /> </>)
+            }
             {tab == "tasks" && (<>
                 <div className="my-3 d-flex align-items-center justify-content-between">
                     <div></div>
                     {tasks && tasks.length > 0 ? (<h3 className="mb-2 p-2">Tasks</h3>) : (<h3>No tasks available</h3>)}
                     <button className='btn btn-warning text-white' onClick={() => { setShowTaskModal(true) }}>
-                        <i className="fa-regular fa-calendar-plus me-2"/> Add </button>
+                        <i className="fa-regular fa-calendar-plus me-2" /> Add </button>
                 </div>
                 {tasks && tasks.length > 0 && (
                     <div className="mt-3">
@@ -298,24 +305,25 @@ export const ProjectFullView = () => {
                     {userRole == "admin" ?
                         (<button className='btn btn-warning text-white'
                             onClick={() => { handleAddMembers(project) }}>
-                                <i className="fa-solid fa-user-plus me-2"/>
-                                 Add </button>)
+                            <i className="fa-solid fa-user-plus me-2" />
+                            Add </button>)
                         : (<div></div>)}
                 </div>
                 {project.members && project.members.length > 0 && (
                     <div className="mt-3">
                         {project.members.map((member) =>
-                        <Link to={`/profile/${member.id}`}>
-                            <MemberCard
-                                key={member.id}
-                                member={member}
-                                memberRole={member.id == project.admin_id ? "admin" : "member"}
-                                userRole={userRole}
-                                projectId={project.id}
-                                onUpdate={handleUpdateProject}
-                                                              
-                            />
-                            </Link>
+                            <div className='btn w-100' onDoubleClick={()=> navigate(`/profile/${member.id}`)}>
+                                <MemberCard
+                                    key={member.id}
+                                    member={member}
+                                    memberRole={member.id == project.admin_id ? "admin" : "member"}
+                                    userRole={userRole}
+                                    projectId={project.id}
+                                    onUpdate={handleUpdateProject}
+                                    
+
+                                />
+                            </div>
                         )}
                     </div>
                 )}
