@@ -907,7 +907,7 @@ def delete_task(project_id, task_id):
         db.session.rollback()
         return jsonify({'msg': 'Error updating task'}), 500
 
-# ========== OPENAI ENDPOINTS ==========
+# ========== AI ENDPOINTS ==========
 
 import requests
 
@@ -953,6 +953,80 @@ def ai_suggest_description():
     except Exception as e:
         print("Mistral API Error:", e)
         return jsonify({"msg": "Error generating description", "error": str(e)}), 500
+    
+
+@app.route('/api/ai/standup', methods=['POST'])
+@jwt_required()
+def ai_standup():
+    all_projects = Project.query.all()
+    if not all_projects:
+        return jsonify({"msg": "No projects found."}), 404
+
+    project_summaries = []
+    for project in all_projects:
+        tasks = Task.query.filter_by(project_id=project.id).all()
+        num_tasks = len(tasks)
+        num_done = len([t for t in tasks if t.status and "done" in str(t.status).lower()])
+        num_inprogress = len([t for t in tasks if t.status and "progress" in str(t.status).lower()])
+        num_urgent = len([t for t in tasks if t.status and "urgent" in str(t.status).lower()])
+        project_summaries.append({
+            "title": project.title,
+            "description": project.description or "",
+            "tasks": [t.title for t in tasks],
+            "num_tasks": num_tasks,
+            "num_done": num_done,
+            "num_inprogress": num_inprogress,
+            "num_urgent": num_urgent,
+        })
+
+    prompt = (
+        "You are an AI standup bot. Summarize the current progress for each project. "
+        "For each project, give a brief status update mentioning tasks done, in progress, urgent tasks, and anything notable. "
+        "Make it readable and actionable for a daily standup update.\n\n"
+    )
+    for proj in project_summaries:
+        prompt += (
+            f"Project: {proj['title']}\n"
+            f"Description: {proj['description']}\n"
+            f"Total Tasks: {proj['num_tasks']}, Done: {proj['num_done']}, In Progress: {proj['num_inprogress']}, Urgent: {proj['num_urgent']}\n"
+            f"Tasks: {', '.join(proj['tasks']) if proj['tasks'] else 'No tasks yet.'}\n\n"
+        )
+
+    mistral_api_key = os.getenv("MISTRAL_API_KEY")
+    if not mistral_api_key:
+        return jsonify({"msg": "Mistral API key not configured"}), 500
+
+    headers = {
+        "Authorization": f"Bearer {mistral_api_key}",
+        "Content-Type": "application/json",
+    }
+
+    payload = {
+        "model": "mistral-tiny",
+        "messages": [
+            {"role": "system", "content": "You are an AI project manager. Write a short standup summary update for all current projects given their tasks and status."},
+            {"role": "user", "content": prompt}
+        ],
+        "max_tokens": 280,
+        "temperature": 0.6
+    }
+
+    try:
+        response = requests.post(
+            "https://api.mistral.ai/v1/chat/completions",
+            headers=headers,
+            json=payload
+        )
+        if response.status_code != 200:
+            print("Mistral API Error:", response.text)
+            return jsonify({"msg": "Error generating standup summary", "error": response.text}), 500
+
+        summary = response.json()["choices"][0]["message"]["content"].strip()
+        return jsonify({"standup": summary})
+    except Exception as e:
+        print("Mistral API Error:", e)
+        return jsonify({"msg": "Error generating standup summary", "error": str(e)}), 500
+
 
 
 # ---- RUN APP ----
