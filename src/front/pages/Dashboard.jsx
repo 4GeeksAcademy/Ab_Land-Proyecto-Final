@@ -197,7 +197,7 @@ export default function Dashboard() {
 
         </>
 
-      ) : !loading && projectEmpty && <div>No projects found.</div>}
+      ) : !loading && projectEmpty && <div className="text-center"><h3>No projects found.</h3></div>}
 
       {/* Modal no project wellcome */}
       <WelcomeModal
