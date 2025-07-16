@@ -249,15 +249,7 @@ export const Register = () => {
                 <label className="form-label">
                   Profile Picture: URL or file (optional)
                 </label>
-                <div className="d-flex gap-2 mb-3">
-                  <input
-                    type="url"
-                    className="form-control"
-                    placeholder="Enter image URL"
-                    value={imageFile ? "" : formData.profile_picture_url}
-                    onChange={handleUrlChange}
-                    disabled={!!imageFile}
-                  />
+                <div className="d-flex flex-column gap-2 mb-3">
                   <input
                     type="file"
                     accept="image/*"
@@ -268,6 +260,14 @@ export const Register = () => {
                       uploading
                     }
                   />
+                  <input
+                    type="url"
+                    className="form-control"
+                    placeholder="Enter image URL"
+                    value={imageFile ? "" : formData.profile_picture_url}
+                    onChange={handleUrlChange}
+                    disabled={!!imageFile}
+                  />                  
                 </div>
                 {uploadMessage && (
                   <div className="mt-2 text-muted">

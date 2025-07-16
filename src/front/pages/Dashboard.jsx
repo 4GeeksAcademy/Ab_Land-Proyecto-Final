@@ -244,9 +244,13 @@ export default function Dashboard() {
             color: "#203040"
           }}
         >
-          <h4 style={{ fontWeight: 700, fontSize: "1.45rem", marginBottom: "0.7rem" }}>
+          <div className="d-flex">
+            <h4 style={{ fontWeight: 700, fontSize: "1.45rem", marginBottom: "0.7rem" }}>
             <span className="ai-sparkle">✨</span>AI Standup
           </h4>
+          <button type="button" className="btn-close ms-auto mt-2" aria-label="Close" onClick={() => setStandupText("")}/>
+          </div>
+          
           <div style={{ whiteSpace: "pre-line" }}>{standupText}</div>
         </div>
       )}
