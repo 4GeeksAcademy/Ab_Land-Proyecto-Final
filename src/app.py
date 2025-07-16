@@ -8,7 +8,7 @@ from flask_migrate import Migrate
 from sqlalchemy.exc import IntegrityError
 
 from api.utils import APIException, generate_sitemap
-from api.models import db, User, Project, Task, Comment, RestorePassword, ProjectStatus, Project_Member, TaskStatus
+from api.models import db, User, Project, Task, RestorePassword, ProjectStatus, Project_Member, TaskStatus
 
 from api.admin import setup_admin
 from api.commands import setup_commands
@@ -22,6 +22,9 @@ from flask_cors import CORS
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(
     os.path.realpath(__file__)), '../dist/')
+
+template_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'api/templates/emails')
+
 
 # CONSTANTS
 TASK_STATUS_MAPPING = {
@@ -148,7 +151,7 @@ def register():
         return jsonify({'msg': 'Ingresa un email distinto.'}), 400
 
     # Send welcome email
-    path = os.path.join(static_file_dir, 'api', 'HTML mails', 'Welcome.html')
+    path = os.path.join(template_dir, 'Welcome.html')
     if os.path.exists(path):
         with open(path, 'r') as f:
             html_content = f.read()
@@ -160,7 +163,7 @@ def register():
         try:
             mail.send(msg)
         except Exception as e:
-            print("MAIL ERROR:", e)
+            return jsonify({'msg': f'Mail error: {str(e)}'}), 500
 
     return jsonify({'msg': 'ok', 'new_user': new_user.serialize()}), 201
 
@@ -187,6 +190,24 @@ def login():
 def verification_token():
     return jsonify({'msg': 'Token is valid'}), 200
 
+@app.route('/api/test-mail/<string:email>', methods=['GET'])
+def test_mail(email):
+    path = os.path.join(template_dir, 'Test.html')
+    
+    if os.path.exists(path):
+        with open(path, 'r') as file:
+            html_content = file.read()
+        msg = Message(
+            subject="Test mail",
+            recipients=[email],
+        )
+        msg.html = html_content
+        
+    try:
+        mail.send(msg)
+        return jsonify({'msg': 'Test email sent!'}), 200
+    except Exception as e:
+        return jsonify({'msg': f'Mail error: {str(e)}'}), 500
 
 @app.route('/api/restore-password', methods=['POST'])
 def restore_password():
@@ -217,8 +238,7 @@ def restore_password():
     restore_link = f"{frontend_url}/restore-password/{token}"
 
     # Send password reset email
-    path = os.path.join(static_file_dir, 'api',
-                        'HTML mails', 'RestorePassword.html')
+    path = os.path.join(template_dir, 'RestorePassword.html')
     if os.path.exists(path):
         with open(path, 'r') as f:
             html_content = f.read()
@@ -231,7 +251,7 @@ def restore_password():
         try:
             mail.send(msg)
         except Exception as e:
-            print("MAIL ERROR:", e)
+            return jsonify({'msg': f'Mail error: {str(e)}'}), 500
 
     return jsonify({'msg': 'Password reset email sent'}), 200
 
@@ -504,9 +524,6 @@ def get_project(project_id):
 
     project_members = Project_Member.query.filter_by(
         project_id=project_id).all()
-    print([member.member_id for member in project_members])
-    print(user.id is not project.admin_id)
-    print(user.id not in [member.member_id for member in project_members])
 
     if user.id is not project.admin_id and user.id not in [member.member_id for member in project_members]:
         # If the user is not an admin or a member of the project, return an error
@@ -701,17 +718,12 @@ def get_project_tasks(project_id):
     is_admin = (user.id == project.admin_id)
     is_member = user.id in [member.member_id for member in project_members]
 
-    print(
-        f"DEBUG: User {user.id}, Project {project_id}, Admin: {is_admin}, Member: {is_member}")
-
     if not is_admin and not is_member:
         return jsonify({'msg': 'You are not authorized to view tasks from this project'}), 400
 
     if is_admin:
         all_tasks = Task.query.filter_by(project_id=project_id).all()
         tasks_data_serialize = [task.serialize() for task in all_tasks]
-
-        print(f"DEBUG: Admin view - Found {len(all_tasks)} tasks")
 
         return jsonify({
             'msg': 'All project tasks retrieved successfully',
@@ -727,8 +739,6 @@ def get_project_tasks(project_id):
 
         tasks_data = [task.serialize_for_member(
             user.id) for task in member_tasks]
-
-        print(f"DEBUG: Member view - Found {len(member_tasks)} tasks")
 
         return jsonify({
             'msg': 'Your tasks retrieved successfully',
@@ -758,7 +768,6 @@ def create_task(project_id):
         return jsonify({'msg': 'You are not authorized to create tasks in this project'}), 400
 
     body = request.get_json(silent=True)
-    print(f"DEBUG: Received body: {body}")
 
     if body is None:
         return jsonify({'msg': 'Debes enviar información en el body'}), 400
@@ -766,7 +775,6 @@ def create_task(project_id):
         return jsonify({'msg': 'Debes enviar un título válido'}), 400
 
     assigned_to_id = body.get('assigned_to_id')
-    print(f"DEBUG: assigned_to_id: {assigned_to_id}")
 
     if assigned_to_id:
         assigned_user = User.query.get(assigned_to_id)
@@ -783,13 +791,9 @@ def create_task(project_id):
         assigned_to_id = None
 
     status_value = body.get('status', 'in progress')
-    print(f"DEBUG: status_value: {status_value}")
 
     if status_value not in TASK_STATUS_MAPPING:
         return jsonify({'msg': 'Invalid task status'}), 400
-
-    print(
-        f"DEBUG: About to create task with data: title={body['title']}, status={TASK_STATUS_MAPPING[status_value]}, assigned_to_id={assigned_to_id}")
 
     try:
         new_task = Task(
@@ -804,18 +808,14 @@ def create_task(project_id):
 
         db.session.add(new_task)
         db.session.commit()
-        print(f"DEBUG: Task created successfully with id: {new_task.id}")
-
+ 
         return jsonify({
             'msg': 'Task created successfully',
             'task': new_task.serialize()
         }), 201
 
     except Exception as e:
-        print(e)
         db.session.rollback()
-        print(f"DEBUG: Error creating task: {str(e)}")
-        print(e)
         return jsonify({'msg': f'Error creating task: {str(e)}'}), 500
 
 
@@ -907,44 +907,9 @@ def delete_task(project_id, task_id):
         db.session.rollback()
         return jsonify({'msg': 'Error updating task'}), 500
 
-# ======================== POSIBLES ENDPOINTS ADICIONALES ========================
-# Basado en los modelos disponibles en models.py que aún no tienen endpoints implementados
-
-# ========== COMMENT ENDPOINTS ==========
-# Endpoints para manejar comentarios en las tareas
-# @app.route('/project/<int:project_id>/task/<int:task_id>/comments', methods=['GET'])
-# @app.route('/project/<int:project_id>/task/<int:task_id>/comment', methods=['POST'])
-# @app.route('/project/<int:project_id>/task/<int:task_id>/comment/<int:comment_id>', methods=['PUT', 'DELETE'])
-
-# ========== TAGS ENDPOINTS ==========
-# Endpoints para manejar etiquetas/tags en las tareas
-# @app.route('/project/<int:project_id>/task/<int:task_id>/tags', methods=['GET'])
-# @app.route('/project/<int:project_id>/task/<int:task_id>/tag', methods=['POST'])
-# @app.route('/project/<int:project_id>/task/<int:task_id>/tag/<int:tag_id>', methods=['DELETE'])
-
-# ========== ROLE ENDPOINTS ==========
-# Endpoints para manejar roles específicos en proyectos (alternativa a project members)
-# @app.route('/project/<int:project_id>/roles', methods=['GET'])
-# @app.route('/project/<int:project_id>/role', methods=['POST'])
-# @app.route('/project/<int:project_id>/role/<int:role_id>', methods=['PUT', 'DELETE'])
-
-# ========== USER PROFILE ENDPOINTS ==========
-# Endpoints adicionales para gestión de perfiles de usuario
-# @app.route('/profile', methods=['GET'])  # Obtener perfil del usuario autenticado
-# @app.route('/profile', methods=['PUT'])  # Actualizar perfil del usuario autenticado
-# @app.route('/profile/picture', methods=['POST'])  # Subir foto de perfil
-# @app.route('/users', methods=['GET'])  # Buscar usuarios (para añadir a proyectos)
-
-# ========== TASK ASSIGNMENT ENDPOINTS ==========
-# Endpoints específicos para gestión de asignaciones
-# @app.route('/project/<int:project_id>/task/<int:task_id>/assign', methods=['POST'])
-# @app.route('/project/<int:project_id>/task/<int:task_id>/unassign', methods=['POST'])
-# @app.route('/my-tasks', methods=['GET'])  # Todas las tareas asignadas al usuario
-
 # ========== OPENAI ENDPOINTS ==========
-import os
+
 import requests
-from flask import request, jsonify
 
 @app.route("/api/ai/suggest-description", methods=["POST"])
 def ai_suggest_description():
@@ -988,8 +953,6 @@ def ai_suggest_description():
     except Exception as e:
         print("Mistral API Error:", e)
         return jsonify({"msg": "Error generating description", "error": str(e)}), 500
-
-
 
 
 # ---- RUN APP ----
