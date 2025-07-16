@@ -8,10 +8,16 @@ export default function Dashboard() {
   const { store, dispatch } = useGlobalReducer();
   const [loading, setLoading] = useState(false);
   const [projects, setProjects] = useState(null);
-  const [showModal, setShowModal] = useState(true);
+
+  // Start false, don't show modal until we know for sure
+  const [showModal, setShowModal] = useState(false);
   const [projectEmpty, setProjectEmpty] = useState(false);
   const [tab, setTab] = useState("admin");
-  const [welcomeMsg, setWelcomeMsg] = useState(true);
+
+  // Only show welcome alert if not previously closed
+  const [welcomeMsg, setWelcomeMsg] = useState(() => {
+    return localStorage.getItem("hideWelcomeMsg") !== "true";
+  });
 
   // AI Standup states
   const [standupLoading, setStandupLoading] = useState(false);
@@ -33,6 +39,7 @@ export default function Dashboard() {
   }, [store.token]);
 
   useEffect(() => {
+    // Wait until we have finished loading and have a value for projects
     if (!loading && projects) {
       if (
         projects.admin && projects.admin.length === 0 &&
@@ -46,12 +53,6 @@ export default function Dashboard() {
       }
     }
   }, [loading, projects]);
-
-  useEffect(() => {
-    if (!welcomeMsg) return;
-    const timer = setTimeout(() => setWelcomeMsg(false), 10000);
-    return () => clearTimeout(timer);
-  }, [welcomeMsg]);
 
   const fetchProjects = async () => {
     setLoading(true);
@@ -116,6 +117,12 @@ export default function Dashboard() {
     }
   };
 
+  // Only hide welcomeMsg if user clicks the X button
+  const handleWelcomeClose = () => {
+    setWelcomeMsg(false);
+    localStorage.setItem("hideWelcomeMsg", "true");
+  };
+
   if (!store.token) {
     return <p>Redirecting to login...</p>;
   }
@@ -142,7 +149,7 @@ export default function Dashboard() {
             }}
           />
           Welcome,&nbsp;<strong className="text-capitalize">{` ${store.user.full_name || store.user.email}`}</strong>! 👋
-          <button type="button" className="btn-close mt-2" aria-label="Close" onClick={() => setWelcomeMsg(false)}></button>
+          <button type="button" className="btn-close mt-2" aria-label="Close" onClick={handleWelcomeClose}></button>
         </div>
       )}
 
@@ -259,7 +266,7 @@ export default function Dashboard() {
                 />
               </Link>
             ))
-            : <>{!loading && <h4 className="text-center">You are not a admin of any project.</h4>}</>
+            : <>{!loading && <h4 className="text-center">You are not an admin of any project.</h4>}</>
           }</>}
           {tab === "member" && <> {(projects.member && projects.member.length > 0)
             ? projects.member.map(proj => (
@@ -275,14 +282,18 @@ export default function Dashboard() {
       ) : !loading && projectEmpty && <div className="text-center"><h3>No projects found.</h3></div>}
       
 
-      {/* Modal no project wellcome */}
-      <WelcomeModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-      />
+      {/* Only render WelcomeModal if we know user has NO projects */}
+      {showModal && (
+        <WelcomeModal
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+        />
+      )}
     </div>
   );
 }
+
+
 
 
 

@@ -21,9 +21,9 @@ export const WelcomeModal = ({isOpen, onClose}) => {
 
                     <h5 className="fw-bold mb-2">Welcome to EchoBoard</h5>
                     <p className="text-muted text-center mb-3">
-                        welcome to your dashboard <br />
-                        It seems you are new here or do not have any projects <br />
-                        have fun and create a new one
+                        Welcome to your dashboard. <br />
+                        It seems you are new here or do not have any projects. <br />
+                        Have fun and create a new one!
                     </p>
                     <Link to={"/newProject"}>
                         <button className="btn btn-primary">Create a new project</button>
