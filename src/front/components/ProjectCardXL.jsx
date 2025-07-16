@@ -48,10 +48,11 @@ export const ProjectCardXL = ({ project, onEdit, onAddMembers }) => {
             <div className="d-flex align-items-start">
                 {/* Project Icon */}
                 <img
-                    src={
-                        project_picture_url ||
-                        'https://placehold.co/150x150/png?text=No+Image'
-                    }
+                    src={project_picture_url}
+                    onError={({ currentTarget }) => {
+                        currentTarget.onerror = null; // prevents looping
+                        currentTarget.src = "'https://placehold.co/150x150/png?text=No+Image'";
+                    }}
                     alt="Project icon"
                     className="rounded cover me-2"
                     style={{ width: 150, height: 150 }}
@@ -88,7 +89,7 @@ export const ProjectCardXL = ({ project, onEdit, onAddMembers }) => {
                                 <img
                                     src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
                                         admin_full_name
-                                    )}&background=random`}                                    
+                                    )}&background=random`}
                                     alt={admin_full_name}
                                     className="rounded-circle"
                                     width="32"
