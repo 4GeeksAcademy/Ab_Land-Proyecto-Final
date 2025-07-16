@@ -23,11 +23,7 @@ export function Profile() {
   const [loading, setLoading] = useState(false);
   const [projects, setProjects] = useState({ admin: [], member: [] });
   const navigate = useNavigate();
-  const { id } = useParams();
-
-  const getAvatarUrl = () =>
-    formData.profile_picture_url ||
-    `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.full_name || "U")}&background=0D8ABC&color=fff`;  
+  const { id } = useParams();  
 
   const handleChange = (e) => {
     setFormData(prev => ({
@@ -35,7 +31,7 @@ export function Profile() {
       [e.target.name]: e.target.value,
     }));
   };
-  
+
   useEffect(() => {
     if (store.user.id == id) {
       setIsUserProfile(true)
@@ -157,10 +153,10 @@ export function Profile() {
   };
 
   const handleUrlChange = (e) => {
-    if (e.key === 'Enter') {
+    if (e) {
       setImageFile(null);
-      const url = e.target.value;
-      setFormData(prev => ({ ...prev, profile_picture_url: url }));
+      const url = e.target.value;      
+      setFormData(prev => ({ ...prev, profile_picture_url: url })) 
     }
   };
 
@@ -179,6 +175,7 @@ export function Profile() {
   const handleDeleteAccount = () => {
     setShowAlertModal(true)
   };
+
   const putProfile = async () => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
     const submitData = { ...formData };
@@ -203,15 +200,17 @@ export function Profile() {
         return;
       }
       if (!response.ok) throw new Error("Network response was not ok");
-      const data = await response.json();
+      else {const data = await response.json();
       dispatch({ type: "success", payload: "User updated successfully!" });
-      setEditing(false);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      dispatch({type: "profile_change", payload: data.user})
+      setEditing(false);}
     } catch (err) {
       dispatch({
         type: "error",
         payload: err?.message || "Error updating user. Please try again.",
       });
-    }
+    } finally { setEditing(false); }
   };
   const handleAlertResponse = (res) => {
     setShowAlertModal(false)
@@ -258,7 +257,8 @@ export function Profile() {
         {/* <span className="text-muted small">Account &nbsp; / &nbsp; Profile</span> */}
         <h1 className="fw-bold d-flex align-items-center ms-2">
           <img
-            src={getAvatarUrl()}
+            src={store.user.profile_picture_url ||
+              `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.full_name || "U")}&background=0D8ABC&color=fff`}
             alt="Profile"
             style={{
               width: "70px",
@@ -270,7 +270,7 @@ export function Profile() {
             }}
           />
           <span className="text-dark">
-            {formData.full_name}{" "}
+            {store.user.full_name}{" "}
             <span title="Verified" className="text-primary" style={{ fontSize: 28 }}>
               <i className="fa-solid fa-circle-check"></i>
             </span>
@@ -318,11 +318,12 @@ export function Profile() {
           <div className="row">
             <div className="col-md-4 text-center mb-4">
               <img
-                src={getAvatarUrl()}
+                src={formData.profile_picture_url ||
+                  `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.full_name || "U")}&background=0D8ABC&color=fff`}
                 alt="Profile"
                 style={{
-                  width: "120px",
-                  height: "120px",
+                  width: "150px",
+                  height: "150px",
                   borderRadius: "50%",
                   objectFit: "cover",
                   border: "3px solid var(--blue-500)",
@@ -332,12 +333,12 @@ export function Profile() {
               {editing && (
                 <div>
                   <label className="form-label">Profile picture: URL or file (optional)</label>
-                  <div className="d-flex gap-2 mb-2">
+                  <div className="d-flex flex-column gap-2 mb-2">
                     <input
                       type="url"
                       className="form-control"
                       placeholder="Enter image URL"
-                      onKeyDown={handleUrlChange}
+                      onChange={handleUrlChange}
                       disabled={!editing || !!imageFile}
                     />
                     <input
@@ -414,7 +415,7 @@ export function Profile() {
 
           {editing && (
             <div className="mt-3 d-flex justify-content-end">
-              <button type="submit" className="btn btn-primary" disabled={uploading}>
+              <button type="submit" className="btn btn-primary" disabled={uploading} onClick={handleSubmit}>
                 Save Changes
               </button>
             </div>

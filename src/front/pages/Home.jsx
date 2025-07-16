@@ -85,9 +85,9 @@ export const Home = () => {
         <h3 className="mb-4" id="ourteam"><strong>Our Team</strong></h3>
         <div className="row justify-content-center pt-3 g-2 px-5">
           {[
-            { name: "Luna", github: "https://github.com/LunaB28" },
+            { name: "Luna ", github: "https://github.com/LunaB28" },
             { name: "Roberta", github: "https://github.com/robertaval", picURL: "https://res.cloudinary.com/duzqn2kk2/image/upload/v1752075672/slack_20220808152622_gcuvzk.jpg" },
-            { name: "Abraham", github: "https://github.com/Ablandaeta", picURL: "https://res.cloudinary.com/dvawhw99g/image/upload/v1751981162/ta2nbrpkqiqytjjodfen.png" }
+            { name: "Abraham", github: "https://github.com/Ablandaeta", picURL: "https://res.cloudinary.com/dvawhw99g/image/upload/wpc38sgqze5z5ifpywzy.png" }
           ].map((member, idx) => (
             <div key={idx} className="col-12 col-md-auto">
               <div className="border-dash rounded p-2 m-1 teamcardHW flex-center flex-column">
