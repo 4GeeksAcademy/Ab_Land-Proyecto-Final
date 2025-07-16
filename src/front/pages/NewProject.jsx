@@ -112,7 +112,7 @@ export function NewProject() {
                 return;
             } else {
 
-                let successMessage = "¡Proyecto guardado exitosamente!";
+                let successMessage = "Project created successfully!";
 
 
                 if (data.members_info && data.members_info.errors && data.members_info.errors.length > 0) {
