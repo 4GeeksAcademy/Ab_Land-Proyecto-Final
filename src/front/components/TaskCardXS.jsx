@@ -22,7 +22,7 @@ export const TaskCardXS = ({ task, onTaskClick }) => {
                 className={`rounded status-${statusColor}`}
                 style={{ width: "10px", height: "10px" }}
             ></span>
-            <span className="flex-grow-1 text-truncate text-capitalize">{task.title}</span>
+            <span className="flex-grow-1 text-truncate text-capitalize" title={task.title}>{task.title}</span>
             {task.task_author && (
                 <div className="rounded-circle bg-light text-dark d-flex justify-content-center align-items-center" style={{ width: "24px", height: "24px", fontSize: "0.75rem", fontWeight: "bold" }}>
                     <img
@@ -33,7 +33,7 @@ export const TaskCardXS = ({ task, onTaskClick }) => {
                   className="rounded-circle"
                   width="24"
                   height="24"
-                  title={`Creado por: ${task.task_author}`}
+                  title={`Created by: ${task.task_author}`}
                 />
                 </div>
             )}

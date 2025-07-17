@@ -143,11 +143,11 @@ export const TaskCard = ({ task, userRole, onEdit, onUpdate }) => {
                 className="rounded-circle"
                 width="32"
                 height="32"
-                title={`Creado y asignado: ${task_author}`}
+                title={`Created and assigned: ${task_author}`}
               />
             </div>
             <small className="text-muted">
-              <strong>Creado y asignado:</strong> {task_author}
+              <strong>Created and assigned:</strong> {task_author}
             </small>
           </div>
         ) : (
@@ -163,11 +163,11 @@ export const TaskCard = ({ task, userRole, onEdit, onUpdate }) => {
                   className="rounded-circle"
                   width="32"
                   height="32"
-                  title={`Creado por: ${task_author}`}
+                  title={`Created by: ${task_author}`}
                 />
               </div>
               <small className="text-muted">
-                <strong>Creador:</strong> {task_author}
+                <strong>Created by:</strong> {task_author}
               </small>
             </div>
 
@@ -183,16 +183,16 @@ export const TaskCard = ({ task, userRole, onEdit, onUpdate }) => {
                       className="rounded-circle"
                       width="32"
                       height="32"
-                      title={`Asignado a: ${assigned_to.full_name}`}
+                      title={`Assigned to: ${assigned_to.full_name}`}
                     />
                   </div>
                   <small className="text-muted">
-                    <strong>Asignado a:</strong> {assigned_to.full_name}
+                    <strong>Assigned to:</strong> {assigned_to.full_name}
                   </small>
                 </>
               ) : (
                 <small className="text-muted">
-                  <strong>Asignado a:</strong> <em>Sin asignar</em>
+                  <strong>Assigned to:</strong> <em>Unassigned</em>
                 </small>
               )}
             </div>

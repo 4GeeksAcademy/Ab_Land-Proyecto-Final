@@ -38,8 +38,9 @@ export const Home = () => {
 
         <div className="container d-flex justify-content-center pt-3">
           {[BSicon, JSicon, Reacticon, PYicon, SQLAicon, Flaskicon].map((icon, index) => (
-            <div key={index} className="home-tech-box rounded mx-3 p-2">
-              <img src={icon} alt={`tech-${index}`} style={{ width: '3rem', height: '3rem' }} />
+            <div key={index} className="home-tech-box rounded mx-1 mx-md-2 mx-lg-3 p-2"
+            style={{ maxWidth: '4rem', aspectRatio:"1/1"}}>
+              <img src={icon} alt={`tech-${index}`} style={{ width: '100%', height: '100%' }}  />
             </div>
           ))}
         </div>

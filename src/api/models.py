@@ -114,6 +114,7 @@ class Project(db.Model):
             'due_date': self.due_date.isoformat() if self.due_date else None,
             'status': self.status.value,
             'admin_id': self.admin_id,
+            'admin_profile_picture_url': self.admin.profile_picture_url if self.admin else None,
             'admin_full_name': self.admin.full_name if self.admin else None,
             'members': [member.member.serialize() for member in self.members],
             'tasks': [task.serialize() for task in self.tasks]

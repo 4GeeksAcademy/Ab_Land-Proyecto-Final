@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import useGlobalReducer from "../hooks/useGlobalReducer";
 
 export function EditProject({ project, isOpen, onClose, onUpdate }) {
-    const { store } = useGlobalReducer();
+    const { store, dispatch } = useGlobalReducer();
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [dueDate, setDueDate] = useState("");
@@ -90,37 +90,41 @@ export function EditProject({ project, isOpen, onClose, onUpdate }) {
             setError("Please wait for the image upload to complete.");
             return;
         }
-
-        fetch(`${import.meta.env.VITE_BACKEND_URL}/api/project/${project.id}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + store.token,
-            },
-            body: JSON.stringify({
-                title,
-                description,
-                due_date: dueDate,
-                project_picture_url: projectPictureUrl,
-                status,
-            }),
-        })
-            .then(async (res) => {
-                const data = await res.json().catch(() => ({}));
-                if (!res.ok) {
-                    setError((data && data.msg) || "An error occurred while updating the project.");
-                    return;
-                }
-                dispatch({ type: "success", payload: "¡Proyecto actualizado exitosamente!" });
-                window.alert("¡Proyecto actualizado exitosamente!");
-                onUpdate(data.project); // Pasar el proyecto actualizado
-                onClose(); // Cerrar el modal
-            })
-            .catch(() => {
-                setError("Connection error with the server.");
-            });
+        putProject()
     };
+    const putProject = async () => {
+        try {
+            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/project/${project.id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + store.token,
+                },
+                body: JSON.stringify({
+                    title,
+                    description,
+                    due_date: dueDate,
+                    project_picture_url: projectPictureUrl,
+                    status,
+                }),
+            });
 
+            const data = await res.json();
+
+            if (!res.ok) {
+                dispatch({ type: "error", payload: data?.msg ||"An error occurred while updating the project."});
+                onClose();
+                return;
+            }
+
+            dispatch({ type: "success", payload: "Project updated successfully!" });            
+            onUpdate(data.project);
+            onClose();
+        } catch (err) {
+            console.error("Network error:", err); // 🔥 Log the actual error
+            setError("Connection error with the server.");
+        }
+    }
     if (!isOpen) return null;
 
     return (

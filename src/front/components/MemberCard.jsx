@@ -54,7 +54,7 @@ export const MemberCard = ({
                     style={{ width: 40, height: 40 }}
                     alt={`${member.full_name}'s portrait`}
                 />
-                <h5 className="me-2 text-capitalize" style={{ width: "20%" }}>{member.full_name}</h5>
+                <h5 className="me-2 text-capitalize text-start" style={{ width: "20%" }}>{member.full_name}</h5>
                 <h6 className='me-2 text-capitalize'><strong>Role:</strong> {memberRole}</h6>
                 {userRole === "admin" && (
                     <button
