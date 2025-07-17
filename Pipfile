@@ -21,7 +21,10 @@ flask-cors = "*"
 sqlalchemy = "*"
 six = "*"
 flask-migrate = "*"
+tomli = "*"
 flask-mail = "*"
+openai = "*"
+requests = "*"
 
 [requires]
 python_version = "3.13"
