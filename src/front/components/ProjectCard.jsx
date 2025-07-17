@@ -18,6 +18,7 @@ export const ProjectCard = ({ project, onEdit, onAddMembers }) => {
     due_date,
     status,
     project_picture_url,
+    admin_profile_picture_url,
     admin_full_name,
     admin_id,
     members,
@@ -77,7 +78,7 @@ export const ProjectCard = ({ project, onEdit, onAddMembers }) => {
           <div className="d-flex align-items-center">
             <div className="me-2">
               <img
-                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                src={admin_profile_picture_url||`https://ui-avatars.com/api/?name=${encodeURIComponent(
                   admin_full_name
                 )}&background=random`}
                 alt={admin_full_name}

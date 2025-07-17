@@ -3,7 +3,6 @@ import useGlobalReducer from "../hooks/useGlobalReducer";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from 'react';
 
-
 export const ProjectCardXL = ({ project, onEdit, onAddMembers }) => {
 
     const { store, dispatch } = useGlobalReducer();
@@ -18,6 +17,7 @@ export const ProjectCardXL = ({ project, onEdit, onAddMembers }) => {
         status,
         project_picture_url,
         admin_full_name,
+        admin_profile_picture_url,
         admin_id,
         members,
         budget
@@ -64,9 +64,9 @@ export const ProjectCardXL = ({ project, onEdit, onAddMembers }) => {
                     <p className="text-muted mb-3" >
                         {description || 'No description provided.'}
                     </p>
-                    <div className="row align-items-center mb-2 ps-3">
-                        <div className="col me-3 mb-3 p-1 rounded border-dashed text-center"
-                            style={{ minWidth: "70px" }}>
+                    <div className="d-flex align-items-center mb-2">
+                        <div className="me-3 mb-3 p-1 rounded border-dashed text-center"
+                            style={{ minWidth: "100px" }}>
                             <small className="mb-0 text-muted">
                                 <strong>{formattedDate}</strong>
                             </small> <br />
@@ -80,13 +80,14 @@ export const ProjectCardXL = ({ project, onEdit, onAddMembers }) => {
                             <small className="mb-0 text-muted">Budget</small>
 
                         </div> */}
-                        <div className="col d-flex ">
+                        <div className="d-flex ">
                             <div className="mx-2">
                                 <img
-                                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                                    src={admin_profile_picture_url ||`https://ui-avatars.com/api/?name=${encodeURIComponent(
                                         admin_full_name
                                     )}&background=random`}
                                     alt={admin_full_name}
+                                    title={admin_full_name}
                                     className="rounded-circle"
                                     width="32"
                                     height="32"
@@ -99,6 +100,7 @@ export const ProjectCardXL = ({ project, onEdit, onAddMembers }) => {
                                         <img
                                             src={member.profile_picture_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.full_name || `M${idx + 1}`)}&background=random`}
                                             alt={member.full_name || `Member ${idx + 1}`}
+                                            title={member.full_name || `Member ${idx + 1}`}
                                             className="rounded-circle"
                                             width="32"
                                             height="32"
