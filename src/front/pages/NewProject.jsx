@@ -112,7 +112,7 @@ export function NewProject() {
                 return;
             } else {
 
-                let successMessage = "¡Proyecto guardado exitosamente!";
+                let successMessage = "Project created successfully!";
 
 
                 if (data.members_info && data.members_info.errors && data.members_info.errors.length > 0) {
@@ -196,14 +196,14 @@ export function NewProject() {
                             <input
                                 type="text"
                                 className="form-control"
-                                placeholder="Enter project title"
+                                placeholder="Enter project's title"
                                 value={title}
                                 onChange={e => setTitle(e.target.value)}
                                 required
                             />
                         </div>
                         <div className="col-12">
-                            <label className="form-label text-dark">Description (optional)</label>
+                            <label className="form-label text-dark">Description (Optional)</label>
                             <textarea
                                 className="form-control"
                                 value={description}
@@ -231,14 +231,14 @@ export function NewProject() {
                                 onChange={e => setStatus(e.target.value)}
                                 required
                             >
-                                <option value="in progress">In progress</option>
-                                <option value="yet to start">Yet to start</option>
+                                <option value="in progress">In Progress</option>
+                                <option value="yet to start">Yet To Start</option>
                                 <option value="done">Done</option>
                                 <option value="dismissed">Dismissed</option>
                             </select>
                         </div>
                         <div className="col-12">
-                            <label className="form-label text-dark">Project picture: URL or file (optional)</label>
+                            <label className="form-label text-dark">Project Picture: URL or a File (Optional)</label>
                             <div className="d-flex gap-2">
                                 <input
                                     type="url"
@@ -278,12 +278,12 @@ export function NewProject() {
                             )}
                         </div>
                         <div className="col-12">
-                            <label className="form-label text-dark">Team Members (optional)</label>
+                            <label className="form-label text-dark">Team Members (Optional)</label>
                             <div className="input-group mb-3">
                                 <input
                                     type="email"
                                     className="form-control"
-                                    placeholder="Enter member email"
+                                    placeholder="Enter member's e-mail address"
                                     value={memberEmail}
                                     onChange={e => setMemberEmail(e.target.value)}
                                     onKeyDown={handleMemberKeyPress}
@@ -320,7 +320,7 @@ export function NewProject() {
                             </div>
                         </div>
                         <div className="col text-end">
-                            <button className="btn btn-primary" type="submit">Create new Project</button>
+                            <button className="btn btn-primary" type="submit">Create a New Project</button>
                         </div>
                     </form>
                 </div>

@@ -8,7 +8,7 @@ from flask_migrate import Migrate
 from sqlalchemy.exc import IntegrityError
 
 from api.utils import APIException, generate_sitemap
-from api.models import db, User, Project, Task, Comment, RestorePassword, ProjectStatus, Project_Member, TaskStatus
+from api.models import db, User, Project, Task, RestorePassword, ProjectStatus, Project_Member, TaskStatus
 
 from api.admin import setup_admin
 from api.commands import setup_commands
@@ -20,7 +20,11 @@ from flask_cors import CORS
 
 # ENVIRONMENT
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
-static_file_dir = os.path.dirname(os.path.realpath(__file__))
+static_file_dir = os.path.join(os.path.dirname(
+    os.path.realpath(__file__)), '../dist/')
+
+template_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'api/templates/emails')
+
 
 # CONSTANTS
 TASK_STATUS_MAPPING = {
@@ -41,14 +45,7 @@ app = Flask(__name__)
 app.url_map.strict_slashes = False
 
 # ====== CORS: HARDCODE YOUR FRONTEND URLS! ======
-CORS(
-    app,
-    origins=[
-        "http://localhost:3000",
-        os.getenv("FRONTEND_URL")
-    ],
-    supports_credentials=True
-)
+CORS(app)
 # =================================================
 
 # DATABASE CONFIG
@@ -73,7 +70,7 @@ app.config.update(
     MAIL_USERNAME=os.getenv('MAIL_DEFAULT_SENDER'),
     MAIL_DEFAULT_SENDER=os.getenv('MAIL_DEFAULT_SENDER'),
     MAIL_PASSWORD=os.getenv('MAIL_PASSWORD'),
-    DEBUG=False
+    DEBUG=True
 )
 
 # INIT EXTENSIONS
@@ -154,7 +151,7 @@ def register():
         return jsonify({'msg': 'Ingresa un email distinto.'}), 400
 
     # Send welcome email
-    path = os.path.join(static_file_dir, 'api', 'HTML mails', 'Welcome.html')
+    path = os.path.join(template_dir, 'Welcome.html')
     if os.path.exists(path):
         with open(path, 'r') as f:
             html_content = f.read()
@@ -163,7 +160,10 @@ def register():
             recipients=[new_user.email],
         )
         msg.html = html_content
-        mail.send(msg)
+        try:
+            mail.send(msg)
+        except Exception as e:
+            return jsonify({'msg': f'Mail error: {str(e)}'}), 500
 
     return jsonify({'msg': 'ok', 'new_user': new_user.serialize()}), 201
 
@@ -190,6 +190,24 @@ def login():
 def verification_token():
     return jsonify({'msg': 'Token is valid'}), 200
 
+@app.route('/api/test-mail/<string:email>', methods=['GET'])
+def test_mail(email):
+    path = os.path.join(template_dir, 'Test.html')
+    
+    if os.path.exists(path):
+        with open(path, 'r') as file:
+            html_content = file.read()
+        msg = Message(
+            subject="Test mail",
+            recipients=[email],
+        )
+        msg.html = html_content
+        
+    try:
+        mail.send(msg)
+        return jsonify({'msg': 'Test email sent!'}), 200
+    except Exception as e:
+        return jsonify({'msg': f'Mail error: {str(e)}'}), 500
 
 @app.route('/api/restore-password', methods=['POST'])
 def restore_password():
@@ -220,8 +238,7 @@ def restore_password():
     restore_link = f"{frontend_url}/restore-password/{token}"
 
     # Send password reset email
-    path = os.path.join(static_file_dir, 'api',
-                        'HTML mails', 'RestorePassword.html')
+    path = os.path.join(template_dir, 'RestorePassword.html')
     if os.path.exists(path):
         with open(path, 'r') as f:
             html_content = f.read()
@@ -231,7 +248,10 @@ def restore_password():
             recipients=[user.email],
         )
         msg.html = html_content
-        mail.send(msg)
+        try:
+            mail.send(msg)
+        except Exception as e:
+            return jsonify({'msg': f'Mail error: {str(e)}'}), 500
 
     return jsonify({'msg': 'Password reset email sent'}), 200
 
@@ -504,9 +524,6 @@ def get_project(project_id):
 
     project_members = Project_Member.query.filter_by(
         project_id=project_id).all()
-    print([member.member_id for member in project_members])
-    print(user.id is not project.admin_id)
-    print(user.id not in [member.member_id for member in project_members])
 
     if user.id is not project.admin_id and user.id not in [member.member_id for member in project_members]:
         # If the user is not an admin or a member of the project, return an error
@@ -701,17 +718,12 @@ def get_project_tasks(project_id):
     is_admin = (user.id == project.admin_id)
     is_member = user.id in [member.member_id for member in project_members]
 
-    print(
-        f"DEBUG: User {user.id}, Project {project_id}, Admin: {is_admin}, Member: {is_member}")
-
     if not is_admin and not is_member:
         return jsonify({'msg': 'You are not authorized to view tasks from this project'}), 400
 
     if is_admin:
         all_tasks = Task.query.filter_by(project_id=project_id).all()
         tasks_data_serialize = [task.serialize() for task in all_tasks]
-
-        print(f"DEBUG: Admin view - Found {len(all_tasks)} tasks")
 
         return jsonify({
             'msg': 'All project tasks retrieved successfully',
@@ -727,8 +739,6 @@ def get_project_tasks(project_id):
 
         tasks_data = [task.serialize_for_member(
             user.id) for task in member_tasks]
-
-        print(f"DEBUG: Member view - Found {len(member_tasks)} tasks")
 
         return jsonify({
             'msg': 'Your tasks retrieved successfully',
@@ -758,7 +768,6 @@ def create_task(project_id):
         return jsonify({'msg': 'You are not authorized to create tasks in this project'}), 400
 
     body = request.get_json(silent=True)
-    print(f"DEBUG: Received body: {body}")
 
     if body is None:
         return jsonify({'msg': 'Debes enviar información en el body'}), 400
@@ -766,7 +775,6 @@ def create_task(project_id):
         return jsonify({'msg': 'Debes enviar un título válido'}), 400
 
     assigned_to_id = body.get('assigned_to_id')
-    print(f"DEBUG: assigned_to_id: {assigned_to_id}")
 
     if assigned_to_id:
         assigned_user = User.query.get(assigned_to_id)
@@ -783,13 +791,9 @@ def create_task(project_id):
         assigned_to_id = None
 
     status_value = body.get('status', 'in progress')
-    print(f"DEBUG: status_value: {status_value}")
 
     if status_value not in TASK_STATUS_MAPPING:
         return jsonify({'msg': 'Invalid task status'}), 400
-
-    print(
-        f"DEBUG: About to create task with data: title={body['title']}, status={TASK_STATUS_MAPPING[status_value]}, assigned_to_id={assigned_to_id}")
 
     try:
         new_task = Task(
@@ -804,18 +808,14 @@ def create_task(project_id):
 
         db.session.add(new_task)
         db.session.commit()
-        print(f"DEBUG: Task created successfully with id: {new_task.id}")
-
+ 
         return jsonify({
             'msg': 'Task created successfully',
             'task': new_task.serialize()
         }), 201
 
     except Exception as e:
-        print(e)
         db.session.rollback()
-        print(f"DEBUG: Error creating task: {str(e)}")
-        print(e)
         return jsonify({'msg': f'Error creating task: {str(e)}'}), 500
 
 
@@ -907,39 +907,126 @@ def delete_task(project_id, task_id):
         db.session.rollback()
         return jsonify({'msg': 'Error updating task'}), 500
 
-# ======================== POSIBLES ENDPOINTS ADICIONALES ========================
-# Basado en los modelos disponibles en models.py que aún no tienen endpoints implementados
+# ========== AI ENDPOINTS ==========
 
-# ========== COMMENT ENDPOINTS ==========
-# Endpoints para manejar comentarios en las tareas
-# @app.route('/project/<int:project_id>/task/<int:task_id>/comments', methods=['GET'])
-# @app.route('/project/<int:project_id>/task/<int:task_id>/comment', methods=['POST'])
-# @app.route('/project/<int:project_id>/task/<int:task_id>/comment/<int:comment_id>', methods=['PUT', 'DELETE'])
+import requests
 
-# ========== TAGS ENDPOINTS ==========
-# Endpoints para manejar etiquetas/tags en las tareas
-# @app.route('/project/<int:project_id>/task/<int:task_id>/tags', methods=['GET'])
-# @app.route('/project/<int:project_id>/task/<int:task_id>/tag', methods=['POST'])
-# @app.route('/project/<int:project_id>/task/<int:task_id>/tag/<int:tag_id>', methods=['DELETE'])
+@app.route("/api/ai/suggest-description", methods=["POST"])
+def ai_suggest_description():
+    data = request.get_json()
+    task_title = data.get("title", "")
 
-# ========== ROLE ENDPOINTS ==========
-# Endpoints para manejar roles específicos en proyectos (alternativa a project members)
-# @app.route('/project/<int:project_id>/roles', methods=['GET'])
-# @app.route('/project/<int:project_id>/role', methods=['POST'])
-# @app.route('/project/<int:project_id>/role/<int:role_id>', methods=['PUT', 'DELETE'])
+    if not task_title:
+        return jsonify({"msg": "No title provided"}), 400
 
-# ========== USER PROFILE ENDPOINTS ==========
-# Endpoints adicionales para gestión de perfiles de usuario
-# @app.route('/profile', methods=['GET'])  # Obtener perfil del usuario autenticado
-# @app.route('/profile', methods=['PUT'])  # Actualizar perfil del usuario autenticado
-# @app.route('/profile/picture', methods=['POST'])  # Subir foto de perfil
-# @app.route('/users', methods=['GET'])  # Buscar usuarios (para añadir a proyectos)
+    mistral_api_key = os.getenv("MISTRAL_API_KEY")
+    if not mistral_api_key:
+        return jsonify({"msg": "Mistral API key not configured"}), 500
 
-# ========== TASK ASSIGNMENT ENDPOINTS ==========
-# Endpoints específicos para gestión de asignaciones
-# @app.route('/project/<int:project_id>/task/<int:task_id>/assign', methods=['POST'])
-# @app.route('/project/<int:project_id>/task/<int:task_id>/unassign', methods=['POST'])
-# @app.route('/my-tasks', methods=['GET'])  # Todas las tareas asignadas al usuario
+    headers = {
+        "Authorization": f"Bearer {mistral_api_key}",
+        "Content-Type": "application/json",
+    }
+
+    payload = {
+        "model": "mistral-tiny",  # Or mistral-small, mistral-medium
+        "messages": [
+            {"role": "system", "content": "You help write clear, concise task descriptions for dev teams."},
+            {"role": "user", "content": f"Write a clear and concise description for this task: {task_title}"}
+        ],
+        "max_tokens": 60,
+        "temperature": 0.7
+    }
+
+    try:
+        response = requests.post(
+            "https://api.mistral.ai/v1/chat/completions",
+            headers=headers,
+            json=payload
+        )
+        if response.status_code != 200:
+            print("Mistral API Error:", response.text)
+            return jsonify({"msg": "Error generating description", "error": response.text}), 500
+
+        suggestion = response.json()["choices"][0]["message"]["content"].strip()
+        return jsonify({"suggestion": suggestion})
+    except Exception as e:
+        print("Mistral API Error:", e)
+        return jsonify({"msg": "Error generating description", "error": str(e)}), 500
+    
+
+@app.route('/api/ai/standup', methods=['POST'])
+@jwt_required()
+def ai_standup():
+    all_projects = Project.query.all()
+    if not all_projects:
+        return jsonify({"msg": "No projects found."}), 404
+
+    project_summaries = []
+    for project in all_projects:
+        tasks = Task.query.filter_by(project_id=project.id).all()
+        num_tasks = len(tasks)
+        num_done = len([t for t in tasks if t.status and "done" in str(t.status).lower()])
+        num_inprogress = len([t for t in tasks if t.status and "progress" in str(t.status).lower()])
+        num_urgent = len([t for t in tasks if t.status and "urgent" in str(t.status).lower()])
+        project_summaries.append({
+            "title": project.title,
+            "description": project.description or "",
+            "tasks": [t.title for t in tasks],
+            "num_tasks": num_tasks,
+            "num_done": num_done,
+            "num_inprogress": num_inprogress,
+            "num_urgent": num_urgent,
+        })
+
+    prompt = (
+        "You are an AI standup bot. Summarize the current progress for each project. "
+        "For each project, give a brief status update mentioning tasks done, in progress, urgent tasks, and anything notable. "
+        "Make it readable and actionable for a daily standup update.\n\n"
+    )
+    for proj in project_summaries:
+        prompt += (
+            f"Project: {proj['title']}\n"
+            f"Description: {proj['description']}\n"
+            f"Total Tasks: {proj['num_tasks']}, Done: {proj['num_done']}, In Progress: {proj['num_inprogress']}, Urgent: {proj['num_urgent']}\n"
+            f"Tasks: {', '.join(proj['tasks']) if proj['tasks'] else 'No tasks yet.'}\n\n"
+        )
+
+    mistral_api_key = os.getenv("MISTRAL_API_KEY")
+    if not mistral_api_key:
+        return jsonify({"msg": "Mistral API key not configured"}), 500
+
+    headers = {
+        "Authorization": f"Bearer {mistral_api_key}",
+        "Content-Type": "application/json",
+    }
+
+    payload = {
+        "model": "mistral-tiny",
+        "messages": [
+            {"role": "system", "content": "You are an AI project manager. Write a short standup summary update for all current projects given their tasks and status."},
+            {"role": "user", "content": prompt}
+        ],
+        "max_tokens": 280,
+        "temperature": 0.6
+    }
+
+    try:
+        response = requests.post(
+            "https://api.mistral.ai/v1/chat/completions",
+            headers=headers,
+            json=payload
+        )
+        if response.status_code != 200:
+            print("Mistral API Error:", response.text)
+            return jsonify({"msg": "Error generating standup summary", "error": response.text}), 500
+
+        summary = response.json()["choices"][0]["message"]["content"].strip()
+        return jsonify({"standup": summary})
+    except Exception as e:
+        print("Mistral API Error:", e)
+        return jsonify({"msg": "Error generating standup summary", "error": str(e)}), 500
+
 
 
 # ---- RUN APP ----

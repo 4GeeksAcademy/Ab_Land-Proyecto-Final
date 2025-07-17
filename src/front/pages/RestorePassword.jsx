@@ -104,7 +104,7 @@ export const RestorePassword = () => {
 
   return (
     <div className="container app">
-      <div className="card flex-center flex-column p-5 max-w-md mt-10">
+      <div className="card flex-center flex-column p-4 w-md-75 mx-auto mt-10">
         <Link to="/login" className="me-auto">          
           ← Back
         </Link>
@@ -113,10 +113,9 @@ export const RestorePassword = () => {
         <p className="mb-4">
           Please fill in the details below to restore your password.
         </p>
-
-        <div className="divider"></div>
+        
         {!token && (
-          <form className="w-25 text-center">
+          <form className="w-lg-50 w-75 text-center">
             <input
               type="email"
               className="form-control mb-3"
@@ -138,7 +137,7 @@ export const RestorePassword = () => {
         )}
 
         {token && (
-          <form className="w-50 text-center">
+          <form className="w-lg-50 w-75 text-center">
             <div className="mb-3">
               <label htmlFor="new-password" className="form-label">
                 New Password
@@ -148,6 +147,7 @@ export const RestorePassword = () => {
                   type={showPassword ? "text" : "password"}
                   value={passwordOne}
                   className="form-control"
+                  placeholder="New Password"
                   onChange={(e) => setPasswordOne(e.target.value)}
                   id="new-password"
                   required
@@ -176,6 +176,7 @@ export const RestorePassword = () => {
                   type={showConfirm ? "text" : "password"}
                   value={passwordTwo}
                   className="form-control"
+                  placeholder="Re-enter Password"
                   onChange={(e) => setPasswordTwo(e.target.value)}
                   id="confirm-password"
                   required

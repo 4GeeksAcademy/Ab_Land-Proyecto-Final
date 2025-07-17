@@ -11,6 +11,10 @@ export function AddEditTask({ project, isOpen, onClose, onUpdate, task, onEdit }
         assigned_to_id: "",
     });
 
+    // AI state
+    const [isAiLoading, setIsAiLoading] = useState(false);
+    const [aiError, setAiError] = useState("");
+
     useEffect(() => {
         if (isOpen) {
             if (onEdit && task !== null) {
@@ -38,6 +42,28 @@ export function AddEditTask({ project, isOpen, onClose, onUpdate, task, onEdit }
                 ? e.target.value.toLowerCase()
                 : e.target.value,
         }));
+    };
+
+    // AI Suggest Handler
+    const handleAiSuggest = () => {
+        if (!formData.title.trim()) return;
+        setIsAiLoading(true);
+        setAiError("");
+        fetch(`${import.meta.env.VITE_BACKEND_URL}/api/ai/suggest-description`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title: formData.title })
+        })
+            .then(async res => {
+                const data = await res.json();
+                if (!res.ok) {
+                    setAiError(data.msg || "Error generating description.");
+                    return;
+                }
+                setFormData(prev => ({ ...prev, description: data.suggestion }));
+            })
+            .catch(err => setAiError("Connection error."))
+            .finally(() => setIsAiLoading(false));
     };
 
     const postTask = (dataToSend) => {
@@ -128,6 +154,27 @@ export function AddEditTask({ project, isOpen, onClose, onUpdate, task, onEdit }
                                     onChange={handleChange}
                                     required
                                 />
+                                {/* AI Suggest Button placed here */}
+                                <button
+                                    type="button"
+                                    className="btn-ai-suggest my-2"
+                                    style={{
+                                        width: '100%',
+                                        maxWidth: '340px',
+                                        margin: '0 auto',
+                                        display: 'block',
+                                        minHeight: "38px"
+                                    }}
+                                    onClick={handleAiSuggest}
+                                    disabled={isAiLoading || !formData.title.trim()}
+                                    title="Suggest a description using AI"
+                                >
+                                    <span className="ai-sparkle" role="img" aria-label="ai">✨</span> Suggest Description with AI
+                                    {isAiLoading && (
+                                        <span className="spinner-border spinner-border-sm ms-2" />
+                                    )}
+                                </button>
+                                {aiError && <span className="text-danger">{aiError}</span>}
                             </div>
 
                             <div className="mb-3">
@@ -158,7 +205,7 @@ export function AddEditTask({ project, isOpen, onClose, onUpdate, task, onEdit }
                                     </select>
                                 </div>
                                 <div className="col-6">
-                                    <label className="form-label">assigned</label>
+                                    <label className="form-label">Assigned</label>
                                     <select
                                         className="form-select"
                                         name='assigned_to_id'
@@ -172,7 +219,7 @@ export function AddEditTask({ project, isOpen, onClose, onUpdate, task, onEdit }
                                                 <option value={""}>Select assignee</option>
                                                 <option value={store.user.id}>{store.user.full_name} (admin)</option>
                                                 {(project.members ?? []).map((member) => (
-                                                    <option key={member.member_id} value={member.id}>
+                                                    <option key={member.member_id || member.id} value={member.id}>
                                                         {member.full_name}
                                                     </option>
                                                 ))}
