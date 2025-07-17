@@ -32,7 +32,7 @@ export const ProjectCard = ({ project, onEdit, onAddMembers }) => {
     } else {
       setStatusColor(status);
     }
-  }, [status]);
+  }, [status, store.user]);
 
   const formattedDate = new Date(due_date).toLocaleDateString('en-US', {
     month: 'short',
@@ -77,28 +77,27 @@ export const ProjectCard = ({ project, onEdit, onAddMembers }) => {
           {/* Admin & Members */}
           <div className="d-flex align-items-center">
             <div className="me-2">
-              <img
-                src={admin_profile_picture_url||`https://ui-avatars.com/api/?name=${encodeURIComponent(
-                  admin_full_name
-                )}&background=random`}
-                alt={admin_full_name}
-                className="rounded-circle"
-                width="32"
-                height="32"
-              />
+              <div className="portrait" style={{ width: "32px" }}>
+                <img
+                  src={admin_profile_picture_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                    admin_full_name
+                  )}&background=random`}
+                  alt={admin_full_name}
+                  className="rounded-circle img-cover"
+                />
+              </div>
             </div>
             {members.length > 0 &&
               members.slice(0, 2).map((member, idx) => (
                 <div className="me-2" key={idx}>
-
-                  <img
-                    src={member.profile_picture_url ||
-                      `https://ui-avatars.com/api/?name=${encodeURIComponent(member.full_name || `M${idx + 1}`)}&background=random`}
-                    alt={member.full_name || `Member ${idx + 1}`}
-                    className="rounded-circle"
-                    width="32"
-                    height="32"
-                  />
+                  <div className="portrait" style={{ width: "32px" }}>
+                    <img
+                      src={member.profile_picture_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.full_name || `M${idx + 1}`)}&background=random`}
+                      alt={member.full_name || `Member ${idx + 1}`}
+                      title={member.full_name || `Member ${idx + 1}`}
+                      className="rounded-circle img-cover"
+                    />
+                  </div>
                 </div>
               ))}
             {members.length > 2 && (
@@ -107,8 +106,7 @@ export const ProjectCard = ({ project, onEdit, onAddMembers }) => {
 
 
           </div>
-        </div>
-        {/* <div className="text-center mx-auto"> div to ad a summay with ai (optional)</div> */}
+        </div>        
         <div className="d-flex flex-column align-items-end ms-auto">
           {/* Status Badge */}
           <span className={`badge badge-${statusColor} text-capitalize mb-2`}>

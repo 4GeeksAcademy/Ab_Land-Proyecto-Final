@@ -48,7 +48,7 @@ export const ProjectCardXL = ({ project, onEdit, onAddMembers }) => {
             <div className="d-flex align-items-start">
                 {/* Project Icon */}
                 <img
-                    src={project_picture_url || "https://placehold.co/150x150/png?text=No+Image"}                    
+                    src={project_picture_url || "https://placehold.co/150x150/png?text=No+Image"}
                     alt="Project icon"
                     className="rounded cover me-2"
                     style={{ width: 150, height: 150 }}
@@ -72,39 +72,30 @@ export const ProjectCardXL = ({ project, onEdit, onAddMembers }) => {
                             </small> <br />
                             <small className="mb-0 text-muted">Due Date</small>
 
-                        </div>
-                        {/* <div className="me-3 p-1 rounded border-dashed text-center">
-                            <small className="mb-0 text-muted">
-                                <strong>{budget || 'No budget set'}</strong>
-                            </small> <br />
-                            <small className="mb-0 text-muted">Budget</small>
-
-                        </div> */}
+                        </div>                        
                         <div className="d-flex ">
                             <div className="mx-2">
-                                <img
-                                    src={admin_profile_picture_url ||`https://ui-avatars.com/api/?name=${encodeURIComponent(
-                                        admin_full_name
-                                    )}&background=random`}
-                                    alt={admin_full_name}
-                                    title={admin_full_name}
-                                    className="rounded-circle"
-                                    width="32"
-                                    height="32"
-                                />
+                                <div className="portrait" style={{ width: "32px" }}>
+                                    <img
+                                        src={admin_profile_picture_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                                            admin_full_name
+                                        )}&background=random`}
+                                        alt={admin_full_name}
+                                        className="rounded-circle img-cover"
+                                    />
+                                </div>
                             </div>
                             {members.length > 0 &&
                                 members.slice(0, 8).map((member, idx) => (
                                     <div className="me-2" key={idx}>
-
-                                        <img
-                                            src={member.profile_picture_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.full_name || `M${idx + 1}`)}&background=random`}
-                                            alt={member.full_name || `Member ${idx + 1}`}
-                                            title={member.full_name || `Member ${idx + 1}`}
-                                            className="rounded-circle"
-                                            width="32"
-                                            height="32"
-                                        />
+                                        <div className="portrait" style={{ width: "32px" }}>
+                                            <img
+                                                src={member.profile_picture_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.full_name || `M${idx + 1}`)}&background=random`}
+                                                alt={member.full_name || `Member ${idx + 1}`}
+                                                title={member.full_name || `Member ${idx + 1}`}
+                                                className="rounded-circle img-cover"
+                                            />
+                                        </div>
                                     </div>
                                 ))}
                             {members.length > 8 && (

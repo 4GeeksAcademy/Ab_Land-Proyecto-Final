@@ -41,7 +41,7 @@ function TimelineView({ tasks, onTaskClick }) {
                     .sort(([dateA], [dateB]) => new Date(dateA) - new Date(dateB)) // Sort by date ascending
                     .map(([date, dayTasks]) => (
                         <div key={date} className="card p-2 "
-                            style={{ minHeight: "30vh", minWidth: "300px" }}>
+                            style={{ minHeight: "30vh", width: "340px" }}>
                             <h6 className="text-muted mb-2">{formatDate(date)}</h6>
                             <div className="d-flex flex-column gap-2">
                                 {dayTasks.map((task) => (

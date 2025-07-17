@@ -117,7 +117,7 @@ export function EditProject({ project, isOpen, onClose, onUpdate }) {
                 return;
             }
 
-            dispatch({ type: "success", payload: "¡Proyecto actualizado exitosamente!" });            
+            dispatch({ type: "success", payload: "Project updated successfully!" });            
             onUpdate(data.project);
             onClose();
         } catch (err) {
