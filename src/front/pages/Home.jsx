@@ -38,8 +38,9 @@ export const Home = () => {
 
         <div className="container d-flex justify-content-center pt-3">
           {[BSicon, JSicon, Reacticon, PYicon, SQLAicon, Flaskicon].map((icon, index) => (
-            <div key={index} className="home-tech-box rounded mx-3 p-2">
-              <img src={icon} alt={`tech-${index}`} style={{ width: '3rem', height: '3rem' }} />
+            <div key={index} className="home-tech-box rounded mx-1 mx-md-2 mx-lg-3 p-2"
+            style={{ maxWidth: '4rem', aspectRatio:"1/1"}}>
+              <img src={icon} alt={`tech-${index}`} style={{ width: '100%', height: '100%' }}  />
             </div>
           ))}
         </div>
@@ -85,7 +86,7 @@ export const Home = () => {
         <h3 className="mb-4" id="ourteam"><strong>Our Team</strong></h3>
         <div className="row justify-content-center pt-3 g-2 px-5">
           {[
-            { name: "Luna ", github: "https://github.com/LunaB28" },
+            { name: "Luna ", github: "https://github.com/LunaB28", picURL:"https://res.cloudinary.com/dvawhw99g/image/upload/klpgqhhwh3meuwvapwra.jpg" },
             { name: "Roberta", github: "https://github.com/robertaval", picURL: "https://res.cloudinary.com/duzqn2kk2/image/upload/v1752075672/slack_20220808152622_gcuvzk.jpg" },
             { name: "Abraham", github: "https://github.com/Ablandaeta", picURL: "https://res.cloudinary.com/dvawhw99g/image/upload/wpc38sgqze5z5ifpywzy.png" }
           ].map((member, idx) => (
