@@ -143,11 +143,11 @@ export const TaskCard = ({ task, userRole, onEdit, onUpdate }) => {
                 className="rounded-circle"
                 width="32"
                 height="32"
-                title={`Created and assigned:: ${task_author}`}
+                title={`Created and assigned: ${task_author}`}
               />
             </div>
             <small className="text-muted">
-              <strong>Created and assigned::</strong> {task_author}
+              <strong>Created and assigned:</strong> {task_author}
             </small>
           </div>
         ) : (
@@ -187,7 +187,7 @@ export const TaskCard = ({ task, userRole, onEdit, onUpdate }) => {
                     />
                   </div>
                   <small className="text-muted">
-                    <strong>Assigned to::</strong> {assigned_to.full_name}
+                    <strong>Assigned to:</strong> {assigned_to.full_name}
                   </small>
                 </>
               ) : (
